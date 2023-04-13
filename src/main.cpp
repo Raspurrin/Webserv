@@ -43,8 +43,26 @@ int main(void)
 	// backlog defines the max # of pending connection that can queue b4 being refued with (ECONNREFUSED)
 	if (listen(server_fd, 3) < 0)
 		error_handle("listen");
+
 	// accept
-	int	new_socket;
+	int	address_len = sizeof(address);
+	int	readed;
+	char	buffer[30000] = {0};
+	std::string	hello = "Hello from server";
+
+	while (1)
+	{
+		int	new_socket;
+
+		printf("WAITING FOR NEW CONNECTION ON SERVER SIDE");
+		if ((new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &address_len)) < 0)
+			error_handle("accept");
+
+		readed = read(new_socket, buffer, 30000);
+		send(new_socket, hello.c_str(), hello.length(), 0);
+		printf("HELLO MESSAGE SENT FROM SERVER");
+	}
+
 	//4. send and receive messages
 	//5. close the socket
 	return (0);

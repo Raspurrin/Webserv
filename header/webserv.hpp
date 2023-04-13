@@ -7,5 +7,10 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <iostream>
+#include <istream>
+#include <fstream>
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #endif
