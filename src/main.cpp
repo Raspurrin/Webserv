@@ -1,6 +1,5 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
-#include <sys/socket.h>
 
 void	error_handle(std::string type)
 {
@@ -59,6 +58,7 @@ int main(void)
 			error_handle("accept");
 	//4. send and receive messages
 		readed = read(new_socket, buffer, 30000);
+		std::cout << readed << std::endl;
 		send(new_socket, hello.c_str(), hello.length(), 0);
 		printf("HELLO MESSAGE SENT FROM SERVER");
 	//5. close the socket
