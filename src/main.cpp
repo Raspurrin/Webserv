@@ -1,5 +1,6 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
+#include <asm-generic/socket.h>
 
 void	error_handle(std::string type)
 {
@@ -18,6 +19,12 @@ int main(void)
 
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		error_handle("Socket error");
+
+	//for preventing binding error address already in use
+	int	opt = 1;
+
+	if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+		error_handle("setsockopt");
 
 	//2. name the socket
 	//assigning a transport address to the socket, a port number. use bind() syscall.
@@ -47,7 +54,8 @@ int main(void)
 	int	address_len = sizeof(address);
 	int	readed;
 	char	buffer[30000] = {0};
-	std::string	hello = "Hello from server";
+//	std::string	hello = "Hello from server";
+	std::string	hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 17\n\nHello from Server";
 
 	while (1)
 	{
