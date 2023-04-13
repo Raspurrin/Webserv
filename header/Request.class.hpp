@@ -8,12 +8,20 @@ class Request
 {
 	private:
 
-		std::string	request;
+		std::string	requestMessage;
+		std::string	method;
+		std::string path;
+		std::string	protocolVersion;
+
+
+		void parseHeaderSection();
+		void parseRequestLine();
+		void parseHeaderFields();
 
 	public:
 
 		Request(void);
-		Request(std::string request);
+		Request(std::string requestMessage);
 		Request(Request const &src);
 		Request&	operator=(Request const &assign);
 		~Request(void);
