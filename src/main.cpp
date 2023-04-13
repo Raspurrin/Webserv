@@ -1,7 +1,11 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
-#include <netinet/in.h>
-#include <sys/socket.h>
+
+void	error_handle(std::string type)
+{
+	perror(type.c_str());
+	exit(0);
+}
 
 int main(void)
 {
@@ -13,14 +17,11 @@ int main(void)
 	int	server_fd;
 
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-	{
-		perror("Couldnt create socket.");
-		exit(0);
-	}
+		error_handle("Couldnt create socket.");
 	//2. name the socket
 	//assigning a transport address to the socket, a port number. use bind() syscall.
 	//int bind(int socket, const struct sockaddr *address, socklen_t address_len)
-	//filling sockaddr struct before bind()
+	//filling sockaddr_in (structure describing an internet socket address) struct before bind()
 	struct		sockaddr_in address;
 	const int	port = 8080;
 
@@ -30,8 +31,10 @@ int main(void)
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 	//htons converts a short integer to a network representation
 	address.sin_port = htons(port);
-	
-	//
+	//sockaddr (structure describing a generic socket address) struct before bind()
+	if (bind(server_fd, (struct sockaddr *) &address, sizeof(address)) < 0)
+		error_handle("Binding error");
+
 	//3. wait for an incoming connection
 	//4. send and receive messages
 	//5. close the socket

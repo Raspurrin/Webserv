@@ -5,5 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <netinet/in.h>
+#include <string.h>
+#include <iostream>
 
 #endif
