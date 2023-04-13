@@ -58,6 +58,7 @@ int main(void)
 			error_handle("Accept error");
 	//4. send and receive messages
 		readed = read(new_socket, buffer, 30000);
+		printf("%s\n", buffer);
 		std::cout << readed << std::endl;
 		send(new_socket, hello.c_str(), hello.length(), 0);
 		printf("HELLO MESSAGE SENT FROM SERVER\n");
