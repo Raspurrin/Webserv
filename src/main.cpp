@@ -5,7 +5,7 @@
 int main(void)
 {
 	//programming wtih tcp/ip sockets
-	//1. create the socket using socket()
+	//1. create the socket using the system call socket(domain, type, protocol)
 	//domain: AF_INET macro for IP
 	//type: SOCK_STREAM virtual circuit service TCP
 	//protocol: 0 IP
