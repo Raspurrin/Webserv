@@ -17,7 +17,7 @@ int main(void)
 	int	server_fd;
 
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		error_handle("Couldnt create socket.");
+		error_handle("Socket error");
 
 	//2. name the socket
 	//assigning a transport address to the socket, a port number. use bind() syscall.
@@ -41,7 +41,7 @@ int main(void)
 	// listen (int socket, int backlog) puts the server socket in a passive mode
 	// backlog defines the max # of pending connection that can queue b4 being refued with (ECONNREFUSED)
 	if (listen(server_fd, 3) < 0)
-		error_handle("listen");
+		error_handle("Listen error");
 
 	// accept
 	int	address_len = sizeof(address);
@@ -55,7 +55,7 @@ int main(void)
 
 		printf("...WAITING FOR NEW CONNECTION...\n");
 		if ((new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &address_len)) < 0)
-			error_handle("accept");
+			error_handle("Accept error");
 	//4. send and receive messages
 		readed = read(new_socket, buffer, 30000);
 		std::cout << readed << std::endl;
