@@ -25,8 +25,11 @@ int main(void)
 	const int	port = 8080;
 
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY; //0.0.0.0 OS chooses
-	address.sin_port = htons(port); //htons converts a short integer to a network representation
+	//INADDR_ANY 0.0.0.0 OS chooses
+	//htonl converts the address to a network representation
+	address.sin_addr.s_addr = htonl(INADDR_ANY);
+	//htons converts a short integer to a network representation
+	address.sin_port = htons(port);
 	
 	//
 	//3. wait for an incoming connection
