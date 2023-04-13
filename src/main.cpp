@@ -53,14 +53,14 @@ int main(void)
 	{
 		int	new_socket;
 
-		printf("WAITING FOR NEW CONNECTION ON SERVER SIDE");
+		printf("...WAITING FOR NEW CONNECTION...\n");
 		if ((new_socket = accept(server_fd, (struct sockaddr *) &address, (socklen_t *) &address_len)) < 0)
 			error_handle("accept");
 	//4. send and receive messages
 		readed = read(new_socket, buffer, 30000);
 		std::cout << readed << std::endl;
 		send(new_socket, hello.c_str(), hello.length(), 0);
-		printf("HELLO MESSAGE SENT FROM SERVER");
+		printf("HELLO MESSAGE SENT FROM SERVER\n");
 	//5. close the socket
 		close(new_socket);
 	}
