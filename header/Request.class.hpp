@@ -8,7 +8,7 @@ class Request
 {
 	private:
 
-		std::string	requestMessage;
+		const std::string	requestMessage;
 		std::string	method;
 		std::string path;
 		std::string	protocolVersion;
@@ -21,7 +21,7 @@ class Request
 	public:
 
 		Request(void);
-		Request(std::string requestMessage);
+		Request(const std::string requestMessage);
 		Request(Request const &src);
 		Request&	operator=(Request const &assign);
 		~Request(void);
