@@ -15,3 +15,4 @@ https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 - Execute CGI based on certain file extension (for example .php).
 - Relevant RFCs  
 RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235  
+![image](https://user-images.githubusercontent.com/71138634/231741862-8518d519-c24b-4267-9444-889be657f609.png)
