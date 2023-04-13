@@ -2,11 +2,14 @@
 # define REQUEST_CLASS_HPP
 
 #include <iostream>
+#include <map>
 #include "colours.hpp"
 
 class Request
 {
 	private:
+
+		std::map<std::string, std::string>headerFields;
 
 		const std::string	requestMessage;
 		std::string	method;
