@@ -9,3 +9,5 @@
 https://en.wikipedia.org/wiki/List_of_HTTP_status_codes  
 - Set a default file to answer if the request is a directory.
 - Execute CGI based on certain file extension (for example .php).
+- Relevant RFCs  
+RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235  
