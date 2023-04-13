@@ -1,5 +1,22 @@
 #include "../header/Request.class.hpp"
 
+void Request::parseHeaderSection()
+{
+	parseRequestLine();
+	parseHeaderFields();
+	return ;
+}
+
+void Request::parseRequestLine()
+{
+	return ;
+}
+
+void Request::parseHeaderFields()
+{
+	return ;
+}
+
 Request::Request(void)
 {
 	return ;
@@ -7,6 +24,7 @@ Request::Request(void)
 
 Request::Request(const std::string requestMessage) : requestMessage(requestMessage)
 {
+	parseHeaderSection();
 	return ;
 }
 
