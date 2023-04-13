@@ -43,7 +43,8 @@ int main(void)
 	// backlog defines the max # of pending connection that can queue b4 being refued with (ECONNREFUSED)
 	if (listen(server_fd, 3) < 0)
 		error_handle("listen");
-	//
+	// accept
+	int	new_socket;
 	//4. send and receive messages
 	//5. close the socket
 	return (0);
