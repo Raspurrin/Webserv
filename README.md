@@ -2,9 +2,10 @@
 ## HTTP server in C++ 98
 
 - GET, POST, and DELETE methods.
-1. GET: Fetch an URL  
-2. POST: Send form data to a URL and get a response back  
-3. DELETE: The DELETE method requests that the target resource delete its state.  
+    1. GET: Fetch an URL  
+    2. POST: Send form data to a URL and get a response back  
+    3. DELETE: The DELETE method requests that the target resource delete its state.  
+https://en.wikipedia.org/wiki/HTTP#Request_methods  
 - Clients must be able to upload files
 - server must be able to listen to multiple ports
 - default error pages if none are provided
