@@ -16,7 +16,7 @@ int main(void)
 		perror("Couldnt create socket.");
 		exit(0);
 	}
-	//2. identify the socket
+	//2. name the socket
 	//3. wait for an incoming connection
 	//4. send and receive messages
 	//5. close the socket

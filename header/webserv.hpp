@@ -4,5 +4,6 @@
 #include <sys/socket.h>
 #include <cstdio>
 #include <cstdlib>
+#include <netinet/in.h>
 
 #endif
