@@ -9,7 +9,7 @@ void Request::printMap()
 	std::cout << YELLOW;
 	while (it != headerFields.end())
 	{
-		std::cout << it->first << ": " << it->second << std::endl;
+		std::cout << it->first << " " << it->second << std::endl;
 		++it;
 	}
 	std::cout << DEF << std::endl;
@@ -26,6 +26,7 @@ void Request::parseHeaderSection()
 	lpos = position;
 	position = requestMessage.find("\n\n", lpos);
 	parseHeaderFields(requestMessage.substr(lpos, position - lpos));
+	printMap();
 	return ;
 }
 
@@ -46,14 +47,24 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	headerFields["Version"] = startLine.substr(lpos, position - lpos);
-	printMap();
 	return ;
 }
 
 void Request::parseHeaderFields(std::string headerSection)
 {
 	std::cout << CYAN << "Header section is: " << DEF << headerSection << std::endl;
-//	std::cout << requestMessage << std::endl;	
+
+	int	position, newline;
+	std::string key, value;
+
+	position = headerSection.find(':');
+	newline = headerSection.find('\n');
+	key = headerSection.substr(0, position);
+	position++;
+	if (headerSection[position] == ' ')
+		position++;
+	value = headerSection.substr(position, newline - position);
+	headerFields[key] = value;
 	return ;
 }
 
