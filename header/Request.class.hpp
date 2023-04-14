@@ -23,6 +23,8 @@ class Request
 		void parseStartLine(std::string startLine);
 		void parseHeaderFields();
 
+		void printMap();
+
 	public:
 
 		Request(void);
