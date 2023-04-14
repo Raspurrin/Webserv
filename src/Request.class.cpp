@@ -16,18 +16,19 @@ void Request::parseHeaderSection()
 void Request::parseStartLine(std::string startLine)
 {
 	std::cout << "in start line" << std::endl;
-	std::cout << startLine << std::endl;	
+	std::cout << startLine << std::endl;
 	int	position, lpos;
 
 	//adding method to map
 	position = startLine.find(' ');
 	headerFields["Method"] = startLine.substr(0, position);
 	std::cout << "Key: Method, Value: " << headerFields["Method"] << std::endl;
+	std::cout << startLine << std::endl;
 	//skipping the space
 	position++;
 	lpos = position;
 	position = startLine.find(' ', lpos);
-	headerFields["Path"] = startLine.substr(lpos, position);
+	headerFields["Path"] = startLine.substr(lpos, position - lpos);
 	std::cout << "Key: Path, Value: " << headerFields["Path"] << std::endl;
 	return ;
 }
