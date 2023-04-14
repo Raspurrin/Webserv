@@ -54,17 +54,25 @@ void Request::parseHeaderFields(std::string headerSection)
 {
 	std::cout << CYAN << "Header section is: " << DEF << headerSection << std::endl;
 
-	int	position, newline;
-	std::string key, value;
+	std::istringstream	iss(headerSection);
+	std::string	line;
+//	int	position, newline;
 
-	position = headerSection.find(':');
-	newline = headerSection.find('\n');
-	key = headerSection.substr(0, position);
-	position++;
-	if (headerSection[position] == ' ')
+	while (getline(iss, line))
+	{
+/*		std::string key, value;
+
+		position = headerSection.find(':');
+		key = headerSection.substr(0, position);
 		position++;
-	value = headerSection.substr(position, newline - position);
-	headerFields[key] = value;
+		if (headerSection[position] == ' ')
+			position++;
+		value = headerSection.substr(position, newline - position);
+		headerFields[key] = value;*/
+		std::cout << "ITER" << line << std::endl;
+	}
+//	newline = headerSection.find('\n');
+	//now lets make a loop?
 	return ;
 }
 
