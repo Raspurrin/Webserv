@@ -17,7 +17,7 @@ void Request::parseStartLine(std::string startLine)
 {
 	std::cout << "in start line" << std::endl;
 	std::cout << startLine << std::endl;	
-	int	position;
+	int	position, lpos;
 
 	//adding method to map
 	position = startLine.find(' ');
@@ -25,6 +25,10 @@ void Request::parseStartLine(std::string startLine)
 	std::cout << "Key: Method, Value: " << headerFields["Method"] << std::endl;
 	//skipping the space
 	position++;
+	lpos = position;
+	position = startLine.find(' ', lpos);
+	headerFields["Path"] = startLine.substr(lpos, position);
+	std::cout << "Key: Path, Value: " << headerFields["Path"] << std::endl;
 	return ;
 }
 
