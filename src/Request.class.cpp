@@ -61,12 +61,12 @@ void Request::parseHeaderFields(std::string headerSection)
 
 	while (getline(iss, line))
 	{
-		position = headerSection.find(':');
-		key = headerSection.substr(0, position);
+		position = line.find(':');
+		key = line.substr(0, position);
 		position++;
 		if (headerSection[position] == ' ')
 			position++;
-		value = headerSection.substr(position);
+		value = line.substr(position);
 		headerFields[key] = value;
 	}
 //	newline = headerSection.find('\n');
