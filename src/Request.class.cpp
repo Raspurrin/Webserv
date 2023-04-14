@@ -30,6 +30,11 @@ void Request::parseStartLine(std::string startLine)
 	position = startLine.find(' ', lpos);
 	headerFields["Path"] = startLine.substr(lpos, position - lpos);
 	std::cout << "Key: Path, Value: " << headerFields["Path"] << std::endl;
+	position++;
+	lpos = position;
+	position = startLine.find(' ', lpos);
+	headerFields["Version"] = startLine.substr(lpos, position - lpos);
+	std::cout << "Key: Version, Value: " << headerFields["Version"] << std::endl;
 	return ;
 }
 
