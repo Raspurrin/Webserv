@@ -21,7 +21,7 @@ class Request
 
 		void parseHeaderSection();
 		void parseStartLine(std::string startLine);
-		void parseHeaderFields();
+		void parseHeaderFields(std::string headerSection);
 
 		void printMap();
 

@@ -18,21 +18,20 @@ void Request::printMap()
 
 void Request::parseHeaderSection()
 {
-	std::istringstream	iss(requestMessage);
-	std::string			line;
-
-	int position;
+	int	position, lpos;
 
 	position = requestMessage.find('\n');
-	getline(iss, line);
 	parseStartLine(requestMessage.substr(0, position));
-	parseHeaderFields();
+	position++;
+	lpos = position;
+	position = requestMessage.find("\n\n", lpos);
+	parseHeaderFields(requestMessage.substr(lpos, position - lpos));
 	return ;
 }
 
 void Request::parseStartLine(std::string startLine)
 {
-	std::cout << CYAN << "First line is: " << DEF << startLine << std::endl;
+	std::cout << CYAN << "Start line is: " << DEF << startLine << std::endl;
 	int	position, lpos;
 
 	//adding method to map
@@ -51,9 +50,9 @@ void Request::parseStartLine(std::string startLine)
 	return ;
 }
 
-void Request::parseHeaderFields()
+void Request::parseHeaderFields(std::string headerSection)
 {
-//	std::cout << "in header fields" << std::endl;
+	std::cout << CYAN << "Header section is: " << DEF << headerSection << std::endl;
 //	std::cout << requestMessage << std::endl;	
 	return ;
 }
