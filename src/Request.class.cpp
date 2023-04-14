@@ -8,9 +8,8 @@ void Request::parseHeaderSection()
 	std::string			line;
 
 	getline(iss, line);
-	std::cout << line << std::endl;
 	parseStartLine(line);
-	parseHeaderFields(iss);
+	parseHeaderFields();
 	return ;
 }
 
@@ -18,14 +17,21 @@ void Request::parseStartLine(std::string startLine)
 {
 	std::cout << "in start line" << std::endl;
 	std::cout << startLine << std::endl;	
+	int	position;
+
+	//adding method to map
+	position = startLine.find(' ');
+	headerFields["Method"] = startLine.substr(0, position);
+	std::cout << "Key: Method, Value: " << headerFields["Method"] << std::endl;
+	//skipping the space
+	position++;
 	return ;
 }
 
-void Request::parseHeaderFields(std::istringstream iss)
+void Request::parseHeaderFields()
 {
-	getline(iss, line);
 	std::cout << "in header fields" << std::endl;
-	std::cout << headerFields << std::endl;	
+	std::cout << requestMessage << std::endl;	
 	return ;
 }
 
@@ -36,7 +42,6 @@ Request::Request(void)
 
 Request::Request(const std::string requestMessage) : requestMessage(requestMessage)
 {
-	iss(requestMessage);
 	parseHeaderSection();
 	return ;
 }
