@@ -6,13 +6,11 @@ void Request::printMap()
 {
 	std::cout << RED << "\nPrinting map of header fields...\n" << DEF << std::endl;
 	std::map<std::string, std::string>::iterator it = headerFields.begin();
-	std::cout << YELLOW;
 	while (it != headerFields.end())
 	{
-		std::cout << it->first << " " << it->second << std::endl;
+		std::cout << YELLOW << it->first << "" << DEF << it->second << std::endl;
 		++it;
 	}
-	std::cout << DEF << std::endl;
 	return ;
 }
 
@@ -32,7 +30,7 @@ void Request::parseHeaderSection()
 
 void Request::parseStartLine(std::string startLine)
 {
-	std::cout << CYAN << "Start line is: " << DEF << startLine << std::endl;
+	std::cout << CYAN << "Start line is:\n" << DEF << startLine << std::endl;
 	int	position, lpos;
 
 	//adding method to map
@@ -52,11 +50,10 @@ void Request::parseStartLine(std::string startLine)
 
 void Request::parseHeaderFields(std::string headerSection)
 {
-	std::cout << CYAN << "Header section is: " << DEF << headerSection << std::endl;
+	std::cout << CYAN << "Header section is:\n" << DEF << headerSection << std::endl;
 
 	std::istringstream	iss(headerSection);
-	std::string key, value;
-	std::string	line;
+	std::string key, value, line;
 	int	position;
 
 	while (getline(iss, line))
@@ -64,13 +61,11 @@ void Request::parseHeaderFields(std::string headerSection)
 		position = line.find(':');
 		key = line.substr(0, position);
 		position++;
-		if (headerSection[position] == ' ')
+		if (line[position] == ' ')
 			position++;
 		value = line.substr(position);
 		headerFields[key] = value;
 	}
-//	newline = headerSection.find('\n');
-	//now lets make a loop?
 	return ;
 }
 
