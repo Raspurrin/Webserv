@@ -8,7 +8,7 @@ void Request::printMap()
 	std::map<std::string, std::string>::iterator it = headerFields.begin();
 	while (it != headerFields.end())
 	{
-		std::cout << YELLOW << it->first << "" << DEF << it->second << std::endl;
+		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
 		++it;
 	}
 	return ;
@@ -58,6 +58,8 @@ void Request::parseHeaderFields(std::string headerSection)
 
 	while (getline(iss, line))
 	{
+		if (line.size() == 1)
+			break ;
 		position = line.find(':');
 		key = line.substr(0, position);
 		position++;
