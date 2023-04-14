@@ -21,8 +21,11 @@ void Request::parseHeaderSection()
 	std::istringstream	iss(requestMessage);
 	std::string			line;
 
+	int position;
+
+	position = requestMessage.find('\n');
 	getline(iss, line);
-	parseStartLine(line);
+	parseStartLine(requestMessage.substr(0, position));
 	parseHeaderFields();
 	return ;
 }
