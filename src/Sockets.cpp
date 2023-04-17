@@ -54,8 +54,6 @@
 			printf("...WAITING FOR NEW CONNECTION...\n");
 			if ((newSocket = accept(serverFd, (struct sockaddr *) &address, (socklen_t *) &addressLen)) < 0)
 				error_handle("Accept error");
-			readMessage(newSocket);
-			sendMessage(newSocket);
 			addNewConnection(newSocket);
 			numEvent = poll(lol.data, lol.size(), 0);
 			if (numEvent > 0)
