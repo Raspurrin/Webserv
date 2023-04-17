@@ -9,7 +9,7 @@ class Sockets
 	private: 
 		const int			port;
 		struct sockaddr_in	address;
-		std::vector<struct pollfd>	lol;
+		std::vector<struct pollfd>	pollFds;
 		int		opt, serverFd, addressLen;
 
 	private:

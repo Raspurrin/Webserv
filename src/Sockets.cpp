@@ -26,7 +26,7 @@
 		fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 		newPfd.fd = fd;
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
-		lol.push_back(newPfd);
+		pollFds.push_back(newPfd);
 	}
 
 	void	Sockets::readMessage(int new_socket)
@@ -34,10 +34,9 @@
 		char	buffer[30000];
 
 		read(new_socket, buffer, 30000);
-		printf("in buffer: %s\n", buffer);
 		Request	request(buffer);
 		request.printMap();
-		//std::cout << readed << std::endl;
+
 	}
 
 	void	Sockets::sendMessage(int new_socket)
@@ -59,16 +58,16 @@
 			if ((newSocket = accept(serverFd, (struct sockaddr *) &address, (socklen_t *) &addressLen)) < 0)
 				error_handle("Accept error");
 			addNewConnection(newSocket);
-			numEvent = poll(lol.data(), lol.size(), 0);
+			numEvent = poll(pollFds.data(), pollFds.size(), 0);
 			if (numEvent > 0)
 			{
-				for (size_t i = 0; i < lol.size(); i++)
+				for (size_t i = 0; i < pollFds.size(); i++)
 				{
-					if (lol[i].revents & POLLIN)
-						readMessage(lol[i].fd);
-					else if (lol[i].revents & POLLOUT)
-						sendMessage(lol[i].fd);
-					else if (lol[i].revents & POLLERR)
+					if (pollFds[i].revents & POLLIN)
+						readMessage(pollFds[i].fd);
+					else if (pollFds[i].revents & POLLOUT)
+						sendMessage(pollFds[i].fd);
+					else if (pollFds[i].revents & POLLERR)
 						error_handle("Error occured with a connection");
 				}
 			}
@@ -87,8 +86,8 @@
 
 	Sockets::~Sockets(void)
 	{
-		for (size_t i = 0; i < lol.size(); i++)
+		for (size_t i = 0; i < pollFds.size(); i++)
 		{
-			close(lol[i].fd);
+			close(pollFds[i].fd);
 		}
 	}
