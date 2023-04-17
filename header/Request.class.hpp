@@ -10,8 +10,6 @@ class Request
 {
 	private:
 		std::map<std::string, std::string>headerFields;
-
-		int					fd;
 		const std::string	requestMessage;
 		std::istringstream	iss;
 		std::string	method;
@@ -28,7 +26,7 @@ class Request
 	public:
 
 		Request(void);
-		Request(int fd);
+		Request(std::string buffer);
 		Request(Request const &src);
 		Request&	operator=(Request const &assign);
 		~Request(void);

@@ -10,7 +10,7 @@ class Sockets
 		const int			port;
 		struct sockaddr_in	address;
 		std::vector<struct pollfd>	lol;
-		int		opt, serverFd, addressLen, readed;
+		int		opt, serverFd, addressLen;
 
 	private:
 		void	readMessage(int fd);

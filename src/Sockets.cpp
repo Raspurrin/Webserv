@@ -31,7 +31,11 @@
 
 	void	Sockets::readMessage(int new_socket)
 	{
-		Request	request(new_socket);
+		char	buffer[30000];
+
+		read(new_socket, buffer, 30000);
+		printf("in buffer: %s\n", buffer);
+		Request	request(buffer);
 		request.printMap();
 		//std::cout << readed << std::endl;
 	}
@@ -55,7 +59,7 @@
 			if ((newSocket = accept(serverFd, (struct sockaddr *) &address, (socklen_t *) &addressLen)) < 0)
 				error_handle("Accept error");
 			addNewConnection(newSocket);
-			numEvent = poll(lol.data, lol.size(), 0);
+			numEvent = poll(lol.data(), lol.size(), 0);
 			if (numEvent > 0)
 			{
 				for (size_t i = 0; i < lol.size(); i++)

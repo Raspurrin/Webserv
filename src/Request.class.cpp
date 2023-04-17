@@ -1,6 +1,7 @@
 #include "../header/Request.class.hpp"
 #include <cstdio>
 #include <sstream>
+#include <unistd.h>
 
 void Request::printMap()
 {
@@ -75,13 +76,9 @@ Request::Request(void)
 	return ;
 }
 
-Request::Request(int fd) :
-	fd(fd)
+Request::Request(std::string requestMessage) : 
+	requestMessage(requestMessage)
 {
-	char	buffer[30000];
-
-	requestMessage = read(fd, buffer, 30000);
-	printf("in buffer: %s\n", buffer);
 	parseHeaderSection();
 	return ;
 }
