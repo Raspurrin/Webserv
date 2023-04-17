@@ -7,4 +7,3 @@
 #define DEF "\033[0m"
 
 #endif
-

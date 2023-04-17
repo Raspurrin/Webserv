@@ -14,4 +14,6 @@
 #include <stdlib.h>
 #include "Request.class.hpp"
 
+void	error_handle(std::string type);
+
 #endif

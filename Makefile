@@ -1,20 +1,17 @@
 NAME = webserv
-
 CC = c++
-
-CFLAGS = -Wall -Wextra -Werror -std=c++98 
+RM = rm -rf
+CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 HEADER_DIR = ./header
-
 SRC_DIR = ./src/
-
 OBJ_DIR = ./.build/
-
 LIBS = -lm
 
-SRCS = main.cpp Request.class.cpp
-
-RM = rm -rf
+SRCS =	main.cpp \
+		Request.class.cpp \
+		Socket.cpp \
+		error.cpp
 
 OBJ = $(SRCS:.cpp=.o)
 OBJ_PREF := $(addprefix $(OBJ_DIR), $(OBJ))
