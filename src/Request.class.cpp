@@ -24,7 +24,6 @@ void Request::parseHeaderSection()
 	lpos = position;
 	position = requestMessage.find("\n\n", lpos);
 	parseHeaderFields(requestMessage.substr(lpos, position - lpos));
-	printMap();
 	return ;
 }
 
@@ -76,8 +75,13 @@ Request::Request(void)
 	return ;
 }
 
-Request::Request(const std::string requestMessage) : requestMessage(requestMessage)
+Request::Request(int fd) :
+	fd(fd)
 {
+	char	buffer[30000];
+
+	requestMessage = read(fd, buffer, 30000);
+	printf("in buffer: %s\n", buffer);
 	parseHeaderSection();
 	return ;
 }
