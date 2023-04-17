@@ -1,6 +1,6 @@
-#include "../header/webserv.hpp"
+#include "../header/Webserv.hpp"
 #include "../header/colours.hpp"
-#include "../header/socket.hpp"
+#include "../header/Sockets.hpp"
 #include <sys/socket.h>
 
 int main(void)

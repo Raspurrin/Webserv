@@ -2,7 +2,7 @@
 # define SOCKET_HPP
 
 #include <sys/socket.h>
-#include "../header/webserv.hpp"
+#include "../header/Webserv.hpp"
 #include "../header/colours.hpp"
 
 class Sockets
