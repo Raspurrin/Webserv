@@ -20,7 +20,10 @@
 
 	void	Sockets::addNewConnection(int fd)
 	{
-		pollfd newPfd;
+		pollfd	newPfd;
+		int		flags = fcntl(fd, F_GETFL, 0);
+
+		fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 		newPfd.fd = fd;
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
 		lol.push_back(newPfd);
@@ -54,7 +57,7 @@
 			readMessage(newSocket);
 			sendMessage(newSocket);
 			addNewConnection(newSocket);
-			numEvent = poll(lol.data, lol.size(), 1000);
+			numEvent = poll(lol.data, lol.size(), 0);
 			if (numEvent > 0)
 			{
 				for (size_t i = 0; i < lol.size(); i++)
