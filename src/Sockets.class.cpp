@@ -34,6 +34,7 @@
 		char	buffer[30000];
 
 		read(new_socket, buffer, 30000);
+		printf("---------Buffer in sockets is:\n %s\n--- BUFFER DONE\n", buffer);
 		Request	request(buffer);
 		request.printMap();
 
