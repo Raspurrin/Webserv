@@ -16,6 +16,7 @@ class Request
 		std::map<std::string, std::string>response;
 
 		const std::string	requestMessage;
+		std::string			responseMessage;
 		std::istringstream	iss;
 
 		void	parseHeaderSection();
@@ -28,6 +29,7 @@ class Request
 	public:
 
 		void	printMap();
+		std::string	getResponse();
 
 	public:
 
