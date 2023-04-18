@@ -1,7 +1,7 @@
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
 
-#include "../header/Webserv.hpp"
+#include "../header/webserv.hpp"
 #include "../header/colours.hpp"
 
 class Sockets

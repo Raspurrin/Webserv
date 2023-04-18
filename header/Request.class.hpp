@@ -9,18 +9,18 @@
 class Request
 {
 	private:
+
 		std::map<std::string, std::string>headerFields;
+
 		const std::string	requestMessage;
 		std::istringstream	iss;
-		std::string	method;
-		std::string path;
-		std::string	protocolVersion;
 
 		void	parseHeaderSection();
 		void	parseStartLine(std::string startLine);
 		void	parseHeaderFields(std::string headerSection);
 
 	public:
+
 		void	printMap();
 
 	public:
