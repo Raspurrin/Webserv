@@ -3,6 +3,12 @@
 #include <sstream>
 #include <unistd.h>
 
+void Request::methodID()
+{
+	std::cout << CYAN << "Method is:\n" << DEF << headerFields["Method"] << std::endl;
+	return ;
+}
+
 void Request::printMap()
 {
 	std::cout << RED << "\nPrinting map of header fields...\n" << DEF << std::endl;
@@ -80,6 +86,7 @@ Request::Request(std::string requestMessage) :
 	requestMessage(requestMessage)
 {
 	parseHeaderSection();
+	methodID();
 	return ;
 }
 
