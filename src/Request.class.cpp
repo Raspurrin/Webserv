@@ -4,11 +4,17 @@
 #include <string>
 #include <unistd.h>
 
+std::string Request::getResponse()
+{
+	return (responseMessage);
+}
+
 void Request::buildResponse()
 {
 	response["Version"] = "HTTP/1.1";
 	methodID();
-	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type"] + "\n" + "Content-Length: " + response["Content-Length"] + "\n\n"; 
+	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"]; 
+	std::cout << "Response message is: " << responseMessage << std::endl;
 	return ;
 }
 
@@ -26,17 +32,17 @@ void Request::GETMethod()
 		std::ifstream	fin(headerFields["Path"].c_str() + 1);
 		if (fin.is_open())
 		{
-			std::string	body;
+			std::string	line, body;
 
 			response["Status code"] = "200 OK";
 			response["Content-Type:"] = "text/plain";
 			while (fin.good())
 			{
-				getline(fin, body);
-				responseMessage.append(body);
+				getline(fin, line);
+				body.append(line);
 			}
-			response["Body"] = responseMessage;
-			size_t	len = responseMessage.length();
+			response["Body"] = body;
+			size_t	len = body.length();
 			std::ostringstream str1;
 			str1 << len;
 			std::string	lenStr = str1.str();
