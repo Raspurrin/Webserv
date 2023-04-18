@@ -3,9 +3,32 @@
 #include <sstream>
 #include <unistd.h>
 
+void Request::buildResponse()
+{
+	methodID();
+	return ;
+}
+
+void Request::GETMethod()
+{
+	std::ifstream	fin(headerFields["Path"].c_str());
+
+	//check if file requested exists
+	//if resquested resource not found 404 Not Found
+	if(access(headerFields["Path"].c_str() + 1, F_OK) == -1)
+		response["Status code"] = "404 Not Found";
+
+	if(access(headerFields["Path"].c_str() + 1, R_OK) == -1)
+		response["Status code"] = "403 Forbidden";
+	//if no acess rights then 403 Forbidden
+	return ;
+}
+
 void Request::methodID()
 {
 	std::cout << CYAN << "Method is:\n" << DEF << headerFields["Method"] << std::endl;
+	if (headerFields["Method"] == "GET")
+		GETMethod();
 	return ;
 }
 
@@ -86,7 +109,7 @@ Request::Request(std::string requestMessage) :
 	requestMessage(requestMessage)
 {
 	parseHeaderSection();
-	methodID();
+	buildResponse();
 	return ;
 }
 
