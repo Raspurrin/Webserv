@@ -37,14 +37,12 @@
 		printf("---------Buffer in sockets is:\n %s\n--- BUFFER DONE\n", buffer);
 		Request	request(buffer);
 		request.printMap();
-
+		response = request.getResponse();	
 	}
 
 	void	Sockets::sendMessage(int new_socket)
 	{
-		std::string	hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 17\n\nHello from Server";
-
-		send(new_socket, hello.c_str(), hello.length(), 0);
+		send(new_socket, response.c_str(), response.length(), 0);
 		printf("HELLO MESSAGE SENT FROM SERVER\n");
 	}
 

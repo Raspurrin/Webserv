@@ -14,7 +14,6 @@ void Request::buildResponse()
 	response["Version"] = "HTTP/1.1";
 	methodID();
 	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"]; 
-	std::cout << "Response message is: " << responseMessage << std::endl;
 	return ;
 }
 
@@ -35,7 +34,7 @@ void Request::GETMethod()
 			std::string	line, body;
 
 			response["Status code"] = "200 OK";
-			response["Content-Type:"] = "text/plain";
+			response["Content-Type:"] = "text/html";
 			while (fin.good())
 			{
 				getline(fin, line);

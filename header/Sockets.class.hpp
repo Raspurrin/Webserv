@@ -11,6 +11,7 @@ class Sockets
 		struct sockaddr_in	address;
 		std::vector<struct pollfd>	pollFds;
 		int		opt, serverFd, addressLen;
+		std::string	response;
 
 	private:
 		void	readMessage(int fd);
