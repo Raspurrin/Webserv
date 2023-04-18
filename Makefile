@@ -10,7 +10,7 @@ LIBS = -lm
 
 SRCS =	main.cpp \
 		Request.class.cpp \
-		Sockets.cpp \
+		Sockets.class.cpp \
 		error.cpp
 
 OBJ = $(SRCS:.cpp=.o)

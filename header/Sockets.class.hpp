@@ -1,5 +1,5 @@
-#ifndef SOCKET_HPP
-# define SOCKET_HPP
+#ifndef SOCKETS_CLASS_HPP
+# define SOCKETS_CLASS_HPP
 
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"

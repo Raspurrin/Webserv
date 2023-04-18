@@ -1,4 +1,4 @@
-	#include "../header/Sockets.hpp"
+	#include "../header/Sockets.class.hpp"
 	
 	Sockets::Sockets(void) :
 		port(8080),
