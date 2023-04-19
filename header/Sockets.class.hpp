@@ -1,31 +1,32 @@
-#ifndef SOCKETS_CLASS_HPP
-# define SOCKETS_CLASS_HPP
+#ifndef SERVER_CLASS_HPP
+# define SERVER_CLASS_HPP
 
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
 
-class Sockets
+class Server
 {
-	private: 
-		const int			port;
-		struct sockaddr_in	address;
-		std::vector<struct pollfd>	pollFds;
-		int		opt, serverFd, addressLen;
-		std::string	response;
+	private:
+		int									opt, serverFd, addressLen;
+		std::map<std::string, std::string> configMap;
+		std::vector<struct pollfd>			pollFds;
+		std::vector<class Route>	routes;
+		struct sockaddr_in			address;
+		std::string					response;
 
 	private:
-		void	readMessage(int fd);
-		void	sendMessage(int fd);
+		void	getRequest(int fd);
+		void	postResponse(int fd);
 		void	addNewConnection(int fd);
 
 	public:
 		void	checkConnections(void);
 
 	public: 
-		Sockets(void);
-		//Socket(Socket const &src);
-		//Sockets&	operator=(Sockets const &assign);
-		~Sockets(void);
+		Server(void);
+		//Server(Server const &src);
+		//Server&	operator=(Server const &assign);
+		~Server(void);
 };
 
 #endif
