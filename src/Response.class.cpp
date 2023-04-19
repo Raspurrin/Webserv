@@ -1,24 +1,25 @@
 #include "../header/Response.class.hpp"
 
-int Response::getResponse(void) const
+void Response::methodID()
 {
-	return (this->number);
-}
-
-Response::Response(void)
-{
+	if (request["Method"] == "GET")
+		GETMethod();
 	return ;
 }
 
-Response::Response(Response const &src)
+std::string Response::getResponse(void) const
 {
-	*this = src;
+	return (this->responseMessage);
+}
+
+Response::Response(std::map<std::string, std::string> request) : request(request)
+{
 	return ;
 }
 
 Response &	Response::operator=(const Response &assign)
 {
-	this->number = assign.getResponse();
+	this->responseMessage = assign.getResponse();
 	return (*this);
 }
 

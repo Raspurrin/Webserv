@@ -54,7 +54,6 @@ void Request::GETMethod()
 
 void Request::methodID()
 {
-	std::cout << CYAN << "Method is:\n" << DEF << headerFields["Method"] << std::endl;
 	if (headerFields["Method"] == "GET")
 		GETMethod();
 	return ;
@@ -89,18 +88,16 @@ void Request::parseHeaderSection()
 	lpos = position;
 	position = requestMessage.find("\n\n", lpos);
 	parseHeaderFields(requestMessage.substr(lpos, position - lpos));
+
 	return ;
 }
 
 void Request::parseStartLine(std::string startLine)
 {
-	std::cout << CYAN << "Start line is:\n" << DEF << startLine << std::endl;
 	int	position, lpos;
 
-	//adding method to map
 	position = startLine.find(' ');
 	headerFields["Method"] = startLine.substr(0, position);
-	//skipping the space
 	position++;
 	lpos = position;
 	position = startLine.find(' ', lpos);
@@ -109,13 +106,12 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	headerFields["Version"] = startLine.substr(lpos, position - lpos);
+
 	return ;
 }
 
 void Request::parseHeaderFields(std::string headerSection)
 {
-	std::cout << CYAN << "Header section is:\n" << DEF << headerSection << std::endl;
-
 	std::istringstream	iss(headerSection);
 	std::string key, value, line;
 	int	position;
@@ -132,6 +128,7 @@ void Request::parseHeaderFields(std::string headerSection)
 		value = line.substr(position);
 		headerFields[key] = value;
 	}
+
 	return ;
 }
 
