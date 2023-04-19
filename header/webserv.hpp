@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include "Request.class.hpp"
+#include <netinet/tcp.h>
 
 void	error_handle(std::string type);
 
