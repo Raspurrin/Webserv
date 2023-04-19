@@ -24,14 +24,21 @@
 			error_handle("Wrong configuration file\n");
 		do
 		{
+			line = trim(line);
 			if (line.empty() || line[0] == '#')
 				continue;
+			if (line[0] == '[')
+			{
+				Route newRoute(line);
+				Routes.push_back(newRoute);
+				continue;
+			}
 			equalSign = line.find('=');
 			key = line.substr(0, equalSign - 1);
 			value = line.substr(equalSign + 1);
 			key = validate_trim(key, isalpha);
 			value = validate_trim(value, isalpha);
-		} while (getline(confFile, line) && line[0] != '[');
+		} while (getline(confFile, line));
 	}
 
 	Server::Server(void) :

@@ -13,7 +13,8 @@ class Server
 		std::vector<struct pollfd>			pollFds;
 		std::string							response;
 		std::map<std::string, std::string>	configMap;
- 
+		std::vector<Route>					Routes;
+
 	private:
 		std::string	trim(std::string);
 		void		getRequest(int fd);
