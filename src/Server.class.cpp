@@ -1,10 +1,45 @@
 	#include "../header/Server.class.hpp"
-	
+
+	std::string	validate_trim(std::string str, int (*check_func)(int))
+	{
+		if (std::all_of(str.begin(), str.end(), check_func) == false)
+			error_handle("Configuration key or value should contain only characters");
+		return (trim(str));
+	}
+
+	std::string	trim(std::string str)
+	{
+		int	first = str.find_first_not_of(" \t\n\r");
+		int	last = str.find_last_not_of(" \t\n\r#");
+		
+		return (str.substr(first, last));
+	}
+
+	void	Server::parseConfFile(const char *confFileName)
+	{
+		int				equalSign;
+		std::string		line, key, value;
+		std::ifstream	confFile("confFileName");
+		if (!confFile)
+			error_handle("Wrong configuration file\n");
+		do
+		{
+			if (line.empty() || line[0] == '#')
+				continue;
+			equalSign = line.find('=');
+			key = line.substr(0, equalSign - 1);
+			value = line.substr(equalSign + 1);
+			key = validate_trim(key, isalpha);
+			value = validate_trim(value, isalpha);
+		} while (getline(confFile, line) && line[0] != '[');
+	}
+
 	Server::Server(void) :
 		port(8080),
 		opt(1),
 		addressLen(sizeof(address))
 	{
+		parseConfFile("webserver.conf");
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = htonl(INADDR_ANY);
 		address.sin_port = htons(port);

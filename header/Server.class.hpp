@@ -7,17 +7,21 @@
 class Server
 {
 	private: 
-		const int			port;
-		struct sockaddr_in	address;
-		std::vector<struct pollfd>	pollFds;
-		int		opt, serverSocket, addressLen;
-		std::string	response;
-
+		int				opt, serverSocket, addressLen;
+		const int							port;
+		struct sockaddr_in					address;
+		std::vector<struct pollfd>			pollFds;
+		std::string							response;
+		std::map<std::string, std::string>	configMap;
+ 
 	private:
-		void	getRequest(int fd);
-		void	postResponse(int socket, int indexToRemove);
-		void	configureSocket(int newSocket);
-		void	addNewConnection(int newSocket);
+		std::string	trim(std::string);
+		void		getRequest(int fd);
+		void		postResponse(int socket, int indexToRemove);
+		void		configureSocket(int newSocket);
+		void		addNewConnection(int newSocket);
+		void		parseConfFile(std::string confFileName);
+		void		configureServer(void);
 
 	public:
 		void	checkConnections(void);

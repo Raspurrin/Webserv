@@ -54,7 +54,6 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	headerFields["Version"] = startLine.substr(lpos, position - lpos);
-
 	return ;
 }
 
