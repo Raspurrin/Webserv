@@ -1,5 +1,62 @@
 #include "../header/Response.class.hpp"
 
+std::string Response::lenToStr(std::string body)
+{
+	size_t	len = body.length();
+	std::ostringstream str1;
+
+	str1 << len;
+	std::string	lenStr = str1.str();
+
+	return (lenStr);
+}
+
+void Response::status200()
+{
+	std::ifstream	fin(request["Path"].c_str() + 1);
+
+	if (fin.is_open())
+	{
+		std::string	line, body;
+
+		response["Status code"] = "200 OK";
+		response["Content-Type:"] = "text/html";
+		while (fin.good())
+		{
+			getline(fin, line);
+			body.append(line);
+		}
+		response["Body"] = body;
+		response["Content-Length:"] = lenToStr(body);
+	}
+
+	return ;
+}
+
+void Response::status404()
+{
+	std::string	body ="404 Not Found";
+
+	response["Status code"] = body;
+	response["Content-Type:"] = "text/plain";
+	response["Body"] = body;
+	response["Content-Length:"] = lenToStr(body);
+
+	return ;
+}
+
+void Response::status403()
+{
+	std::string	body ="403 Forbidden";
+
+	response["Status code"] = body;
+	response["Content-Type:"] = "text/plain";
+	response["Body"] = body;
+	response["Content-Length:"] = lenToStr(body);
+
+	return ;
+}
+
 void Response::buildResponse()
 {
 	response["Version"] = "HTTP/1.1";
@@ -10,36 +67,12 @@ void Response::buildResponse()
 
 void Response::GETMethod()
 {
-	//check if file requested exists
-	//if resquested resource not found 404 Not Found
 	if(access(request["Path"].c_str() + 1, F_OK) == -1)
-		response["Status code"] = "404 Not Found";
-
+		status404();
 	else if(access(request["Path"].c_str() + 1, R_OK) == -1)
-		response["Status code"] = "403 Forbidden";
+		status403();
 	else
-	{
-		std::ifstream	fin(request["Path"].c_str() + 1);
-		if (fin.is_open())
-		{
-			std::string	line, body;
-
-			response["Status code"] = "200 OK";
-			response["Content-Type:"] = "text/html";
-			while (fin.good())
-			{
-				getline(fin, line);
-				body.append(line);
-			}
-			response["Body"] = body;
-			size_t	len = body.length();
-			std::ostringstream str1;
-			str1 << len;
-			std::string	lenStr = str1.str();
-			response["Content-Length:"] = lenStr;
-		}
-	}
-	//if no acess rights then 403 Forbidden
+		status200();
 	return ;
 }
 void Response::methodID()

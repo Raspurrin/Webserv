@@ -19,6 +19,10 @@ class Response
 		void	methodID();
 		void	GETMethod();
 		void	buildResponse();
+		void	status404();
+		void	status403();
+		void	status200();
+		std::string	lenToStr(std::string body);
 
 
 	public:
