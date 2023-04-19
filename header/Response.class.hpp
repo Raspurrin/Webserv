@@ -15,6 +15,7 @@ class Response
 
 		void	methodID();
 		void	GETMethod();
+		void	buildResponse();
 
 
 	public:

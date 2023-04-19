@@ -7,6 +7,7 @@
 #include <map>
 #include <sstream>
 #include "colours.hpp"
+#include "Response.class.hpp"
 
 class Request
 {

@@ -141,6 +141,7 @@ Request::Request(std::string requestMessage) :
 	requestMessage(requestMessage)
 {
 	parseHeaderSection();
+	Response response(headerFields);
 	buildResponse();
 	return ;
 }
