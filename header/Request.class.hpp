@@ -14,23 +14,19 @@ class Request
 	private:
 
 		std::map<std::string, std::string>headerFields;
-		std::map<std::string, std::string>response;
 
 		const std::string	requestMessage;
 		std::string			responseMessage;
-		std::istringstream	iss;
 
 		void	parseHeaderSection();
 		void	parseStartLine(std::string startLine);
 		void	parseHeaderFields(std::string headerSection);
-		void	buildResponse();
-		void	methodID();
-		void	GETMethod();
 
 	public:
 
 		void	printMap();
 		std::string	getResponse();
+		std::map<std::string, std::string>	getMap();
 
 	public:
 

@@ -4,59 +4,14 @@
 #include <string>
 #include <unistd.h>
 
+std::map<std::string, std::string> Request::getMap()
+{
+	return (headerFields);
+}
+
 std::string Request::getResponse()
 {
 	return (responseMessage);
-}
-
-void Request::buildResponse()
-{
-	response["Version"] = "HTTP/1.1";
-	methodID();
-	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"]; 
-	return ;
-}
-
-void Request::GETMethod()
-{
-	//check if file requested exists
-	//if resquested resource not found 404 Not Found
-	if(access(headerFields["Path"].c_str() + 1, F_OK) == -1)
-		response["Status code"] = "404 Not Found";
-
-	else if(access(headerFields["Path"].c_str() + 1, R_OK) == -1)
-		response["Status code"] = "403 Forbidden";
-	else
-	{
-		std::ifstream	fin(headerFields["Path"].c_str() + 1);
-		if (fin.is_open())
-		{
-			std::string	line, body;
-
-			response["Status code"] = "200 OK";
-			response["Content-Type:"] = "text/html";
-			while (fin.good())
-			{
-				getline(fin, line);
-				body.append(line);
-			}
-			response["Body"] = body;
-			size_t	len = body.length();
-			std::ostringstream str1;
-			str1 << len;
-			std::string	lenStr = str1.str();
-			response["Content-Length:"] = lenStr;
-		}
-	}
-	//if no acess rights then 403 Forbidden
-	return ;
-}
-
-void Request::methodID()
-{
-	if (headerFields["Method"] == "GET")
-		GETMethod();
-	return ;
 }
 
 void Request::printMap()
@@ -67,13 +22,6 @@ void Request::printMap()
 	{
 		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
 		++it;
-	}
-	std::cout << RED << "\nPrinting map of response fields...\n" << DEF << std::endl;
-	std::map<std::string, std::string>::iterator itt = response.begin();
-	while (itt != response.end())
-	{
-		std::cout << YELLOW << itt->first << " " << DEF << itt->second << std::endl;
-		++itt;
 	}
 	return ;
 }
@@ -142,7 +90,6 @@ Request::Request(std::string requestMessage) :
 {
 	parseHeaderSection();
 	Response response(headerFields);
-	buildResponse();
 	return ;
 }
 
@@ -162,4 +109,3 @@ Request::~Request(void)
 {
 	return ;
 }
-

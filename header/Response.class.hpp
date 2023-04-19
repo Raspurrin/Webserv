@@ -2,6 +2,9 @@
 # define RESPONSE_CLASS_HPP
 
 #include <iostream>
+#include <unistd.h>
+#include <fstream>
+#include <sstream>
 #include <map>
 #include "colours.hpp"
 
