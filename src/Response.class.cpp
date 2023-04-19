@@ -75,6 +75,7 @@ void Response::GETMethod()
 		status200();
 	return ;
 }
+
 void Response::methodID()
 {
 	if (request["Method"] == "GET")
@@ -89,6 +90,7 @@ std::string Response::getResponse(void) const
 
 Response::Response(std::map<std::string, std::string> request) : request(request)
 {
+	methodID();
 	return ;
 }
 
