@@ -91,6 +91,7 @@ Request::Request(std::string requestMessage) :
 	parseHeaderSection();
 	Response response(headerFields);
 	responseMessage = response.getResponse();
+	std::cout << "response in request: " << responseMessage << "END" << std::endl;
 	return ;
 }
 
