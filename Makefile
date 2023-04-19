@@ -10,6 +10,7 @@ LIBS = -lm
 
 SRCS =	main.cpp \
 		Request.class.cpp \
+		Response.class.cpp \
 		Sockets.class.cpp \
 		error.cpp
 
