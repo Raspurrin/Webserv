@@ -91,7 +91,6 @@ std::string Response::getResponse(void) const
 Response::Response(std::map<std::string, std::string> request) : request(request)
 {
 	buildResponse();
-	std::cout << "response in response: " << responseMessage << "END" << std::endl;
 	return ;
 }
 

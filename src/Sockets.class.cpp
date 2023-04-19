@@ -38,7 +38,6 @@
 		Request	request(buffer);
 		request.printMap();
 		response = request.getResponse();	
-		std::cout << "RESPONSE IS: " << response << std::endl;
 	}
 
 	void	Sockets::sendMessage(int new_socket)
