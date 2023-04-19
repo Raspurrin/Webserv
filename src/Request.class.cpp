@@ -90,6 +90,7 @@ Request::Request(std::string requestMessage) :
 {
 	parseHeaderSection();
 	Response response(headerFields);
+	responseMessage = response.getResponse();
 	return ;
 }
 
