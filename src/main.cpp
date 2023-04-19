@@ -1,13 +1,13 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
-#include "../header/Sockets.class.hpp"
+#include "../header/Server.class.hpp"
 #include <sys/socket.h>
 
 int main(void)
 {
-	Sockets sockets;
+	Server Server;
 
-	sockets.checkConnections();
+	Server.checkConnections();
 	return (0);
 }
 
