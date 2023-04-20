@@ -3,6 +3,8 @@
 
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
+#include "../header/Route.class.hpp"
+#include "../header/parsing.hpp"
 
 class Server
 {
@@ -16,13 +18,12 @@ class Server
 		std::vector<Route>					Routes;
 
 	private:
-		std::string	trim(std::string);
+		void		parseConfFile(const char *confFileName);
+		void		extractRoute(std::ifstream confFile, std::string line);
 		void		getRequest(int fd);
 		void		postResponse(int socket, int indexToRemove);
 		void		configureSocket(int newSocket);
 		void		addNewConnection(int newSocket);
-		void		parseConfFile(std::string confFileName);
-		void		configureServer(void);
 
 	public:
 		void	checkConnections(void);

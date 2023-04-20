@@ -75,7 +75,6 @@ void Request::parseHeaderFields(std::string headerSection)
 		value = line.substr(position);
 		headerFields[key] = value;
 	}
-
 	return ;
 }
 

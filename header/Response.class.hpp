@@ -24,7 +24,6 @@ class Response
 		void	status200();
 		std::string	lenToStr(std::string body);
 
-
 	public:
 
 		std::string	getResponse(void) const;

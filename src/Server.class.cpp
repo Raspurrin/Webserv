@@ -1,52 +1,45 @@
 	#include "../header/Server.class.hpp"
 
-	std::string	validate_trim(std::string str, int (*check_func)(int))
+	void	Server::extractRoute(std::ifstream confFile, std::string line)
 	{
-		if (std::all_of(str.begin(), str.end(), check_func) == false)
-			error_handle("Configuration key or value should contain only characters");
-		return (trim(str));
-	}
+		std::string	extractedRoute;
 
-	std::string	trim(std::string str)
-	{
-		int	first = str.find_first_not_of(" \t\n\r");
-		int	last = str.find_last_not_of(" \t\n\r#");
-		
-		return (str.substr(first, last));
+		while (line[1] != '/')
+		{
+			getline(confFile, line);
+			extractedRoute = extractedRoute + line;
+		}
+		Route newRoute(extractedRoute, line);
+		Routes.push_back(newRoute);
 	}
 
 	void	Server::parseConfFile(const char *confFileName)
-	{
-		int				equalSign;
+	{	
 		std::string		line, key, value;
-		std::ifstream	confFile("confFileName");
+		std::ifstream	confFile(confFileName);
+
 		if (!confFile)
 			error_handle("Wrong configuration file\n");
-		do
+		while (getline(confFile, line))
 		{
-			line = trim(line);
+			line = parsing::trim(line);
 			if (line.empty() || line[0] == '#')
 				continue;
-			if (line[0] == '[')
-			{
-				Route newRoute(line);
-				Routes.push_back(newRoute);
-				continue;
-			}
-			equalSign = line.find('=');
-			key = line.substr(0, equalSign - 1);
-			value = line.substr(equalSign + 1);
-			key = validate_trim(key, isalpha);
-			value = validate_trim(value, isalpha);
-		} while (getline(confFile, line));
+			if (line[0] == '<')
+				break;
+				//extractRoute(confFile, line);
+			parsing::extractKeyValue(line, key, value);
+			configMap[key] = value;
+		}
 	}
 
 	Server::Server(void) :
-		port(8080),
 		opt(1),
-		addressLen(sizeof(address))
+		addressLen(sizeof(address)),
+		port(8080)
 	{
 		parseConfFile("webserver.conf");
+		parsing::printMap(RED, YELLOW, configMap);
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = htonl(INADDR_ANY);
 		address.sin_port = htons(port);
