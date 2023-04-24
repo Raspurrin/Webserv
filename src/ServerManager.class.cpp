@@ -1,13 +1,13 @@
-	#include "../header/Server.class.hpp"
+	#include "../header/ServerManager.class.hpp"
 	
-	Server::Server(void) :
-		port(8080),
-		opt(1),
-		addressLen(sizeof(address))
+	ServerManager::ServerManager(void) :
+		opt(1)
 	{
+		int	addressLen;
+	
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = htonl(INADDR_ANY);
-		address.sin_port = htons(port);
+		address.sin_port = htons(8080);
 		if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			error_handle("Socket error");
 		configureSocket(serverSocket);
@@ -17,7 +17,12 @@
 			error_handle("Listen error");
 	}
 
-	void	Server::configureSocket(int newSocket)
+	void	ServerManager::parseConfigFile(void)
+	{
+
+	}
+
+	void	ServerManager::configureSocket(int newSocket)
 	{
 		int		flags;
 
@@ -27,7 +32,9 @@
 		fcntl(newSocket, F_SETFL, flags | O_NONBLOCK);
 	}
 
-	void	Server::addNewConnection(int newSocket)
+	void	
+
+	void	ServerManager::addClientSocket(int newSocket)
 	{
 		pollfd	newPfd;
 
@@ -38,33 +45,33 @@
 		pollFds.push_back(newPfd);
 	}
 
-	void	Server::getRequest(int new_socket)
+	void	ServerManager::getRequest(int new_socket)
 	{
 		char	buffer[30000];
 
 		read(new_socket, buffer, 30000);
-		printf("---------Buffer in Server is:\n %s\n--- BUFFER DONE\n", buffer);
+		printf("---------Buffer in ServerManager is:\n %s\n--- BUFFER DONE\n", buffer);
 		Request	request(buffer);
 		request.printMap();
 		response = request.getResponse();	
 	}
 
-	void	Server::postResponse(int socket, int indexToRemove)
+	void	ServerManager::postResponse(int socket, int indexToRemove)
 	{
 		send(socket, response.c_str(), response.length(), 0);
-		printf("HELLO MESSAGE SENT FROM SERVER\n");
+		printf("HELLO MESSAGE SENT FROM ServerManager\n");
 		pollFds.erase(pollFds.begin() + indexToRemove);
 		close(socket);
 	}
 
-	void	Server::checkConnections(void)
+	void	ServerManager::eventLoop(void)
 	{
 		int	newSocket;
 		int	numEvent;
 
 		while (69)
 		{
-			//printf("...WAITING FOR NEW CONNECTION...\n");
+			printf("...WAITING FOR NEW CONNECTION...\n");
 			newSocket = accept(serverSocket, (struct sockaddr *) &address, (socklen_t *) &addressLen);
 			if (newSocket > 0)
 				addNewConnection(newSocket);
@@ -89,12 +96,12 @@
 
 	// }
 
-	// Server&	Server::operator=(Server const &assign)
+	// ServerManager&	ServerManager::operator=(ServerManager const &assign)
 	// {
 
 	// }
 
-	Server::~Server(void)
+	ServerManager::~ServerManager(void)
 	{
 		for (size_t i = 0; i < pollFds.size(); i++)
 		{

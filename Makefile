@@ -11,7 +11,7 @@ LIBS = -lm
 SRCS =	main.cpp \
 		Request.class.cpp \
 		Response.class.cpp \
-		Server.class.cpp \
+		ServerManager.class.cpp \
 		error.cpp
 
 OBJ = $(SRCS:.cpp=.o)
