@@ -110,6 +110,10 @@ void Response::buildResponse()
 
 void Response::GETMethod()
 {
+	//FIXME: only list directory when enabled. Requires working config.
+	if (listDir())
+		return;
+
 	if(access(request["Path"].c_str() + 1, F_OK) == -1)
 		status404();
 	else if(access(request["Path"].c_str() + 1, R_OK) == -1)
