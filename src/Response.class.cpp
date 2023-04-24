@@ -20,8 +20,17 @@ void Response::listDir()
 
 		closedir(dir);
 
+		std::string body = "<h1>Content of " + request["Path"] + "</h1>";
+
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-			std::cout << *it << std::endl;
+		{
+			body += "<p>" + *it + "</p>";
+		}
+
+		response["Status code"] = "200 OK";
+		response["Content-Type:"] = "text/html";
+		response["Body"] = body;
+		response["Content-Length:"] = lenToStr(body);
 	}
 	else
 		status404();
