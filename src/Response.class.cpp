@@ -19,6 +19,8 @@ bool Response::listDir()
 	if (dir != NULL)
 	{
 		struct dirent *ent;
+
+		// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
 		std::set<std::string> files;
 
 		while ((ent = readdir(dir)) != NULL)
@@ -29,9 +31,7 @@ bool Response::listDir()
 		std::string body = "<h1>Content of " + request["Path"] + "</h1>";
 
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-		{
 			body += "<a href=\"" + request["Path"] + "/" + *it + "\">" + *it + "</a><br>";
-		}
 
 		response["Status code"] = "200 OK";
 		response["Content-Type:"] = "text/html";
