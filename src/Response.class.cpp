@@ -1,5 +1,32 @@
 #include "../header/Response.class.hpp"
 
+void Response::listDir()
+{
+	char cwd[256];
+	DIR *dir;
+
+	if (getcwd(cwd, 256) != NULL)
+		dir = opendir((cwd + request["Path"]).c_str());
+	else
+		return;
+
+	if (dir != NULL)
+	{
+		struct dirent *ent;
+		std::set<std::string> files;
+		std::cout << RED << "Listing dir\n" << DEF;
+		while ((ent = readdir(dir)) != NULL)
+			files.insert(std::string(ent->d_name));
+
+		closedir(dir);
+
+		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
+			std::cout << *it << std::endl;
+	}
+	else
+		status404();
+}
+
 std::string Response::lenToStr(std::string body)
 {
 	size_t	len = body.length();
