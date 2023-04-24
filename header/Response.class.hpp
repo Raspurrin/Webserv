@@ -18,7 +18,7 @@ class Response
 		std::map<std::string, std::string> request;
 		std::string	responseMessage;
 
-		void	listDir();
+		bool	listDir();
 		void	methodID();
 		void	GETMethod();
 		void	buildResponse();

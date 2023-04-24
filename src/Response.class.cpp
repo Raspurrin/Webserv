@@ -1,6 +1,12 @@
 #include "../header/Response.class.hpp"
 
-void Response::listDir()
+/**
+ * Writes a html page containing a List of files in the current directory
+ * to the body of the Response object.
+ *
+ * Returns true if successfull, otherwise false.
+*/
+bool Response::listDir()
 {
 	char cwd[256];
 	DIR *dir;
@@ -8,13 +14,13 @@ void Response::listDir()
 	if (getcwd(cwd, 256) != NULL)
 		dir = opendir((cwd + request["Path"]).c_str());
 	else
-		return;
+		return false;
 
 	if (dir != NULL)
 	{
 		struct dirent *ent;
 		std::set<std::string> files;
-		std::cout << RED << "Listing dir\n" << DEF;
+
 		while ((ent = readdir(dir)) != NULL)
 			files.insert(std::string(ent->d_name));
 
@@ -24,16 +30,17 @@ void Response::listDir()
 
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
 		{
-			body += "<p>" + *it + "</p>";
+			body += "<a href=\"" + request["Path"] + "/" + *it + "\">" + *it + "</a><br>";
 		}
 
 		response["Status code"] = "200 OK";
 		response["Content-Type:"] = "text/html";
 		response["Body"] = body;
 		response["Content-Length:"] = lenToStr(body);
+		return true;
 	}
 	else
-		status404();
+		return false;
 }
 
 std::string Response::lenToStr(std::string body)
