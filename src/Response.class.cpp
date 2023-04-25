@@ -141,6 +141,7 @@ void Response::buildResponse()
 	response["Version"] = "HTTP/1.1";
 	methodID();
 	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
+	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
 	std::cout << "RESPONSE MESSAGE" << responseMessage << std::endl;
 	return ;
 }
