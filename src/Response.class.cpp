@@ -30,8 +30,9 @@ bool Response::listDir()
 
 		std::string body = "<h1>Content of " + request["Path"] + "</h1>";
 
+		const char *insert = request["Path"] == "/" ? "" : "/";
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-			body += "<a href=\"" + request["Path"] + "/" + *it + "\">" + *it + "</a><br>";
+			body += "<a href=\"" + request["Path"] + insert + *it + "\">" + *it + "</a><br>";
 
 		response["Status code"] = "200 OK";
 		response["Content-Type:"] = "text/html";
@@ -104,7 +105,7 @@ void Response::buildResponse()
 {
 	response["Version"] = "HTTP/1.1";
 	methodID();
-	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"]; 
+	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
 	return ;
 }
 
