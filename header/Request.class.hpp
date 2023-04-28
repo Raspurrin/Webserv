@@ -8,28 +8,27 @@
 #include <sstream>
 #include "colours.hpp"
 #include "Response.class.hpp"
+#include "Client.class.hpp"
 
 class Request
 {
 	private:
+		std::map<std::string, std::string>	headerFields;
+		const std::string					requestMessage;
+		std::string							responseMessage;
 
-		std::map<std::string, std::string>headerFields;
-
-		const std::string	requestMessage;
-		std::string			responseMessage;
-
-		void	parseHeaderSection();
+	private:
+		void	parseHeaderSection(Client &client);
 		void	parseStartLine(std::string startLine);
 		void	parseHeaderFields(std::string headerSection);
 
 	public:
-
-		void	printMap();
-		std::string	getResponse();
+		void								printMap();
+		std::string							getResponse();
+		void								getRequest(int new_socket);
 		std::map<std::string, std::string>	getMap();
 
 	public:
-
 		Request(void);
 		Request(std::string buffer);
 		Request(Request const &src);

@@ -9,26 +9,25 @@
 
 class ServerConfig
 {
+	private:
 	typedef struct route
 	{
-		const int											methods;
-		const bool											dir_list;
-		const std::string									HTTP_redirect;
-		const std::string									root;
-		const std::string									index;
+		const int										methods;
+		const bool										dir_list;
+		const std::string								HTTP_redirect;
+		const std::string								root;
+		const std::string								index;
 	}	t_route;
 
-	private:
-		std::string											name;
-		const int											clientBodySize;
-		const struct sockaddr_in							address;
-		const std::map<std::string, std::string>			errorPages;
-		const std::map<const std::string, const t_route>	routes;
-
-	private:
-		
+	//std::vector<std::stringstream>						orderedInput;
+	std::string											name;
+	const int											clientBodySize;
+	const std::map<std::string, std::string>			errorPages;
+	const std::map<const std::string, const t_route>	routes;
 
 	public:
+		//template<typename T>
+		// T				parsingKeyValue(std::stringstream Input);
 		bool				checkRoutePath(const std::string &path) const;
 		int					getMethods(const std::string &path) const;
 		bool				isMethodAllowed(const std::string &path, const int methodToCheck) const;
@@ -36,8 +35,11 @@ class ServerConfig
 		const std::string	getRouteRoot(const std::string &path) const;
 		const std::string	getRouteIndex(const std::string &path) const;
 
-	public:
+	private:
 		ServerConfig(void);
+	
+	public:
+		ServerConfig(std::vector<std::stringstream> orderedInput);
 		//ServerManager(ServerManager const &src);
 		//ServerManager&	operator=(ServerManager const &assign);
 		~ServerConfig(void);

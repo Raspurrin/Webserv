@@ -29,7 +29,6 @@ void Response::status200()
 		response["Body"] = body;
 		response["Content-Length:"] = lenToStr(body);
 	}
-
 	return ;
 }
 

@@ -1,20 +1,26 @@
 #include "../header/ServerConfig.class.hpp"
 
-bool		ServerConfig::checkRoutePath(const std::string &path) const
+// template<typename T>
+// T	parsingKeyValue(std::stringstream Input)
+// {
+
+// }
+
+bool	ServerConfig::checkRoutePath(const std::string &path) const
 {
 	if (routes.find(path) != routes.end())
 		return (true);
 	return (false);
 }
 
-int			ServerConfig::getMethods(const std::string &path) const
+int		ServerConfig::getMethods(const std::string &path) const
 {
 	if (routes.find(path) != routes.end())
 		error_handle("the route path does not exist");
 	return (routes.at(path).methods);
 }
 
-bool		ServerConfig::isMethodAllowed(const std::string &path, const int methodToCheck) const
+bool	ServerConfig::isMethodAllowed(const std::string &path, const int methodToCheck) const
 {
 	if (routes.find(path) != routes.end())
 		error_handle("the route path does not exist");
@@ -23,7 +29,7 @@ bool		ServerConfig::isMethodAllowed(const std::string &path, const int methodToC
 	return (false);
 }
 
-bool		ServerConfig::isDirListEnabled(const std::string &path) const
+bool	ServerConfig::isDirListEnabled(const std::string &path) const
 {
 	if (routes.find(path) != routes.end())
 		error_handle("the route path does not exist");
@@ -44,13 +50,21 @@ const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 	return (routes.at(path).index);
 }
 
-ServerConfig::ServerConfig(void) :
-	name(),
-	clientBodySize(),
-	errorPages(),
-	routes()
+	// name(parsingKeyValue(orderedInput[0])),
+	// clientBodySize(parsingKeyValue(orderedInput[1])),
+	// errorPages(parsingKeyValue(orderdedInput[2])),
+	// routes(parsingKeyValue(orderedInput[3]))
+ServerConfig::ServerConfig(std::vector<std::stringstream> orderedInput) :
+	name("tmp"),
+	clientBodySize(300),
+	errorPages({"404", "/errorpages"}),
+	routes({"/CGI", {GET | POST | DELETE, true, "/newCGI"}}),
 {
-	// parsy parsy paring
+	// parsy parsy parsing
+}
+
+ServerConfig::ServerConfig(void)
+{
 }
 
 //ServerConfig::ServerConfig(ServerConfig const &src);

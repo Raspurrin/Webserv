@@ -4,18 +4,22 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
 
-typedef struct pollfd			t_pollfd;
-typedef struct route			t_route;
-typedef struct server_config	t_server_config;
+typedef struct pollfd					t_pollfd;
+typedef struct route					t_route;
+typedef struct server_config			t_server_config;
 
 class ServerManager
 {
-	private: 
-		int										opt;
-		std::vector<t_server_config>			serverConfigs;
-		std::map<t_pollfd, t_server_config&>	clients;
-		std::vector<t_pollfd>					sockets;
-		std::string								response;
+	private:
+		int								opt;
+		std::vector<t_server_config>	serverConfigs;
+		std::list<class Client>			clients;
+		std::vector<t_pollfd>			sockets;
+		std::vector<t_pollfd>			serverSockets;
+		struct sockaddr_in				address;
+		int								addressLen;
+		Response&						response;
+		Request&						request;
 
 	public:
 		void	eventLoop(void);

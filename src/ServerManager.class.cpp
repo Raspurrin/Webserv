@@ -3,18 +3,12 @@
 	ServerManager::ServerManager(void) :
 		opt(1)
 	{
-		int	addressLen;
-	
+		response = new Reponse();
+		request = new Request();
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = htonl(INADDR_ANY);
 		address.sin_port = htons(8080);
-		if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-			error_handle("Socket error");
-		configureSocket(serverSocket);
-		if (bind(serverSocket, (struct sockaddr *) &address, sizeof(address)) < 0)
-			error_handle("Binding error");
-		if (listen(serverSocket, 3) < 0)
-			error_handle("Listen error");
+		addressLen = sizeof(address);
 	}
 
 	void	ServerManager::parseConfigFile(void)
@@ -32,35 +26,50 @@
 		fcntl(newSocket, F_SETFL, flags | O_NONBLOCK);
 	}
 
-	void	
+	void	ServerManager::addServerSocket(void)
+	{
+		pollfd	serverSocket;
+	
+		serverSocket.events = POLLIN;
+		if ((serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			error_handle("Socket error");
+		configureSocket(serverSocket.fd);
+		if (bind(serverSocket.fd, (struct sockaddr *) &address, sizeof(address)) < 0)
+			error_handle("Binding error");
+		if (listen(serverSocket.fd, 3) < 0)
+			error_handle("Listen error");
+		sockets.push_back(serverSocket);
+		serverSockets.push_back(serverSocket);
+	}
 
-	void	ServerManager::addClientSocket(int newSocket)
+	void	ServerManager::addClientSocket(int serverSocket)
 	{
 		pollfd	newPfd;
 
-		configureSocket(newSocket);
-		setsockopt(newSocket, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
-		newPfd.fd = newSocket;
+		newPfd.fd = accept(serverSocket, (struct sockaddr *) &address, (socklen_t *) &addressLen);
+			if (newPfd.fd > 0)
+				addNewConnection(newPfd.fd);
+		configureSocket(newPfd.fd);
+		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
-		pollFds.push_back(newPfd);
+		sockets.push_back(newPfd);
 	}
 
-	void	ServerManager::getRequest(int new_socket)
-	{
-		char	buffer[30000];
+	// void	ServerManager::getRequest(int new_socket)
+	// {
+	// 	char	buffer[30000];
 
-		read(new_socket, buffer, 30000);
-		printf("---------Buffer in ServerManager is:\n %s\n--- BUFFER DONE\n", buffer);
-		Request	request(buffer);
-		request.printMap();
-		response = request.getResponse();	
-	}
+	// 	read(new_socket, buffer, 30000);
+	// 	Request	request(buffer);
+	// 	request.printMap();
+	// 	response = request.getResponse();	
+	// }
 
 	void	ServerManager::postResponse(int socket, int indexToRemove)
 	{
 		send(socket, response.c_str(), response.length(), 0);
 		printf("HELLO MESSAGE SENT FROM ServerManager\n");
-		pollFds.erase(pollFds.begin() + indexToRemove);
+		sockets.erase(sockets.begin() + indexToRemove);
 		close(socket);
 	}
 
@@ -71,21 +80,25 @@
 
 		while (69)
 		{
-			printf("...WAITING FOR NEW CONNECTION...\n");
-			newSocket = accept(serverSocket, (struct sockaddr *) &address, (socklen_t *) &addressLen);
-			if (newSocket > 0)
-				addNewConnection(newSocket);
-			numEvent = poll(pollFds.data(), pollFds.size(), 300);
+			int	i = 0;
+			numEvent = poll(sockets.data(), sockets.size(), 300);
 			if (numEvent > 0)
 			{
-				for (size_t i = 0; i < pollFds.size(); i++)
+				while (i < serverSockets.size())
 				{
-					if (pollFds[i].revents & POLLIN)
-						getRequest(pollFds[i].fd);
-					else if (pollFds[i].revents & POLLOUT)
-						postResponse(pollFds[i].fd, i);
-					else if (pollFds[i].revents & POLLERR)
+					if (serverSockets[i].revents & POLLIN)
+						addClientSocket(serverSockets[i].fd);
+					i++;
+				}
+				while (i < clients.size() - serverSockets.size())
+				{
+					if (sockets[i].revents & POLLIN)
+						getRequest(clients[i], sockets[i]->ServerConfig);
+					else if (sockets[i].revents & POLLOUT)
+						postResponse(sockets[i].fd, i);
+					else if (sockets[i].revents & POLLERR)
 						error_handle("Error occured with a connection");
+					i++;
 				}
 			}
 		}
@@ -107,4 +120,6 @@
 		{
 			close(pollFds[i].fd);
 		}
+		delete request;
+		delete response;
 	}

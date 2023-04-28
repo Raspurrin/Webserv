@@ -26,17 +26,17 @@ void Request::printMap()
 	return ;
 }
 
-void Request::parseHeaderSection()
+void Request::parseHeaderSection(Client &client)
 {
 	int	position, lpos;
 
-	position = requestMessage.find('\n');
-	parseStartLine(requestMessage.substr(0, position));
+	position = client.incomingBuffer.find('\n');
+	parseStartLine(client.incomingBuffer.substr(0, position));
 	position++;
 	lpos = position;
-	position = requestMessage.find("\n\n", lpos);
-	parseHeaderFields(requestMessage.substr(lpos, position - lpos));
-
+	position = client.incomingBuffer.find("\n\n", lpos);
+	parseHeaderFields(client.incomingBuffer.substr(lpos, position - lpos));
+	client.requestHeader = headerFields;
 	return ;
 }
 
@@ -76,8 +76,16 @@ void Request::parseHeaderFields(std::string headerSection)
 		value = line.substr(position);
 		headerFields[key] = value;
 	}
-
 	return ;
+}
+
+Request::readIntoBuffer(Client &client)
+{
+	char	readBuffer[BUFLEN];
+
+	if (!read(client.fd, readBuffer, BUFLEN))
+		error_handle("Read failed");
+	client.incomingBuffer += readBuffer;
 }
 
 Request::Request(void)
@@ -85,14 +93,22 @@ Request::Request(void)
 	return ;
 }
 
-Request::Request(std::string requestMessage) : 
-	requestMessage(requestMessage)
+Request::getRequest(Client &client, ServerConfig& serverConfig)
 {
-	parseHeaderSection();
-	Response response(headerFields);
-	responseMessage = response.getResponse();
-	return ;
+	if (client.incomingBuffer.isDone == false)
+		readIntoBuffer();
+	else
+		parseHeaderSection(client);
 }
+
+// Request::Request(std::string requestMessage) : 
+// 	requestMessage(requestMessage)
+// {
+// 	parseHeaderSection();
+// 	Response response(headerFields);
+// 	responseMessage = response.getResponse();
+// 	return ;
+// }
 
 Request::Request(Request const &src)
 {

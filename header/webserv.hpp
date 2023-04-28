@@ -2,6 +2,7 @@
 # define WEBSERV_HPP
 
 #include <vector>
+#include <list>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <cstdio>

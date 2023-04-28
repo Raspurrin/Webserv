@@ -7,17 +7,25 @@
 
 class Client
 {
-
 	private: 
-		struct pollfd	pollFd;
-		class Server&	Server;
+		struct buffer
+		{
+			std::string						buffer;
+			bool							isDone;		
+		};
+		struct pollfd						pollFd;
+		class ServerConfig&					serverConfig;
+		struct buffer						incomingBuffer;
+		struct buffer						outgoingBuffer;
+		std::map<std::string, std::string>	requestHeader;
 
 	public:
-		std::vector<struct pollfd>	createPollFdVector(bool option, struct pollfd pollFd);
-		int							getFd();
-		int							getEvent();
-		int							getRevent();
-		class Server&				getServerRef();
+		std::vector<struct pollfd>			createPollFdVector(bool option, struct pollfd pollFd);
+		int									getFd();
+		int									getEvent();
+		int									getRevent();
+		class Server&						getServerRef();
+		void								setRequestHeader(std::map<std::string, std::string>);
 
 	private:
 		Client(void);
