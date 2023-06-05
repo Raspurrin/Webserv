@@ -1,4 +1,5 @@
 #include "../header/Response.class.hpp"
+#include <sys/stat.h>
 
 std::string Response::lenToStr(std::string body)
 {
@@ -66,6 +67,31 @@ int Response::status403()
 		return (0);
 }
 
+int Response::checkStat()
+{
+	struct	stat s;
+
+	if (stat(request["Path"].c_str() + 1, &s) == 0)
+	{
+		if (s.st_mode & S_IFDIR)
+		{
+			response["Status code"] = "200 OK";
+			response["Path"] = "/directory.html";
+			readHTML();
+			return (1);
+		}
+		else
+			return (0);
+	}
+	else
+	{
+		response["Status code"] = "500 Internal Server Error";
+		response["Path"] = "/error_pages/500.html";
+		readHTML();
+		return (1);
+	}
+}
+
 void Response::buildResponse()
 {
 	response["Version"] = "HTTP/1.1";
@@ -79,6 +105,8 @@ void Response::GETMethod()
 {
 	if (request["Path"] == "/")
 		request["Path"] = "/index.html";
+	if (checkStat() == 1)
+		return ;
 	if (status404() == 1)
 		return ;
 	if (status403() == 1)
