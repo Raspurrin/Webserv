@@ -22,6 +22,7 @@ class Response
 		void	status404();
 		void	status403();
 		void	status200();
+		void	readHTML();
 		std::string	lenToStr(std::string body);
 
 

@@ -11,15 +11,14 @@ std::string Response::lenToStr(std::string body)
 	return (lenStr);
 }
 
-void Response::status200()
+void Response::readHTML()
 {
-	std::ifstream	fin(request["Path"].c_str() + 1);
+	std::ifstream	fin(response["Path"].c_str() + 1);
 
 	if (fin.is_open())
 	{
 		std::string	line, body;
 
-		response["Status code"] = "200 OK";
 		response["Content-Type:"] = "text/html";
 		while (fin.good())
 		{
@@ -33,27 +32,24 @@ void Response::status200()
 	return ;
 }
 
+void Response::status200()
+{
+	response["Status code"] = "200 OK";
+	response["Path"] = request["Path"];
+	return ;
+}
+
 void Response::status404()
 {
-	std::string	body ="404 Not Found";
-
-	response["Status code"] = body;
-	response["Content-Type:"] = "text/plain";
-	response["Body"] = body;
-	response["Content-Length:"] = lenToStr(body);
-
+	response["Status code"] = "404 Not Found";
+	response["Path"] = "/error_pages/404.html";
 	return ;
 }
 
 void Response::status403()
 {
-	std::string	body ="403 Forbidden";
-
-	response["Status code"] = body;
-	response["Content-Type:"] = "text/plain";
-	response["Body"] = body;
-	response["Content-Length:"] = lenToStr(body);
-
+	response["Status code"] = "403 Forbidden";
+	response["Path"] = "/error_pages/403.html";
 	return ;
 }
 
@@ -73,6 +69,7 @@ void Response::GETMethod()
 		status403();
 	else
 		status200();
+	readHTML();
 	return ;
 }
 
