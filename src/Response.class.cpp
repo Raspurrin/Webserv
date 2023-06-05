@@ -117,6 +117,7 @@ void Response::GETMethod()
 		status403();
 	else
 		status200();
+	std::cout << "STATUS CODE" << response["Status code"] << std::endl;
 	readHTML();
 	return ;
 }
