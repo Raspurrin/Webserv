@@ -36,21 +36,34 @@ void Response::status200()
 {
 	response["Status code"] = "200 OK";
 	response["Path"] = request["Path"];
+	readHTML();
 	return ;
 }
 
-void Response::status404()
+int Response::status404()
 {
-	response["Status code"] = "404 Not Found";
-	response["Path"] = "/error_pages/404.html";
-	return ;
+	if (access(request["Path"].c_str() + 1, F_OK) == -1)
+	{
+		response["Status code"] = "404 Not Found";
+		response["Path"] = "/error_pages/404.html";
+		readHTML();
+		return (1);
+	}
+	else
+		return (0);
 }
 
-void Response::status403()
+int Response::status403()
 {
-	response["Status code"] = "403 Forbidden";
-	response["Path"] = "/error_pages/403.html";
-	return ;
+	if (access(request["Path"].c_str() + 1, R_OK) == -1)
+	{
+		response["Status code"] = "403 Forbidden";
+		response["Path"] = "/error_pages/403.html";
+		readHTML();
+		return (1);
+	}
+	else
+		return (0);
 }
 
 void Response::buildResponse()
@@ -58,19 +71,19 @@ void Response::buildResponse()
 	response["Version"] = "HTTP/1.1";
 	methodID();
 	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"]; 
+	std::cout << "RESPONSE MESSAGE" << responseMessage << std::endl;
 	return ;
 }
 
 void Response::GETMethod()
 {
-	if(access(request["Path"].c_str() + 1, F_OK) == -1)
-		status404();
-	else if(access(request["Path"].c_str() + 1, R_OK) == -1)
-		status403();
-	else
-		status200();
-	std::cout << "STATUS CODE" << response["Status code"] << std::endl;
-	readHTML();
+	if (request["Path"] == "/")
+		request["Path"] = "/index.html";
+	if (status404() == 1)
+		return ;
+	if (status403() == 1)
+		return ;
+	status200();
 	return ;
 }
 
