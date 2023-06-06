@@ -2,6 +2,7 @@
 # define RESPONSE_CLASS_HPP
 
 #include <iostream>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <fstream>
 #include <sstream>
@@ -19,9 +20,11 @@ class Response
 		void	methodID();
 		void	GETMethod();
 		void	buildResponse();
-		void	status404();
-		void	status403();
+		int	status404();
+		int	status403();
+		int	checkStat();
 		void	status200();
+		void	readHTML();
 		std::string	lenToStr(std::string body);
 
 
