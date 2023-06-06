@@ -103,4 +103,3 @@ Response::~Response(void)
 {
 	return ;
 }
-

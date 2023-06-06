@@ -4,28 +4,23 @@
 #include "ServerConfig.class.hpp"
 #include "webserv.hpp"
 
-
 class Client
 {
-	private: 
-		struct buffer
-		{
-			std::string						buffer;
-			bool							isDone;		
-		};
+	private:
 		struct pollfd						pollFd;
 		class ServerConfig&					serverConfig;
-		struct buffer						incomingBuffer;
-		struct buffer						outgoingBuffer;
-		std::map<std::string, std::string>	requestHeader;
+		class Response&						Response;
+		class Request&						Request;
+		// struct buffer					incomingBuffer;
+		// struct buffer					outgoingBuffer;
+		// std::map<std::string, std::string>	requestHeader;
 
 	public:
-		std::vector<struct pollfd>			createPollFdVector(bool option, struct pollfd pollFd);
+		//std::vector<struct pollfd>			createPollFdVector(bool option, struct pollfd pollFd);
 		int									getFd();
 		int									getEvent();
 		int									getRevent();
 		class Server&						getServerRef();
-		void								setRequestHeader(std::map<std::string, std::string>);
 
 	private:
 		Client(void);

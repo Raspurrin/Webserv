@@ -10,25 +10,30 @@
 #include "Response.class.hpp"
 #include "Client.class.hpp"
 
+#define BUFLEN 2000
+#define REACHED_HEADER_END 1
+#define REACHED_BODY_END 2
+
 class Request
 {
 	private:
+		int				bufferFlags;
+		std::string		headerBuffer;
+		std::string		bodyBuffer;
+
+		void			readingBody(int &socket);
+		void			readingHeader(int &socket);
+		void			parseHeaderSection();
+		void			parseStartLine(std::string startLine);
+		void			parseHeaderFields(std::string headerSection);
+
+	public:
 		std::map<std::string, std::string>	headerFields;
-		const std::string					requestMessage;
-		std::string							responseMessage;
 
-	private:
-		void	parseHeaderSection(Client &client);
-		void	parseStartLine(std::string startLine);
-		void	parseHeaderFields(std::string headerSection);
+		void			printMap();
+		void			getRequest(int &socket);
+		std::string		getResponse();
 
-	public:
-		void								printMap();
-		std::string							getResponse();
-		void								getRequest(int new_socket);
-		std::map<std::string, std::string>	getMap();
-
-	public:
 		Request(void);
 		Request(std::string buffer);
 		Request(Request const &src);

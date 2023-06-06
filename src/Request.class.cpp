@@ -4,16 +4,6 @@
 #include <string>
 #include <unistd.h>
 
-std::map<std::string, std::string> Request::getMap()
-{
-	return (headerFields);
-}
-
-std::string Request::getResponse()
-{
-	return (responseMessage);
-}
-
 void Request::printMap()
 {
 	std::cout << RED << "\nPrinting map of header fields...\n" << DEF << std::endl;
@@ -26,17 +16,17 @@ void Request::printMap()
 	return ;
 }
 
-void Request::parseHeaderSection(Client &client)
+void Request::parseHeaderSection()
 {
 	int	position, lpos;
 
-	position = client.incomingBuffer.find('\n');
-	parseStartLine(client.incomingBuffer.substr(0, position));
+	position = headerBuffer.find('\n');
+	parseStartLine(headerBuffer.substr(0, position));
 	position++;
 	lpos = position;
-	position = client.incomingBuffer.find("\n\n", lpos);
-	parseHeaderFields(client.incomingBuffer.substr(lpos, position - lpos));
-	client.requestHeader = headerFields;
+	position = headerBuffer.find("\n\n", lpos);
+	parseHeaderFields(headerBuffer.substr(lpos, position - lpos));
+	requestHeader = headerFields;
 	return ;
 }
 
@@ -79,36 +69,45 @@ void Request::parseHeaderFields(std::string headerSection)
 	return ;
 }
 
-Request::readIntoBuffer(Client &client)
+void	Request::readingBody(int &socket)
 {
+
+}
+
+void	Request::readingHeader(int &socket)
+{
+	int		position;
 	char	readBuffer[BUFLEN];
 
-	if (!read(client.fd, readBuffer, BUFLEN))
+	if (!read(socket, readBuffer, BUFLEN))
 		error_handle("Read failed");
-	client.incomingBuffer += readBuffer;
+	std::string readString(readBuffer);
+
+	if (readString.find("\n\n"))
+	{
+		bufferFlags = bufferFlags | REACHED_HEADER_END;
+		position = readString.find("\n\n");
+		headerBuffer += readString.substr(0, position);
+		bodyBuffer = readString.substr(position, BUFLEN - position);
+	}
+	else
+		headerBuffer += readString;
+}
+
+void	Request::getRequest(int	&socket)
+{
+	if (bufferFlags & REACHED_HEADER_END == 0)
+		readingHeader(socket);
+	else if (bufferFlags & REACHED_BODY_END == 0)
+		readingBody(socket);
+	else
+		parseHeaderFields(headerBuffer);
 }
 
 Request::Request(void)
 {
 	return ;
 }
-
-Request::getRequest(Client &client, ServerConfig& serverConfig)
-{
-	if (client.incomingBuffer.isDone == false)
-		readIntoBuffer();
-	else
-		parseHeaderSection(client);
-}
-
-// Request::Request(std::string requestMessage) : 
-// 	requestMessage(requestMessage)
-// {
-// 	parseHeaderSection();
-// 	Response response(headerFields);
-// 	responseMessage = response.getResponse();
-// 	return ;
-// }
 
 Request::Request(Request const &src)
 {
