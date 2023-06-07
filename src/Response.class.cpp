@@ -1,6 +1,52 @@
 #include "../header/Response.class.hpp"
 #include <sys/stat.h>
 
+
+/**
+ * Writes a html page containing a List of files in the current directory
+ * to the body of the Response object.
+ *
+ * Returns true if successfull, otherwise false.
+*/
+bool Response::listDir()
+{
+	char cwd[256];
+	DIR *dir;
+
+	if (getcwd(cwd, 256) != NULL)
+		dir = opendir((cwd + request["Path"]).c_str());
+	else
+		return false;
+
+	if (dir != NULL)
+	{
+		struct dirent *ent;
+
+		// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
+		std::set<std::string> files;
+
+		while ((ent = readdir(dir)) != NULL)
+			files.insert(std::string(ent->d_name));
+
+		closedir(dir);
+
+		std::string body = "<h1>Content of " + request["Path"] + "</h1>";
+
+		const char *insert = request["Path"] == "/" ? "" : "/";
+		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
+			body += "<a href=\"" + request["Path"] + insert + *it + "\">" + *it + "</a><br>";
+
+		response["Status code"] = "200 OK";
+		response["Content-Type:"] = "text/html";
+		response["Body"] = body;
+		response["Content-Length:"] = lenToStr(body);
+		return true;
+	}
+	else
+		return false;
+}
+
+
 std::string Response::lenToStr(std::string body)
 {
 	size_t	len = body.length();
@@ -67,10 +113,22 @@ int Response::status403()
 		return (0);
 }
 
+int Response::status403()
+{
+	if (access(request["Path"].c_str() + 1, R_OK) == -1)
+	{
+		response["Status code"] = "403 Forbidden";
+		response["Path"] = "/error_pages/403.html";
+		readHTML();
+		return (1);
+	}
+	else
+		return (0);
+}
+
 int Response::checkStat()
 {
 	struct	stat s;
-
 	if (stat(request["Path"].c_str() + 1, &s) == 0)
 	{
 		if (s.st_mode & S_IFDIR)
@@ -103,6 +161,9 @@ void Response::buildResponse()
 
 void Response::GETMethod()
 {
+	//FIXME: only list directory when enabled. Requires working config.
+	if (listDir())
+		return;
 	if (request["Path"] == "/")
 		request["Path"] = "/index.html";
 	if (checkStat() == 1)

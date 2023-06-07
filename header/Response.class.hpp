@@ -7,6 +7,10 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <set>
+#include <dirent.h>
+#include <set>
+#include <dirent.h>
 #include "colours.hpp"
 
 class Response
@@ -17,6 +21,7 @@ class Response
 		std::map<std::string, std::string> request;
 		std::string	responseMessage;
 
+		bool	listDir();
 		void	methodID();
 		void	GETMethod();
 		void	buildResponse();
