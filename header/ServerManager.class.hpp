@@ -3,6 +3,7 @@
 
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
+#include "../header/ServerConfig.class.hpp"
 
 typedef struct pollfd					t_pollfd;
 typedef struct route					t_route;
@@ -12,8 +13,8 @@ class ServerManager
 {
 	private:
 		int								opt;
-		std::vector<t_server_config>	serverConfigs;
-		std::list<class Client>			clients;
+		std::vector<ServerConfig>		serverConfigs;
+		std::vector<class Client>		clients;
 		std::vector<t_pollfd>			sockets;
 		std::vector<t_pollfd>			serverSockets;
 		struct sockaddr_in				address;

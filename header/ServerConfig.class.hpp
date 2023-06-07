@@ -20,10 +20,10 @@ class ServerConfig
 	}	t_route;
 
 	//std::vector<std::stringstream>						orderedInput;
-	std::string											name;
-	const int											clientBodySize;
-	const std::map<std::string, std::string>			errorPages;
-	const std::map<const std::string, const t_route>	routes;
+	std::string											_name;
+	const int											_clientBodySize;
+	const std::map<std::string, std::string>			_errorPages;
+	const std::map<const std::string, const t_route>	_routes;
 
 	public:
 		//template<typename T>
@@ -34,12 +34,11 @@ class ServerConfig
 		bool				isDirListEnabled(const std::string &path) const;
 		const std::string	getRouteRoot(const std::string &path) const;
 		const std::string	getRouteIndex(const std::string &path) const;
-
-	private:
-		ServerConfig(void);
 	
 	public:
-		ServerConfig(std::vector<std::stringstream> orderedInput);
+		 ServerConfig(const std::string& name, const int clientBodySize, \
+                 const std::map<std::string, std::string>& errorPages, \
+                 const std::map<const std::string, const t_route>& routes);
 		//ServerManager(ServerManager const &src);
 		//ServerManager&	operator=(ServerManager const &assign);
 		~ServerConfig(void);

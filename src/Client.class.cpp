@@ -1,33 +1,41 @@
+#include "Client.class.hpp"
 
-struct pollfd				Client::getFd()
+// struct pollfd				Client::getFd()
+// {
+// 	return(pollFd.fd);
+// }
+
+// int							Client::getEvent()
+// {
+// 	return(pollFd.event);
+// }
+
+// int							Client::getRevent()
+// {
+// 	return(pollFd.revent);
+// }
+
+// class Server&				Client::getServerRef()
+// {
+// 	return(Server);
+// }
+
+void	Client::getRequest()
 {
-	return(pollFd.fd);
+	_Request.getRequest(_pollFd.fd);
 }
 
-int							Client::getEvent()
-{
-	return(pollFd.event);
-}
-
-int							Client::getRevent()
-{
-	return(pollFd.revent);
-}
-
-class Server&				Client::getServerRef()
-{
-	return(Server);
-}
-
-Client::Client(struct pollfd pollFd, class Server& Server) :
-	pollFd(pollFd),
-	Server(Server)
+Client::Client(struct pollfd pollFd, class ServerConfig& ServerConfig, class Response& Response, class Request& Request) :
+	_pollFd(pollFd),
+	_serverConfig(ServerConfig),
+	_Response(Response),
+	_Request(Request)
 {
 }
 
-Client::Client(void)
-{
-}
+// Client::Client(void)
+// {
+// }
 //Client(Client const &src);
 //Client&	operator=(Client const &assign);
 Client::~Client(void)

@@ -73,12 +73,12 @@
 
 	void	ServerManager::eventLoop(void)
 	{
-		int	newSocket;
+		//int	newSocket;
 		int	numEvent;
 
 		while (69)
 		{
-			int	i = 0;
+			unsigned int	i = 0;
 			numEvent = poll(sockets.data(), sockets.size(), 300);
 			if (numEvent > 0)
 			{
@@ -91,9 +91,9 @@
 				while (i < clients.size() - serverSockets.size())
 				{
 					if (sockets[i].revents & POLLIN)
-						getRequest(clients[i], sockets[i]->ServerConfig);
-					else if (sockets[i].revents & POLLOUT)
-						postResponse(sockets[i].fd, i);
+						clients[i].getRequest();
+					// else if (sockets[i].revents & POLLOUT)
+					// 	postResponse(sockets[i].fd, i);
 					else if (sockets[i].revents & POLLERR)
 						error_handle("Error occured with a connection");
 					i++;

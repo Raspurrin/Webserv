@@ -7,10 +7,10 @@
 class Client
 {
 	private:
-		struct pollfd						pollFd;
-		class ServerConfig&					serverConfig;
-		class Response&						Response;
-		class Request&						Request;
+		struct pollfd						_pollFd;
+		class ServerConfig&					_serverConfig;
+		class Response&						_Response;
+		class Request&						_Request;
 		// struct buffer					incomingBuffer;
 		// struct buffer					outgoingBuffer;
 		// std::map<std::string, std::string>	requestHeader;
@@ -21,12 +21,13 @@ class Client
 		int									getEvent();
 		int									getRevent();
 		class Server&						getServerRef();
+		void								getRequest();
 
-	private:
-		Client(void);
+	// private:
+	// 	Client(void);
 
 	public:
-		Client(struct pollfd pollFd, class Server& Server);
+		Client(struct pollfd pollFd, class ServerConfig& ServerConfig, class Response& Response, class Request& Request);
 		//Client(Client const &src);
 		//Client&	operator=(Client const &assign);
 		~Client(void);
