@@ -32,7 +32,7 @@ bool Response::listDir()
 
 		std::string body = "<h1>Content of " + request["Path"] + "</h1>";
 
-		const char *insert = request["Path"] == "/" ? "" : "/";
+		const char *insert = request["Path"][request["Path"].size() - 1] == '/' ? "" : "/";
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
 			body += "<a href=\"" + request["Path"] + insert + *it + "\">" + *it + "</a><br>";
 
