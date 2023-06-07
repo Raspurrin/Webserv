@@ -1,6 +1,7 @@
 #include "../header/Response.class.hpp"
 #include <sys/stat.h>
 
+
 /**
  * Writes a html page containing a List of files in the current directory
  * to the body of the Response object.
@@ -44,6 +45,7 @@ bool Response::listDir()
 	else
 		return false;
 }
+
 
 std::string Response::lenToStr(std::string body)
 {
@@ -111,10 +113,22 @@ int Response::status403()
 		return (0);
 }
 
+int Response::status403()
+{
+	if (access(request["Path"].c_str() + 1, R_OK) == -1)
+	{
+		response["Status code"] = "403 Forbidden";
+		response["Path"] = "/error_pages/403.html";
+		readHTML();
+		return (1);
+	}
+	else
+		return (0);
+}
+
 int Response::checkStat()
 {
 	struct	stat s;
-
 	if (stat(request["Path"].c_str() + 1, &s) == 0)
 	{
 		if (s.st_mode & S_IFDIR)
@@ -140,8 +154,7 @@ void Response::buildResponse()
 {
 	response["Version"] = "HTTP/1.1";
 	methodID();
-	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
-	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
+	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"]; 
 	std::cout << "RESPONSE MESSAGE" << responseMessage << std::endl;
 	return ;
 }
@@ -151,7 +164,6 @@ void Response::GETMethod()
 	//FIXME: only list directory when enabled. Requires working config.
 	if (listDir())
 		return;
-
 	if (request["Path"] == "/")
 		request["Path"] = "/index.html";
 	if (checkStat() == 1)
