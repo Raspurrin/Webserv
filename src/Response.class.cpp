@@ -87,11 +87,11 @@ std::string Response::getResponse(void) const
 	return (this->responseMessage);
 }
 
-Response::Response(std::map<std::string, std::string> request) : request(request)
-{
-	buildResponse();
-	return ;
-}
+// Response::Response(std::map<std::string, std::string> request) : request(request)
+// {
+// 	buildResponse();
+// 	return ;
+// }
 
 Response &	Response::operator=(const Response &assign)
 {

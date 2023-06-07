@@ -3,8 +3,6 @@
 	ServerManager::ServerManager(void) :
 		opt(1)
 	{
-		response = new Reponse();
-		request = new Request();
 		address.sin_family = AF_INET;
 		address.sin_addr.s_addr = htonl(INADDR_ANY);
 		address.sin_port = htons(8080);
@@ -47,8 +45,8 @@
 		pollfd	newPfd;
 
 		newPfd.fd = accept(serverSocket, (struct sockaddr *) &address, (socklen_t *) &addressLen);
-			if (newPfd.fd > 0)
-				addNewConnection(newPfd.fd);
+		// if (newPfd.fd > 0)
+		// 	addNewConnection(newPfd.fd);
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
@@ -65,13 +63,13 @@
 	// 	response = request.getResponse();	
 	// }
 
-	void	ServerManager::postResponse(int socket, int indexToRemove)
-	{
-		send(socket, response.c_str(), response.length(), 0);
-		printf("HELLO MESSAGE SENT FROM ServerManager\n");
-		sockets.erase(sockets.begin() + indexToRemove);
-		close(socket);
-	}
+	// void	ServerManager::postResponse(int socket, int indexToRemove)
+	// {
+	// 	send(socket, response.c_str(), response.length(), 0);
+	// 	printf("HELLO MESSAGE SENT FROM ServerManager\n");
+	// 	sockets.erase(sockets.begin() + indexToRemove);
+	// 	close(socket);
+	// }
 
 	void	ServerManager::eventLoop(void)
 	{
@@ -116,10 +114,8 @@
 
 	ServerManager::~ServerManager(void)
 	{
-		for (size_t i = 0; i < pollFds.size(); i++)
-		{
-			close(pollFds[i].fd);
-		}
-		delete request;
-		delete response;
+		// for (size_t i = 0; i < pollFds.size(); i++)
+		// {
+		// 	close(pollFds[i].fd);
+		// }
 	}

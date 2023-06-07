@@ -13,7 +13,6 @@ void Request::printMap()
 		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
 		++it;
 	}
-	return ;
 }
 
 void Request::parseHeaderSection()
@@ -26,8 +25,6 @@ void Request::parseHeaderSection()
 	lpos = position;
 	position = headerBuffer.find("\n\n", lpos);
 	parseHeaderFields(headerBuffer.substr(lpos, position - lpos));
-	requestHeader = headerFields;
-	return ;
 }
 
 void Request::parseStartLine(std::string startLine)
@@ -44,8 +41,6 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	headerFields["Version"] = startLine.substr(lpos, position - lpos);
-
-	return ;
 }
 
 void Request::parseHeaderFields(std::string headerSection)
@@ -66,62 +61,78 @@ void Request::parseHeaderFields(std::string headerSection)
 		value = line.substr(position);
 		headerFields[key] = value;
 	}
-	return ;
 }
 
-void	Request::readingBody(int &socket)
+std::string readIntoString(int &socket)
 {
-
-}
-
-void	Request::readingHeader(int &socket)
-{
-	int		position;
 	char	readBuffer[BUFLEN];
 
 	if (!read(socket, readBuffer, BUFLEN))
 		error_handle("Read failed");
 	std::string readString(readBuffer);
+	return (readString);
+}
 
-	if (readString.find("\n\n"))
+void	Request::readingBody(int &socket)
+{
+	std::string readString = readIntoString(socket);
+
+	bodyBuffer += readString;
+	readCount += BUFLEN;
+	if (readCount < atoi(headerFields["Content-Length"].c_str()))
+		bufferFlags = bufferFlags & REACHED_BODY_END;
+}
+
+void	Request::readingHeader(int &socket)
+{
+	int		position;
+	std::string readString = readIntoString(socket);
+
+	if (!readString.find("\n\n"))
 	{
-		bufferFlags = bufferFlags | REACHED_HEADER_END;
-		position = readString.find("\n\n");
-		headerBuffer += readString.substr(0, position);
-		bodyBuffer = readString.substr(position, BUFLEN - position);
-	}
-	else
 		headerBuffer += readString;
+		return;
+	}
+	bufferFlags = bufferFlags | REACHED_HEADER_END;
+	position = readString.find("\n\n");
+	headerBuffer += readString.substr(0, position);
+	bodyBuffer = readString.substr(position + 2, BUFLEN - position);
+	parseHeaderFields(headerBuffer);
 }
 
 void	Request::getRequest(int	&socket)
 {
-	if (bufferFlags & REACHED_HEADER_END == 0)
+	if ((bufferFlags & REACHED_HEADER_END) == false)
 		readingHeader(socket);
-	else if (bufferFlags & REACHED_BODY_END == 0)
+	else if ((bufferFlags & REACHED_BODY_END) == false)
 		readingBody(socket);
-	else
-		parseHeaderFields(headerBuffer);
+}
+
+void	Request::printBody(void)
+{
+	std::cout << bodyBuffer << std::endl;
 }
 
 Request::Request(void)
 {
-	return ;
 }
 
 Request::Request(Request const &src)
 {
 	*this = src;
-	return ;
 }
 
-Request &	Request::operator=(const Request &assign)
+Request 		&Request::operator=(const Request &assign)
 {
 	(void) assign;
 	return (*this);
 }
 
+std::string 	Request::operator[](std::string const &key) 
+{
+	return headerFields[key];
+}
+
 Request::~Request(void)
 {
-	return ;
 }

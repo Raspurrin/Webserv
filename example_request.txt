@@ -1,0 +1,7 @@
+POST /api/upload HTTP/1.1
+Host: example.com
+User-Agent: Your-User-Agent
+Content-Type: multipart/form-data; boundary=----BoundaryString
+Content-Length: 10
+
+03  f$#3225

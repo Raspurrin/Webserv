@@ -10,9 +10,9 @@ LIBS = -lm
 
 SRCS =	main.cpp \
 		Request.class.cpp \
-		Response.class.cpp \
-		ServerManager.class.cpp \
 		error.cpp
+# Response.class.cpp \
+# ServerManager.class.cpp \
 
 OBJ = $(SRCS:.cpp=.o)
 OBJ_PREF := $(addprefix $(OBJ_DIR), $(OBJ))

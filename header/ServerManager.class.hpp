@@ -18,8 +18,6 @@ class ServerManager
 		std::vector<t_pollfd>			serverSockets;
 		struct sockaddr_in				address;
 		int								addressLen;
-		Response&						response;
-		Request&						request;
 
 	public:
 		void	eventLoop(void);

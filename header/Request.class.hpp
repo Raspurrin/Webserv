@@ -18,8 +18,10 @@ class Request
 {
 	private:
 		int				bufferFlags;
+		int				readCount;
 		std::string		headerBuffer;
 		std::string		bodyBuffer;
+		std::map<std::string, std::string>	headerFields;
 
 		void			readingBody(int &socket);
 		void			readingHeader(int &socket);
@@ -28,16 +30,14 @@ class Request
 		void			parseHeaderFields(std::string headerSection);
 
 	public:
-		std::map<std::string, std::string>	headerFields;
-
+		void			printBody(void);
 		void			printMap();
 		void			getRequest(int &socket);
-		std::string		getResponse();
 
 		Request(void);
-		Request(std::string buffer);
 		Request(Request const &src);
 		Request&	operator=(Request const &assign);
+		std::string	operator[](std::string const &key);
 		~Request(void);
 };
 
