@@ -113,19 +113,6 @@ int Response::status403()
 		return (0);
 }
 
-int Response::status403()
-{
-	if (access(request["Path"].c_str() + 1, R_OK) == -1)
-	{
-		response["Status code"] = "403 Forbidden";
-		response["Path"] = "/error_pages/403.html";
-		readHTML();
-		return (1);
-	}
-	else
-		return (0);
-}
-
 int Response::checkStat()
 {
 	struct	stat s;
@@ -154,7 +141,7 @@ void Response::buildResponse()
 {
 	response["Version"] = "HTTP/1.1";
 	methodID();
-	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"]; 
+	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
 	std::cout << "RESPONSE MESSAGE" << responseMessage << std::endl;
 	return ;
 }
