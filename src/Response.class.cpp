@@ -146,6 +146,7 @@ void Response::buildResponse()
 
 void Response::GETMethod()
 {
+	// "/" will always be a directory, so maybe we should solve this with a route later on?
 	if (request["Path"] == "/")
 		request["Path"] = "/index.html";
 	if (checkStat() == 1)
