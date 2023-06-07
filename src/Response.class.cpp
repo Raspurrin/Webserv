@@ -118,11 +118,9 @@ int Response::checkStat()
 	struct	stat s;
 	if (stat(request["Path"].c_str() + 1, &s) == 0)
 	{
-		if (s.st_mode & S_IFDIR)
+		//FIXME: only list directory when enabled. Requires working config.
+		if (s.st_mode & S_IFDIR && listDir())
 		{
-			response["Status code"] = "200 OK";
-			response["Path"] = "/directory.html";
-			readHTML();
 			return (1);
 		}
 		else
@@ -148,9 +146,6 @@ void Response::buildResponse()
 
 void Response::GETMethod()
 {
-	//FIXME: only list directory when enabled. Requires working config.
-	if (listDir())
-		return;
 	if (request["Path"] == "/")
 		request["Path"] = "/index.html";
 	if (checkStat() == 1)
