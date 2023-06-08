@@ -25,6 +25,11 @@ void	Client::getRequest()
 	_Request.getRequest(_pollFd.fd);
 }
 
+void	Client::getReponse()
+{
+	_Response.getResponse(_pollFd.fd);
+}
+
 Client::Client(struct pollfd pollFd, class ServerConfig& ServerConfig, class Response& Response, class Request& Request) :
 	_pollFd(pollFd),
 	_serverConfig(ServerConfig),

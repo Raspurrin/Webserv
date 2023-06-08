@@ -16,12 +16,13 @@ class Client
 		// std::map<std::string, std::string>	requestHeader;
 
 	public:
-		//std::vector<struct pollfd>			createPollFdVector(bool option, struct pollfd pollFd);
-		int									getFd();
-		int									getEvent();
-		int									getRevent();
-		class Server&						getServerRef();
+		//std::vector<struct pollfd>		createPollFdVector(bool option, struct pollfd pollFd);
+		// int								getFd();
+		// int								getEvent();
+		// int								getRevent();
+		// class Server&					getServerRef();
 		void								getRequest();
+		void								getResponse();
 
 	// private:
 	// 	Client(void);
