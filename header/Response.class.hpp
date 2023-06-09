@@ -12,6 +12,7 @@
 #include <set>
 #include <dirent.h>
 #include "colours.hpp"
+#include "error.h"
 
 class Response
 {
@@ -25,8 +26,10 @@ class Response
 		void	methodID();
 		void	GETMethod();
 		void	buildResponse();
+		void	buildError(const Error);
 		int	status404();
 		int	status403();
+		void	status500();
 		int	checkStat();
 		void	status200();
 		void	readHTML();

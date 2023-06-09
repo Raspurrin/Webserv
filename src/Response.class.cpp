@@ -100,6 +100,13 @@ int Response::status404()
 		return (0);
 }
 
+void Response::status500()
+{
+	response["Status code"] = "500 Internal Server Error";
+	response["Path"] = "/error_pages/500.html";
+	readHTML();
+}
+
 int Response::status403()
 {
 	if (access(request["Path"].c_str() + 1, R_OK) == -1)
@@ -128,20 +135,46 @@ int Response::checkStat()
 	}
 	else
 	{
-		response["Status code"] = "500 Internal Server Error";
-		response["Path"] = "/error_pages/500.html";
-		readHTML();
+		throw Internal_Error;
 		return (1);
+	}
+}
+
+void Response::buildError(const Error err) {
+	switch (err)
+	{
+	case Bad_Request:
+		// TODO
+		break;
+
+	case Forbidden:
+		status403();
+		break;
+
+	case Not_Found:
+		status404();
+		break;
+
+	case Internal_Error:
+		status500();
+		break;
+
+	default:
+		break;
 	}
 }
 
 void Response::buildResponse()
 {
-	response["Version"] = "HTTP/1.1";
-	methodID();
+	try {
+		response["Version"] = "HTTP/1.1";
+		methodID();
+	} catch (const Error &err) {
+
+	}
+
 	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
 	std::cout << "RESPONSE MESSAGE" << responseMessage << std::endl;
-	return ;
 }
 
 void Response::GETMethod()
