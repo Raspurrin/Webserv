@@ -25,6 +25,7 @@ bool Response::listDir()
 		// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
 		std::set<std::string> files;
 
+		// Return value of readdir is statically allocated and must not be freed!
 		while ((ent = readdir(dir)) != NULL)
 			files.insert(std::string(ent->d_name));
 
