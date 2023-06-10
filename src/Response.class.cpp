@@ -75,6 +75,8 @@ void Response::readHTML()
 		response["Body"] = body;
 		response["Content-Length:"] = lenToStr(body);
 	}
+	else
+		throw ErrC(Internal_Error);
 
 	return ;
 }
@@ -97,7 +99,8 @@ int Response::status404()
 		return (1);
 	}
 	else
-		return (0);
+		throw ErrC(Not_Found);
+	return (0);
 }
 
 void Response::status500()
@@ -117,7 +120,8 @@ int Response::status403()
 		return (1);
 	}
 	else
-		return (0);
+		throw ErrC(Forbidden);
+	return (0);
 }
 
 int Response::checkStat()
@@ -134,10 +138,8 @@ int Response::checkStat()
 			return (0);
 	}
 	else
-	{
-		throw Internal_Error;
-		return (1);
-	}
+		throw ErrC(Internal_Error);
+	return (1);
 }
 
 void Response::buildError(const Error err) {
