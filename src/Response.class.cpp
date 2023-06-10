@@ -166,11 +166,19 @@ void Response::buildError(const Error err) {
 
 void Response::buildResponse()
 {
+
+	// TODO: this block can be moved to a different place, depending on djaisins changes
 	try {
 		response["Version"] = "HTTP/1.1";
 		methodID();
-	} catch (const Error &err) {
-
+	} catch (const std::exception &e) {
+		const ErrC *err = dynamic_cast<const ErrC *>(&e);
+		if (err != NULL) {
+			buildError(err->getError());
+		} else {
+			std::cout << "Catched exception " << e.what() << std::endl;
+			buildError(Internal_Error);
+		}
 	}
 
 	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
