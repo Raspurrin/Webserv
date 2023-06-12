@@ -11,9 +11,13 @@ enum Error {
 class ErrC: public std::exception {
 private:
 	Error err;
+	std::string desc;
 
 public:
 	ErrC(Error);
+	ErrC(Error, std::string);
+	virtual ~ErrC() throw() {};
 
 	Error getError() const;
+	virtual const char *what() const throw();
 };
