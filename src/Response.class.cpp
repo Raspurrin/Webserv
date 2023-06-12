@@ -76,7 +76,7 @@ void Response::readHTML()
 		response["Content-Length:"] = lenToStr(body);
 	}
 	else
-		throw ErrC(Internal_Error);
+		throw ErrC(Internal_Error, "Internal Error in readHtml");
 
 	return ;
 }
@@ -91,16 +91,10 @@ void Response::status200()
 
 int Response::status404()
 {
-	if (access(request["Path"].c_str() + 1, F_OK) == -1)
-	{
-		response["Status code"] = "404 Not Found";
-		response["Path"] = "/error_pages/404.html";
-		readHTML();
-		return (1);
-	}
-	else
-		throw ErrC(Not_Found);
-	return (0);
+	response["Status code"] = "404 Not Found";
+	response["Path"] = "/error_pages/404.html";
+	readHTML();
+	return (1);
 }
 
 void Response::status500()
@@ -112,16 +106,10 @@ void Response::status500()
 
 int Response::status403()
 {
-	if (access(request["Path"].c_str() + 1, R_OK) == -1)
-	{
-		response["Status code"] = "403 Forbidden";
-		response["Path"] = "/error_pages/403.html";
-		readHTML();
-		return (1);
-	}
-	else
-		throw ErrC(Forbidden);
-	return (0);
+	response["Status code"] = "403 Forbidden";
+	response["Path"] = "/error_pages/403.html";
+	readHTML();
+	return (1);
 }
 
 int Response::checkStat()
@@ -138,7 +126,7 @@ int Response::checkStat()
 			return (0);
 	}
 	else
-		throw ErrC(Internal_Error);
+		throw ErrC(Internal_Error, "Internal Error in checkStat");
 	return (1);
 }
 
@@ -192,12 +180,11 @@ void Response::GETMethod()
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
 	if (request["Path"] == "/")
 		request["Path"] = "/index.html";
-	if (checkStat() == 1)
-		return ;
-	if (status404() == 1)
-		return ;
-	if (status403() == 1)
-		return ;
+	if (access(request["Path"].c_str() + 1, F_OK) == -1)
+		throw ErrC(Not_Found);
+	if (access(request["Path"].c_str() + 1, R_OK) == -1)
+		throw ErrC(Forbidden);
+	checkStat();
 	status200();
 	return ;
 }
