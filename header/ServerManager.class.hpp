@@ -17,19 +17,17 @@ class ServerManager
 		std::vector<class Client>		clients;
 		std::vector<t_pollfd>			sockets;
 		std::vector<t_pollfd>			serverSockets;
-		struct sockaddr_in				address;
-		int								addressLen;
+
+	private:
+		void	addServerSockets(void);
+		void	addServerSocket(struct sockaddr_in serverAddress);
+		void	configureSocket(int newSocket);
+		void	addClientSocket(ServerConfig& serverConfig);
+		void	listenToServerSockets();
+		void	handleClientSockets();
 
 	public:
 		void	eventLoop(void);
-
-	private:
-		void	parseConfigFile(void);
-		void	addServerSocket(void);
-		void	configureSocket(int newSocket);
-		void	addClientSocket(int newSocket);
-		void	getRequest(int fd);
-		void	postResponse(int socket, int indexToRemove);
 
 	public:
 		ServerManager(void);

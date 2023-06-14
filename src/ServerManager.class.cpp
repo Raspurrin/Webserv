@@ -1,17 +1,35 @@
 	#include "../header/ServerManager.class.hpp"
+	#include "../header/ParsingConfig.hpp"
 	
 	ServerManager::ServerManager(void) :
 		opt(1)
 	{
-		address.sin_family = AF_INET;
-		address.sin_addr.s_addr = htonl(INADDR_ANY);
-		address.sin_port = htons(8080);
-		addressLen = sizeof(address);
+		ParsingConfig	parsingConfig;
+		int fd = open("serverconfig", O_RDONLY);
+	
+		serverConfigs = parsingConfig.parsing(fd);
+		addServerSockets();
 	}
 
-	void	ServerManager::parseConfigFile(void)
+	void	ServerManager::addServerSockets(void)
 	{
+		for (std::vector<ServerConfig>::iterator it = serverConfigs.begin(); it != serverConfigs.end(); it++)
+			addServerSocket(it->getServerAddress());
+	}
 
+	void	ServerManager::addServerSocket(struct sockaddr_in serverAddress)
+	{ 
+		pollfd	serverSocket;
+	
+		serverSocket.events = POLLIN;
+		if ((serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			error_handle("Socket error");
+		configureSocket(serverSocket.fd);
+		if (bind(serverSocket.fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
+			error_handle("Binding error");
+		if (listen(serverSocket.fd, 3) < 0)
+			error_handle("Listen error");
+		serverSockets.push_back(serverSocket);
 	}
 
 	void	ServerManager::configureSocket(int newSocket)
@@ -24,98 +42,55 @@
 		fcntl(newSocket, F_SETFL, flags | O_NONBLOCK);
 	}
 
-	void	ServerManager::addServerSocket(void)
+	void	ServerManager::eventLoop(void)
 	{
-		pollfd	serverSocket;
-	
-		serverSocket.events = POLLIN;
-		if ((serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-			error_handle("Socket error");
-		configureSocket(serverSocket.fd);
-		if (bind(serverSocket.fd, (struct sockaddr *) &address, sizeof(address)) < 0)
-			error_handle("Binding error");
-		if (listen(serverSocket.fd, 3) < 0)
-			error_handle("Listen error");
-		sockets.push_back(serverSocket);
-		serverSockets.push_back(serverSocket);
+		int	numEvent;
+
+		while (69)
+		{
+			numEvent = poll(sockets.data(), sockets.size(), 300);
+			if (numEvent > 0)
+			{
+				listenToServerSockets();
+				handleClientSockets();
+			}
+		}
 	}
 
-	void	ServerManager::addClientSocket(int serverSocket)
+	void	ServerManager::listenToServerSockets()
+	{
+		for (size_t i = 0; i < serverConfigs.size(); i++)
+		{
+			if (serverSockets[i].revents & POLLIN)
+				addClientSocket(serverConfigs[i]);
+		}
+	}
+
+	void	ServerManager::addClientSocket(ServerConfig& serverConfig)
 	{
 		pollfd	newPfd;
 
-		newPfd.fd = accept(serverSocket, (struct sockaddr *) &address, (socklen_t *) &addressLen);
-		// if (newPfd.fd > 0)
-		// 	addNewConnection(newPfd.fd);
+		newPfd.fd = accept(serverConfig.getServerSocketFd(), &serverConfig.getServerAddress(), \
+															(socklen_t *) sizeof(serverConfig.getServerAddress()));
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
 		sockets.push_back(newPfd);
 	}
 
-	// void	ServerManager::getRequest(int new_socket)
-	// {
-	// 	char	buffer[30000];
-
-	// 	read(new_socket, buffer, 30000);
-	// 	Request	request(buffer);
-	// 	request.printMap();
-	// 	response = request.getResponse();	
-	// }
-
-	// void	ServerManager::postResponse(int socket, int indexToRemove)
-	// {
-	// 	send(socket, response.c_str(), response.length(), 0);
-	// 	printf("HELLO MESSAGE SENT FROM ServerManager\n");
-	// 	sockets.erase(sockets.begin() + indexToRemove);
-	// 	close(socket);
-	// }
-
-	void	ServerManager::eventLoop(void)
+	void	ServerManager::handleClientSockets()
 	{
-		//int	newSocket;
-		int	numEvent;
-
-		while (69)
+		for (size_t i = 0; i < clients.size(); i++)
 		{
-			unsigned int	i = 0;
-			numEvent = poll(sockets.data(), sockets.size(), 300);
-			if (numEvent > 0)
-			{
-				while (i < serverSockets.size())
-				{
-					if (serverSockets[i].revents & POLLIN)
-						addClientSocket(serverSockets[i].fd);
-					i++;
-				}
-				while (i < clients.size() - serverSockets.size())
-				{
-					if (sockets[i].revents & POLLIN)
-						clients[i].getRequest();
-					// else if (sockets[i].revents & POLLOUT)
-					// 	postResponse(sockets[i].fd, i);
-					else if (sockets[i].revents & POLLERR)
-						error_handle("Error occured with a connection");
-					i++;
-				}
-			}
+			if (sockets[i].revents & POLLIN)
+				clients[i].getRequest();
+			else if (sockets[i].revents & POLLOUT)
+				clients[i].getResponse();
+			else if (sockets[i].revents & POLLERR)
+				error_handle("Error occurred with a connection");
 		}
 	}
 
-	// Socket::Socket(Socket const &src)
-	// {
-
-	// }
-
-	// ServerManager&	ServerManager::operator=(ServerManager const &assign)
-	// {
-
-	// }
-
 	ServerManager::~ServerManager(void)
 	{
-		// for (size_t i = 0; i < pollFds.size(); i++)
-		// {
-		// 	close(pollFds[i].fd);
-		// }
 	}

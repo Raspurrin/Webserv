@@ -6,6 +6,11 @@
 
 // }
 
+int		ServerConfig::getServerSocketFd()
+{
+	return (_serverSocket.fd);
+}
+
 bool	ServerConfig::checkRoutePath(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
@@ -50,13 +55,20 @@ const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 	return (_routes.at(path).index);
 }
 
+struct sockaddr_in	ServerConfig::getServerAddress(void)
+{
+	return (_serverAddress);
+}
+
 ServerConfig::ServerConfig(const std::string& name, int clientBodySize, \
-                 const std::map<std::string, std::string>& errorPages, \
-                 const std::map<const std::string, const t_route>& routes) :
+                			const std::map<std::string, std::string>& errorPages, \
+                			const std::map<const std::string, const t_route>& routes, \
+							struct sockaddr_in serverAddress) :
 	_name(name),
 	_clientBodySize(clientBodySize),
 	_errorPages(errorPages),
-	_routes(routes)
+	_routes(routes),
+	_serverAddress(serverAddress)
 {
 	if (_clientBodySize)
 		printf("hi\n");

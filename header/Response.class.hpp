@@ -25,9 +25,9 @@ class Response
 		void	methodID();
 		void	GETMethod();
 		void	buildResponse();
-		int	status404();
-		int	status403();
-		int	checkStat();
+		int		status404();
+		int		status403();
+		int		checkStat();
 		void	status200();
 		void	readHTML();
 		std::string	lenToStr(std::string body);

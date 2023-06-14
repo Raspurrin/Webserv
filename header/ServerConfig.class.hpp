@@ -7,6 +7,8 @@
 #define POST 2
 #define DELETE 4
 
+typedef struct pollfd					t_pollfd;
+
 class ServerConfig
 {
 	private:
@@ -24,7 +26,9 @@ class ServerConfig
 	const int											_clientBodySize;
 	const std::map<std::string, std::string>			_errorPages;
 	const std::map<const std::string, const t_route>	_routes;
-
+	t_pollfd&											_serverSocket;
+	struct sockaddr_in									_serverAddress;
+	
 	public:
 		//template<typename T>
 		// T				parsingKeyValue(std::stringstream Input);
@@ -34,11 +38,15 @@ class ServerConfig
 		bool				isDirListEnabled(const std::string &path) const;
 		const std::string	getRouteRoot(const std::string &path) const;
 		const std::string	getRouteIndex(const std::string &path) const;
+		struct sockaddr_in	getServerAddress();
+		int					getServerSocketFd();
+		
 	
 	public:
 		 ServerConfig(const std::string& name, const int clientBodySize, \
-                 const std::map<std::string, std::string>& errorPages, \
-                 const std::map<const std::string, const t_route>& routes);
+                 	const std::map<std::string, std::string>& errorPages, \
+                 	const std::map<const std::string, const t_route>& routes, \
+				 	struct sockaddr_in serverAddress);
 		//ServerManager(ServerManager const &src);
 		//ServerManager&	operator=(ServerManager const &assign);
 		~ServerConfig(void);

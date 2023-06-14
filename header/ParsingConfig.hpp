@@ -5,9 +5,12 @@
 
 class ParsingConfig
 {
-    std::vector<ServerConfig> parsing(int fd);
-    ParsingConfig(void);
-    ~ParsingConfig(void);
+    public:
+        std::vector<ServerConfig> parsing(int fd);
+    
+    public:
+        ParsingConfig(void);
+        ~ParsingConfig(void);
 };
 
 #endif

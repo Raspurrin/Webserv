@@ -25,9 +25,9 @@ void	Client::getRequest()
 	_Request.getRequest(_pollFd.fd);
 }
 
-void	Client::getReponse()
+void	Client::getResponse()
 {
-	_Response.getResponse(_pollFd.fd);
+	_Response.getResponse();
 }
 
 Client::Client(struct pollfd pollFd, class ServerConfig& ServerConfig, class Response& Response, class Request& Request) :
@@ -36,11 +36,12 @@ Client::Client(struct pollfd pollFd, class ServerConfig& ServerConfig, class Res
 	_Response(Response),
 	_Request(Request)
 {
+	(void)_serverConfig;
 }
 
 // Client::Client(void)
 // {
-// }
+// } hbby hybb                                    nu77hyb66 
 //Client(Client const &src);
 //Client&	operator=(Client const &assign);
 Client::~Client(void)
