@@ -55,7 +55,7 @@ const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 	return (_routes.at(path).index);
 }
 
-struct sockaddr_in	ServerConfig::getServerAddress(void)
+struct sockaddr	ServerConfig::getServerAddress(void)
 {
 	return (_serverAddress);
 }
@@ -63,7 +63,7 @@ struct sockaddr_in	ServerConfig::getServerAddress(void)
 ServerConfig::ServerConfig(const std::string& name, int clientBodySize, \
                 			const std::map<std::string, std::string>& errorPages, \
                 			const std::map<const std::string, const t_route>& routes, \
-							struct sockaddr_in serverAddress) :
+							struct sockaddr serverAddress) :
 	_name(name),
 	_clientBodySize(clientBodySize),
 	_errorPages(errorPages),

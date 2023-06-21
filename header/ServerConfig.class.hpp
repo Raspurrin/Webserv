@@ -22,31 +22,33 @@ class ServerConfig
 	}	t_route;
 
 	//std::vector<std::stringstream>						orderedInput;
+	const int											_port;
+	//TODO: initialize port
 	std::string											_name;
 	const int											_clientBodySize;
 	const std::map<std::string, std::string>			_errorPages;
 	const std::map<const std::string, const t_route>	_routes;
 	t_pollfd&											_serverSocket;
-	struct sockaddr_in									_serverAddress;
+	struct sockaddr										_serverAddress;
 	
 	public:
 		//template<typename T>
 		// T				parsingKeyValue(std::stringstream Input);
+		int					getPort() const; // TODO: make getport()
 		bool				checkRoutePath(const std::string &path) const;
 		int					getMethods(const std::string &path) const;
 		bool				isMethodAllowed(const std::string &path, const int methodToCheck) const;
 		bool				isDirListEnabled(const std::string &path) const;
 		const std::string	getRouteRoot(const std::string &path) const;
 		const std::string	getRouteIndex(const std::string &path) const;
-		struct sockaddr_in	getServerAddress();
+		struct sockaddr		getServerAddress();
 		int					getServerSocketFd();
 		
-	
 	public:
 		 ServerConfig(const std::string& name, const int clientBodySize, \
                  	const std::map<std::string, std::string>& errorPages, \
                  	const std::map<const std::string, const t_route>& routes, \
-				 	struct sockaddr_in serverAddress);
+				 	struct sockaddr serverAddress);
 		//ServerManager(ServerManager const &src);
 		//ServerManager&	operator=(ServerManager const &assign);
 		~ServerConfig(void);

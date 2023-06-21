@@ -9,8 +9,8 @@ class Client
 	private:
 		struct pollfd						_pollFd;
 		class ServerConfig&					_serverConfig;
-		class Response&						_Response;
-		class Request&						_Request;
+		class Response						_Response;
+		class Request						_Request;
 		// struct buffer					incomingBuffer;
 		// struct buffer					outgoingBuffer;
 		// std::map<std::string, std::string>	requestHeader;
