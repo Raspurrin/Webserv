@@ -22,7 +22,7 @@
 
 void	Client::getRequest()
 {
-	_Request.getRequest(_pollFd.fd);
+	// _Request.getRequest(_pollFd.fd);
 }
 
 void	Client::getResponse()
@@ -30,11 +30,9 @@ void	Client::getResponse()
 	_Response.getResponse();
 }
 
-Client::Client(struct pollfd pollFd, class ServerConfig& ServerConfig, class Response& Response, class Request& Request) :
+Client::Client(struct pollfd &pollFd, class ServerConfig& ServerConfig) :
 	_pollFd(pollFd),
-	_serverConfig(ServerConfig),
-	_Response(Response),
-	_Request(Request)
+	_serverConfig(ServerConfig)
 {
 	(void)_serverConfig;
 }

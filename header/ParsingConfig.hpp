@@ -2,6 +2,7 @@
 # define PARSINGCONFIG_HPP
 
 #include "webserv.hpp"
+#include "ServerConfig.class.hpp"
 
 class ParsingConfig
 {

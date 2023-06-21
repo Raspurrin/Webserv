@@ -3,6 +3,8 @@
 
 #include "ServerConfig.class.hpp"
 #include "webserv.hpp"
+#include "Request.class.hpp"
+#include "Response.class.hpp"
 
 class Client
 {
@@ -10,7 +12,7 @@ class Client
 		struct pollfd						_pollFd;
 		class ServerConfig&					_serverConfig;
 		class Response						_Response;
-		class Request						_Request;
+		// class Request						_Request;
 		// struct buffer					incomingBuffer;
 		// struct buffer					outgoingBuffer;
 		// std::map<std::string, std::string>	requestHeader;
@@ -28,7 +30,7 @@ class Client
 	// 	Client(void);
 
 	public:
-		Client(struct pollfd pollFd, class ServerConfig& ServerConfig, class Response& Response, class Request& Request);
+		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);
 		//Client(Client const &src);
 		//Client&	operator=(Client const &assign);
 		~Client(void);

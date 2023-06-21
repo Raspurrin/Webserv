@@ -1,9 +1,11 @@
 #ifndef SERVERMANAGER_CLASS_HPP
 # define SERVERMANAGER_CLASS_HPP
 
-#include "../header/webserv.hpp"
-#include "../header/colours.hpp"
-#include "../header/ServerConfig.class.hpp"
+#include "webserv.hpp"
+#include "colours.hpp"
+#include "ServerConfig.class.hpp"
+#include "ParsingConfig.hpp"
+#include "Client.class.hpp"
 
 #define BACKLOG 3
 
@@ -30,7 +32,7 @@ class ServerManager
 		void	addServerSockets(void);
 		void	addServerSocket(ServerConfig &serverConfig);
 		void	configureSocket(int newSocket);
-		void	addClientSocket(ServerConfig& serverConfig);
+		void	addClientSocket(serverSocket &serverSocket, ServerConfig &serverConfigs);
 		void	listenToServerSockets();
 		void	handleClientSockets();
 

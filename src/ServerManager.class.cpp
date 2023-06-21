@@ -22,7 +22,6 @@
 	{ 
 		t_serverSocket serverSocket;
 	
-		//TODO: initialize sockadrr in server vector
 		serverSocket.address.sin_family = AF_INET;
    		serverSocket.address.sin_addr.s_addr = INADDR_ANY;
     	serverSocket.address.sin_port = htons(serverConfig.getPort());
@@ -36,7 +35,6 @@
 		if (listen(serverSocket.poll.fd, BACKLOG) < 0)
 			error_handle("Listen error");
 		serverSockets.push_back(serverSocket);
-		// where to add the socket to? 
 	}
 
 	void	ServerManager::configureSocket(int newSocket)
@@ -68,22 +66,22 @@
 	{
 		for (size_t i = 0; i < serverSockets.size(); i++)
 		{
-			if (serverSockets[i].poll.revents & POLLIN) // should we have a vector of pairs here to pass the address?
-				addClientSocket(serverConfigs[i]);
+			if (serverSockets[i].poll.revents & POLLIN)
+				addClientSocket(serverSockets[i], serverConfigs[i]);
 		}
 	}
 
-	void	ServerManager::addClientSocket(ServerConfig& serverConfig)
+	void	ServerManager::addClientSocket(serverSocket &serverSocket, ServerConfig &serverConfigs)
 	{
 		pollfd	newPfd;
-
-		newPfd.fd = accept(serverConfig.getServerSocketFd(), &serverConfig.getServerAddress(), \
-											(socklen_t *) sizeof(serverConfig.getServerAddress()));
+		Client	newClient(newPfd, serverConfigs);
+		newPfd.fd = accept(serverSocket.poll.fd, (struct sockaddr *) &serverSocket.address, \
+											(socklen_t *) sizeof(serverSocket.address));
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
 		clientSockets.push_back(newPfd);
-		//TODO: instantiate client class and add to vector
+		clients.push_back(newClient);
 	}
 
 	//TODO: remove client class and client socket from vector when disconnecting
@@ -92,9 +90,9 @@
 	{
 		for (size_t i = 0; i < clients.size(); i++)
 		{
-			if (clientSockets[i].revents & POLLIN)
-				clients[i].getRequest();
-			else if (clientSockets[i].revents & POLLOUT)
+			// if (clientSockets[i].revents & POLLIN)
+				// clients[i].getRequest();
+			if (clientSockets[i].revents & POLLOUT)
 				clients[i].getResponse();
 			else if (clientSockets[i].revents & POLLERR)
 				error_handle("Error occurred with a connection");

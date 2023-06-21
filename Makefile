@@ -1,7 +1,7 @@
 NAME = webserv
 CC = c++
 RM = rm -rf
-CFLAGS = -Wall -Wextra -Werror -std=c++98
+#CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 HEADER_DIR = ./header
 SRC_DIR = ./src/
@@ -14,7 +14,8 @@ SRCS =	main.cpp \
 		Response.class.cpp \
 		ServerConfig.class.cpp \
 		ServerManager.class.cpp \
-		Client.class.cpp
+		Client.class.cpp \
+		ParsingConfig.class.cpp
 
 OBJ = $(SRCS:.cpp=.o)
 OBJ_PREF := $(addprefix $(OBJ_DIR), $(OBJ))

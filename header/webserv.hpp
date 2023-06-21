@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <list>
+#include <map>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <cstdio>
@@ -16,8 +17,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include "Request.class.hpp"
+//#include "Request.class.hpp"
 #include <netinet/tcp.h>
+
 
 void	error_handle(std::string type);
 
