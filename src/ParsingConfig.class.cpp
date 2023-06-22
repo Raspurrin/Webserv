@@ -2,29 +2,30 @@
  #include "ServerConfig.class.hpp"
 
  //hardcoded for testing xd
-std::vector<ServerConfig>    ParsingConfig::parsing(int fd)
+ParsingConfig    ParsingConfig::parsing(int fd)
 {
-    std::map<std::string, std::string> map1;
-    map1["404"] = "Not Found";
+
+    std::map<std::string, t_route> routemap1;
     t_route route1;
-    std::vector<ServerConfig>    serverConfigs;
-    ServerConfig config(8080, "MyServer", 1024, \
-                        map1, \
-                        {{"route1", {1, true, "http://example.com", "/root", "index.html"}}});
-    // ServerConfig config2(8080, "MyServer", 1024, {{"404", "Not Found"}, {"500", "Internal Server Error"}}, \
-    //                 {{"route1", {1, true, "http://example.com", "/root", "index.html"}}, \
-    //                  {"route2", {2, false, "", "/path", "default.html"}}});
-    serverConfigs.push_back(config);
-    // serverConfigs.push_back(config2);
-    return (serverConfigs);
+    route1.methods = 1;
+    route1.dir_list = false;
+    route1.HTTP_redirect = "hi";
+    route1.index = "4";
+    route1.root = "dsfs";
+    _routes["lol"] = route1;
+
+    routemap1["route1"] = route1;
+    _port = 343;
+    _name = "dsfsdf";
+    _clientBodySize = 4343;
+    _errorPages["505"] = "sdfsdfs";
+    return (*this);
 }
 
- ParsingConfig::ParsingConfig(void)
- {
-
- }
-
- ParsingConfig::~ParsingConfig(void)
+ParsingConfig::ParsingConfig(void)
 {
+}
 
+ParsingConfig::~ParsingConfig(void)
+{
 }

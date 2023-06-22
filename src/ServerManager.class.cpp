@@ -25,7 +25,6 @@
 		serverSocket.address.sin_family = AF_INET;
    		serverSocket.address.sin_addr.s_addr = INADDR_ANY;
     	serverSocket.address.sin_port = htons(serverConfig.getPort());
-
 		serverSocket.poll.events = POLLIN;
 		if ((serverSocket.poll.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			error_handle("Socket error");
