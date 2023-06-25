@@ -2,6 +2,16 @@
 
  //hardcoded for testing xd
 
+t_sockaddr_in   ParsingConfig::setAddress(int port)
+{
+    t_sockaddr_in   address;
+
+    address.sin_family = AF_INET;
+   	address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(port);
+    return (address);
+}
+
 serverConfigVector    ParsingConfig::parsing(std::string fileName)
 {
     fileToBeParsed.open(fileName);
@@ -13,7 +23,8 @@ serverConfigVector    ParsingConfig::parsing(std::string fileName)
 ServerConfig ParsingConfig::parsingOneServerConfig()
 {
     ServerConfig oneServerConfig;
-    oneServerConfig._port = 343;
+    oneServerConfig._port = 8080;
+    oneServerConfig._address = setAddress(oneServerConfig._port);
     oneServerConfig._name = "lol";
     oneServerConfig._clientBodySize = 69;
     oneServerConfig._errorPages["ha"] = "404";

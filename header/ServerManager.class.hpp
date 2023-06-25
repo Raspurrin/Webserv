@@ -9,30 +9,28 @@
 
 #define BACKLOG 3
 
-typedef struct sockaddr_in				t_sockaddr_in;
-typedef struct pollfd					t_pollfd;
-typedef struct route					t_route;
-typedef struct server_config			t_server_config;
+typedef struct sockaddr_in			t_sockaddr_in;
+typedef struct pollfd				t_pollfd;
+typedef struct route				t_route;
+typedef struct server_config		t_server_config;
+typedef std::vector<t_pollfd>		PollFdVector;
+typedef	std::vector<class Client>	ClientVector;
+typedef std::vector<ServerConfig>	ServerConfigVector;
 
 class ServerManager
 {
 	private:
-		typedef struct serverSocket
-		{
-			t_pollfd		poll;
-			t_sockaddr_in	address;
-		}	t_serverSocket;
-		int								opt;
-		std::vector<ServerConfig>		serverConfigs;
-		std::vector<class Client>		clients;
-		std::vector<t_pollfd>			clientSockets;
-		std::vector<t_serverSocket>		serverSockets;
+		int					opt;
+		ServerConfigVector	serverConfigs;
+		ClientVector		clients;
+		PollFdVector		clientSockets;
+		PollFdVector		serverSockets;
 
 	private:
 		void	addServerSockets(void);
 		void	addServerSocket(ServerConfig &serverConfig);
 		void	configureSocket(int newSocket);
-		void	addClientSocket(serverSocket &serverSocket, ServerConfig &serverConfigs);
+		void	addClientSocket(t_pollfd &serverSocket, ServerConfig &serverConfigs);
 		void	listenToServerSockets();
 		void	handleClientSockets();
 

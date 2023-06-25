@@ -165,8 +165,9 @@ void Response::methodID()
 	return ;
 }
 
-std::string Response::getResponse(void) const
+std::string Response::getResponse(void)
 {
+	buildResponse();
 	return (this->responseMessage);
 }
 
@@ -176,7 +177,7 @@ std::string Response::getResponse(void) const
 // 	return ;
 // }
 
-Response &	Response::operator=(const Response &assign)
+Response &	Response::operator=(Response &assign)
 {
 	this->responseMessage = assign.getResponse();
 	return (*this);

@@ -14,6 +14,7 @@ Client::Client(struct pollfd &pollFd, class ServerConfig& ServerConfig) :
 	_pollFd(pollFd),
 	_serverConfig(ServerConfig)
 {
+	static_cast<void>(_serverConfig);
 }
 
 Client::~Client(void)

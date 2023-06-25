@@ -8,7 +8,7 @@
 #include <sstream>
 #include "colours.hpp"
 #include "Response.class.hpp"
-#include "Client.class.hpp"
+#include "webserv.hpp"
 
 #define BUFLEN 2000
 #define REACHED_HEADER_END 1

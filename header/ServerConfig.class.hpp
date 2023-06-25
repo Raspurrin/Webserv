@@ -7,6 +7,7 @@
 #define POST 2
 #define DELETE 4
 
+typedef struct sockaddr_in	t_sockaddr_in;
 
 class ServerConfig
 {
@@ -31,6 +32,7 @@ class ServerConfig
 		int					_clientBodySize;
 		StringStringMap		_errorPages;
 		StringRouteMap		_routes;
+		t_sockaddr_in		_address;
 	
 	public:
 		int					getPort() const;
@@ -40,6 +42,7 @@ class ServerConfig
 		bool				isDirListEnabled(const std::string &path) const;
 		const std::string	getRouteRoot(const std::string &path) const;
 		const std::string	getRouteIndex(const std::string &path) const;
+		t_sockaddr_in&		getAddress();
 
 	public:
 		ServerConfig&	operator=(ServerConfig const &assign);

@@ -34,11 +34,11 @@ class Response
 
 	public:
 		void		postResponse(int socket, int indexToRemove);
-		std::string	getResponse(void) const;
+		std::string	getResponse(void);
 
 	public:
 		Response();
-		Response&	operator=(Response const &assign);
+		Response&	operator=(Response &assign);
 		~Response(void);
 };
 

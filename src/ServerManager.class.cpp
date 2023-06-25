@@ -6,31 +6,27 @@
 	{
 		ParsingConfig	parsingConfig;
 	
-		serverConfigs = parsingConfig.parsing("config"); // TODO: serverconfigs type needs to change in the serverconfigs class
-		// open file in parsingConfig
+		serverConfigs = parsingConfig.parsing("config");
 		addServerSockets();
 	}
 
 	void	ServerManager::addServerSockets(void)
 	{
+		std::cout << "adding server sockets" << std::endl;
 		for (std::vector<ServerConfig>::iterator it = serverConfigs.begin(); it != serverConfigs.end(); it++)
 			addServerSocket(*it);
 	}
 
 	void	ServerManager::addServerSocket(ServerConfig &serverConfig)
 	{ 
-		t_serverSocket serverSocket;
+		t_pollfd serverSocket;
 	
-		serverSocket.address.sin_family = AF_INET;
-   		serverSocket.address.sin_addr.s_addr = INADDR_ANY;
-    	serverSocket.address.sin_port = htons(serverConfig.getPort());
-		serverSocket.poll.events = POLLIN;
-		if ((serverSocket.poll.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		if ((serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			error_handle("Socket error");
-		configureSocket(serverSocket.poll.fd);
-		if (bind(serverSocket.poll.fd, (struct sockaddr *) &serverSocket.address, sizeof(serverSocket.address)) < 0)
+		configureSocket(serverSocket.fd);
+		if (bind(serverSocket.fd, reinterpret_cast<struct sockaddr *>(&serverConfig.getAddress()), sizeof(serverConfig.getAddress())) < 0)
 			error_handle("Binding error");
-		if (listen(serverSocket.poll.fd, BACKLOG) < 0)
+		if (listen(serverSocket.fd, BACKLOG) < 0)
 			error_handle("Listen error");
 		serverSockets.push_back(serverSocket);
 	}
@@ -48,13 +44,23 @@
 	void	ServerManager::eventLoop(void)
 	{
 		int	numEvent;
+		int serverEvents;
+		std::cout << "starting event loop" << std::endl;
 
 		while (69)
 		{
+			listenToServerSockets();
+			serverEvents = poll(serverSockets.data(), serverSockets.size(), 300);
+			std::cout << serverEvents << " server events polled" << std::endl;
 			numEvent = poll(clientSockets.data(), clientSockets.size(), 300);
+			for (size_t i = 0; i < serverSockets.size(); i++)
+			{
+				if (serverSockets[i].revents & POLLIN)
+					addClientSocket(serverSockets[i], serverConfigs[i]);
+			}
+			std::cout << numEvent << " events polled" << std::endl;
 			if (numEvent > 0)
 			{
-				listenToServerSockets();
 				handleClientSockets();
 			}
 		}
@@ -62,19 +68,21 @@
 
 	void	ServerManager::listenToServerSockets()
 	{
+		std::cout << "listening to server sockets. serverSockets.size() = " << serverSockets.size() << std::endl;
 		for (size_t i = 0; i < serverSockets.size(); i++)
 		{
-			if (serverSockets[i].poll.revents & POLLIN)
+			if (serverSockets[i].revents & POLLIN)
 				addClientSocket(serverSockets[i], serverConfigs[i]);
 		}
 	}
 
-	void	ServerManager::addClientSocket(serverSocket &serverSocket, ServerConfig &serverConfigs)
+	void	ServerManager::addClientSocket(t_pollfd &serverSocket, ServerConfig &serverConfig)
 	{
+		std::cout << "client connect" << std::endl;
 		pollfd	newPfd;
-		Client	newClient(newPfd, serverConfigs);
-		newPfd.fd = accept(serverSocket.poll.fd, (struct sockaddr *) &serverSocket.address, \
-											(socklen_t *) sizeof(serverSocket.address));
+		Client	newClient(newPfd, serverConfig);
+		newPfd.fd = accept(serverSocket.fd, reinterpret_cast<struct sockaddr *>(&serverConfig.getAddress()), \
+											(socklen_t *) sizeof(serverConfig.getAddress()));
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
@@ -88,9 +96,9 @@
 	{
 		for (size_t i = 0; i < clients.size(); i++)
 		{
-			// if (clientSockets[i].revents & POLLIN)
-				// clients[i].getRequest();
-			if (clientSockets[i].revents & POLLOUT)
+			if (clientSockets[i].revents & POLLIN)
+				clients[i].getRequest();
+			else if (clientSockets[i].revents & POLLOUT)
 				clients[i].getResponse();
 			else if (clientSockets[i].revents & POLLERR)
 				error_handle("Error occurred with a connection");

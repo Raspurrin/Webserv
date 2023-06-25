@@ -56,6 +56,11 @@ const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 	return (_routes.at(path).index);
 }
 
+t_sockaddr_in&		ServerConfig::getAddress()
+{
+	return (_address);
+}
+
 ServerConfig&	ServerConfig::operator=(ServerConfig const &assign)
 {
 	(void)assign;
