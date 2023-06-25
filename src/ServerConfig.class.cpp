@@ -7,6 +7,11 @@
 // }
 
 
+int		ServerConfig::getPort() const
+{
+	return (_port);
+}
+
 bool	ServerConfig::checkRoutePath(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
@@ -34,7 +39,7 @@ bool	ServerConfig::isDirListEnabled(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
-	return (_routes.at(path).dir_list);
+	return (_routes.at(path).directoryListing);
 }
 
 const std::string	ServerConfig::getRouteRoot(const std::string &path) const
@@ -51,33 +56,10 @@ const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 	return (_routes.at(path).index);
 }
 
-ServerConfig::ServerConfig(ServerConfig const &src) :
-	_port(src._port),
-	_name(src._name),
-	_clientBodySize(src._clientBodySize),
-	_errorPages(src._errorPages),
-	_routes(src._routes)
-{
-}
-
 ServerConfig&	ServerConfig::operator=(ServerConfig const &assign)
 {
 	(void)assign;
 	return (*this);
-}
-
-ServerConfig::ServerConfig(const int port, const std::string& name, int clientBodySize, \
-                			const std::map<std::string, std::string>& errorPages, \
-                			const std::map<const std::string, const t_route>& routes) :
-	_port(port),
-	_name(name),
-	_clientBodySize(clientBodySize),
-	_errorPages(errorPages),
-	_routes(routes)
-{
-	if (_clientBodySize)
-		printf("hi\n");
-	// parsy parsy parsing
 }
 
 ServerConfig::~ServerConfig(void)

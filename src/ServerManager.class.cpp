@@ -5,9 +5,8 @@
 		opt(1)
 	{
 		ParsingConfig	parsingConfig;
-		int fd = open("serverconfig", O_RDONLY);
 	
-		serverConfigs = parsingConfig.parsing(fd); // TODO: serverconfigs type needs to change in the serverconfigs class
+		serverConfigs = parsingConfig.parsing("config"); // TODO: serverconfigs type needs to change in the serverconfigs class
 		// open file in parsingConfig
 		addServerSockets();
 	}

@@ -1,25 +1,41 @@
  #include "ParsingConfig.hpp"
- #include "ServerConfig.class.hpp"
 
  //hardcoded for testing xd
-ParsingConfig    ParsingConfig::parsing(int fd)
+
+serverConfigVector    ParsingConfig::parsing(std::string fileName)
 {
+    fileToBeParsed.open(fileName);
+    ServerConfig oneServerConfig = parsingOneServerConfig();
+    addToVector(oneServerConfig);
+    return (serverConfigs);
+}
 
-    std::map<std::string, t_route> routemap1;
-    t_route route1;
-    route1.methods = 1;
-    route1.dir_list = false;
-    route1.HTTP_redirect = "hi";
-    route1.index = "4";
-    route1.root = "dsfs";
-    _routes["lol"] = route1;
+ServerConfig ParsingConfig::parsingOneServerConfig()
+{
+    ServerConfig oneServerConfig;
+    oneServerConfig._port = 343;
+    oneServerConfig._name = "lol";
+    oneServerConfig._clientBodySize = 69;
+    oneServerConfig._errorPages["ha"] = "404";
+    oneServerConfig._routes["newroute"] = addRoute();
+    std::pair <std::string, ServerConfig::t_route> asdf = std::make_pair("newroute", addRoute());
+    return (oneServerConfig);
+    // oneServerConfig._routes.emplace("newroute", addRoute());
+}
 
-    routemap1["route1"] = route1;
-    _port = 343;
-    _name = "dsfsdf";
-    _clientBodySize = 4343;
-    _errorPages["505"] = "sdfsdfs";
-    return (*this);
+ServerConfig::t_route ParsingConfig::addRoute()
+{
+    ServerConfig::t_route newRoute;
+    newRoute.methods = POST & DELETE;
+    newRoute.directoryListing = true;
+    newRoute.root = "bigman";
+    newRoute.index = "somewhere";
+    return (newRoute);
+}
+
+void    ParsingConfig::addToVector(ServerConfig &oneServerConfig)
+{
+    serverConfigs.push_back(oneServerConfig);
 }
 
 ParsingConfig::ParsingConfig(void)

@@ -12,6 +12,7 @@ class Client
 		struct pollfd			_pollFd;
 		class ServerConfig&		_serverConfig;
 		class Response			_Response;
+		class Request			_Request;
 
 	public:
 		void					getRequest();

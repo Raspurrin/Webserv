@@ -182,7 +182,10 @@ Response &	Response::operator=(const Response &assign)
 	return (*this);
 }
 
+Response::Response(void)
+{
+}
+
 Response::~Response(void)
 {
-	return ;
 }
