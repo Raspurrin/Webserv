@@ -33,6 +33,7 @@ class Request
 		void			printBody(void);
 		void			printMap();
 		void			getRequest(int &socket);
+		bool			isFlagOn(int flag);
 
 		Request(void);
 		Request(Request const &src);

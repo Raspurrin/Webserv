@@ -102,15 +102,23 @@ void	Request::readingHeader(int &socket)
 
 void	Request::getRequest(int	&socket)
 {
+	std::cout << "getting request" << std::endl;
 	if ((bufferFlags & REACHED_HEADER_END) == false)
 		readingHeader(socket);
 	else if ((bufferFlags & REACHED_BODY_END) == false)
 		readingBody(socket);
+	std::cout << "headerbuffer: " << headerBuffer << std::endl;
+	std::cout << "bodybuffer: " << bodyBuffer << std::endl;
 }
 
 void	Request::printBody(void)
 {
 	std::cout << bodyBuffer << std::endl;
+}
+
+bool	Request::isFlagOn(int flag)
+{
+	return ((bufferFlags & flag));
 }
 
 Request::Request(void)

@@ -17,6 +17,7 @@ class Client
 	public:
 		void					getRequest();
 		void					getResponse();
+		bool					isRequestSent();
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);

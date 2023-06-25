@@ -72,12 +72,7 @@
 		pollfd	newPfd;
 		Client	newClient(newPfd, serverConfig);
 
-		std::cout << "serversocket: " << serverSocket.fd << std::endl;
 		newPfd.fd = accept(serverSocket.fd, NULL, NULL);
-
-		if (newPfd.fd == -1) {
-			perror("accept: ");
-		}
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
@@ -93,7 +88,7 @@
 		{
 			if (clientSockets[i].revents & POLLIN)
 				clients[i].getRequest();
-			else if (clientSockets[i].revents & POLLOUT)
+			else if (clients[i].isRequestSent() && clientSockets[i].revents & POLLOUT)
 				clients[i].getResponse();
 			else if (clientSockets[i].revents & POLLERR)
 				error_handle("Error occurred with a connection");
