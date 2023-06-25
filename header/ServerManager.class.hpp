@@ -25,6 +25,7 @@ class ServerManager
 		ClientVector		clients;
 		PollFdVector		clientSockets;
 		PollFdVector		serverSockets;
+		t_sockaddr_in		address;
 
 	private:
 		void	addServerSockets(void);

@@ -6,6 +6,7 @@
 
 int main(void)
 {
+    std::cout << "asdf" << std::endl;
 	ServerManager ServerManager;
 
 	ServerManager.eventLoop();
