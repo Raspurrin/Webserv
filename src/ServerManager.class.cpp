@@ -25,6 +25,8 @@
 			error_handle("Socket error");
 		std::cout << "socket " << serverSocket.fd << std::endl;
 		configureSocket(serverSocket.fd);
+		if (setsockopt(serverSocket.fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
+			error_handle("setsockopt");
 		if (bind(serverSocket.fd, reinterpret_cast<struct sockaddr *>(&serverConfig.getAddress()), sizeof(serverConfig.getAddress())) < 0)
 			error_handle("Binding error");
 		if (listen(serverSocket.fd, BACKLOG) < 0)
@@ -36,8 +38,6 @@
 	{
 		int		flags;
 		std::cout << "socket2 " << newSocket << std::endl;
-		if (setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
-			error_handle("setsockopt");
 		flags = fcntl(newSocket, F_GETFL, 0);
 		fcntl(newSocket, F_SETFL, flags | O_NONBLOCK);
 	}
@@ -70,13 +70,13 @@
 	void	ServerManager::addClientSocket(t_pollfd &serverSocket, ServerConfig &serverConfig)
 	{
 		pollfd	newPfd;
-		Client	newClient(newPfd, serverConfig);
 
 		newPfd.fd = accept(serverSocket.fd, NULL, NULL);
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
 		clientSockets.push_back(newPfd);
+		Client	newClient(newPfd, serverConfig);
 		clients.push_back(newClient);
 	}
 
