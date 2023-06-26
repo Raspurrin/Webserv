@@ -1,39 +1,41 @@
 #ifndef REQUEST_CLASS_HPP
 # define REQUEST_CLASS_HPP
 
-#include <iostream>
-#include <unistd.h>
-#include <fstream>
-#include <map>
-#include <sstream>
 #include "colours.hpp"
 #include "Response.class.hpp"
+#include "webserv.hpp"
+
+#define BUFLEN 512
+#define REACHED_HEADER_END 1
+#define REACHED_BODY_END 2
 
 class Request
 {
 	private:
+		int				bufferFlags;
+		int				readCount;
+		std::string		headerBuffer;
+		std::string		bodyBuffer;
+		std::map<std::string, std::string>	headerFields;
 
-		std::map<std::string, std::string>headerFields;
-
-		const std::string	requestMessage;
-		std::string			responseMessage;
-
-		void	parseHeaderSection();
-		void	parseStartLine(std::string startLine);
-		void	parseHeaderFields(std::string headerSection);
-
-	public:
-
-		void	printMap();
-		std::string	getResponse();
-		std::map<std::string, std::string>	getMap();
+		std::string		buildResponse();
+		void			readingBody(int &socket);
+		std::string		readingHeader(int &socket);
+		void			parseHeaderSection();
+		void			parseStartLine(std::string startLine);
+		void			parseHeaderFields(std::string headerSection);
 
 	public:
+		void			printBody(void);
+		void			printMap();
+		std::string		getRequest(int &socket);
+		StringStringMap	getHeaderFields();
+		bool			isFlagOn(int flag);
 
 		Request(void);
-		Request(std::string buffer);
 		Request(Request const &src);
 		Request&	operator=(Request const &assign);
+		std::string	operator[](std::string const &key);
 		~Request(void);
 };
 
