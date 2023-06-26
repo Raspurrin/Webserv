@@ -11,15 +11,16 @@
 #include <dirent.h>
 #include <set>
 #include <dirent.h>
+#include "webserv.hpp"
 #include "colours.hpp"
 
 class Response
 {
 	private:
 
-		std::map<std::string, std::string>	response;
-		std::map<std::string, std::string>	request;
-		std::string							responseMessage;
+		StringStringMap	_response;
+		StringStringMap	_headerFields;
+		std::string		_responseMessage;
 
 		bool	listDir();
 		void	methodID();
@@ -34,11 +35,12 @@ class Response
 
 	public:
 		void		postResponse(int socket, int indexToRemove);
-		std::string	getResponse(void);
+		std::string	getResponse();
 
 	public:
 		Response();
-		Response&	operator=(Response &assign);
+		Response(StringStringMap headerFields);
+		//Response&	operator=(Response &assign);
 		~Response(void);
 };
 

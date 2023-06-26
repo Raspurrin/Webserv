@@ -80,16 +80,31 @@
 		clients.push_back(newClient);
 	}
 
+	void	ServerManager::sendResponse(Client &client, int indexToRemove)
+	{
+		std::cout << "==================" << std::endl;
+		std::cout << "sending response" << std::endl;
+		std::cout << "==================" << std::endl;
+		send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
+		printf("HELLO MESSAGE SENT FROM SERVER\n");
+		clientSockets.erase(clientSockets.begin() + indexToRemove);
+		close(client.getSocket());
+	}
+
 	//TODO: remove client class and client socket from vector when disconnecting
 
 	void	ServerManager::handleClientSockets()
 	{
 		for (size_t i = 0; i < clients.size(); i++)
 		{
+			//std::cout << "we do a loop" << std::endl;
 			if (clientSockets[i].revents & POLLIN)
+			{
+				std::cout << "POLLIN" << std::endl;
 				clients[i].getRequest();
+			}
 			else if (clients[i].isRequestSent() && clientSockets[i].revents & POLLOUT)
-				clients[i].getResponse();
+				sendResponse(clients[i], i);
 			else if (clientSockets[i].revents & POLLERR)
 				error_handle("Error occurred with a connection");
 		}

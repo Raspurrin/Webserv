@@ -11,12 +11,13 @@ class Client
 	private:
 		struct pollfd			_pollFd;
 		class ServerConfig&		_serverConfig;
-		class Response			_Response;
 		class Request			_Request;
+		std::string				_responseMessage;
 
 	public:
+		int						getSocket();
 		void					getRequest();
-		void					getResponse();
+		std::string				getResponse();
 		bool					isRequestSent();
 
 	public:

@@ -65,50 +65,73 @@ void Request::parseHeaderFields(std::string headerSection)
 
 std::string readIntoString(int &socket)
 {
-	char	readBuffer[BUFLEN];
+	char	readBuffer[BUFLEN] = {0};
 
-	if (!read(socket, readBuffer, BUFLEN))
+	int howmuch;
+	if ((howmuch = recv(socket, readBuffer, BUFLEN-1, 0)) == -1)
 		error_handle("Read failed");
+	std::cout << "received message: " << readBuffer;
 	std::string readString(readBuffer);
 	return (readString);
 }
 
-void	Request::readingBody(int &socket)
-{
-	std::string readString = readIntoString(socket);
+// void	Request::readingBody(int &socket)
+// {
+// 	std::string readString = readIntoString(socket);
 
-	bodyBuffer += readString;
-	readCount += BUFLEN;
-	if (readCount < atoi(headerFields["Content-Length"].c_str()))
-		bufferFlags = bufferFlags & REACHED_BODY_END;
-}
+// 	bodyBuffer += readString;
+// 	std::cout << "in reading Body bodyBuffer: " << bodyBuffer << std::endl;
+// 	readCount += BUFLEN;
+// 	if (readCount < atoi(headerFields["Content-Length"].c_str()))
+// 		bufferFlags = bufferFlags & REACHED_BODY_END;
+// }
 
-void	Request::readingHeader(int &socket)
+std::string	Request::readingHeader(int &socket)
 {
 	int		position;
 	std::string readString = readIntoString(socket);
 
+	std::cout << "in readingHeader" << std::endl;
 	if (!readString.find("\n\n"))
 	{
 		headerBuffer += readString;
-		return;
+		std::cout << "headerBuffer: " << headerBuffer << std::endl;
+		return ("");
 	}
 	bufferFlags = bufferFlags | REACHED_HEADER_END;
+	std::cout << "bufferFlags: in readingHeader: " << bufferFlags << std::endl;
 	position = readString.find("\n\n");
 	headerBuffer += readString.substr(0, position);
 	bodyBuffer = readString.substr(position + 2, BUFLEN - position);
-	parseHeaderFields(headerBuffer);
+	parseHeaderSection();
+	return (buildResponse());
 }
 
-void	Request::getRequest(int	&socket)
+std::string	Request::getRequest(int	&socket)
 {
 	std::cout << "getting request" << std::endl;
-	if ((bufferFlags & REACHED_HEADER_END) == false)
-		readingHeader(socket);
-	else if ((bufferFlags & REACHED_BODY_END) == false)
-		readingBody(socket);
-	std::cout << "headerbuffer: " << headerBuffer << std::endl;
-	std::cout << "bodybuffer: " << bodyBuffer << std::endl;
+	return(readingHeader(socket));
+	// if ((bufferFlags & REACHED_HEADER_END) == false)
+	// else if ((bufferFlags & REACHED_BODY_END) == false)
+	// {
+	// 	std::cout << "before reading body" << std::endl;
+	// 	readingBody(socket);
+	// 	_responseMessage = buildResponse();
+	// 	return (_responseMessage);
+	// }
+}
+
+std::string	Request::buildResponse()
+{
+	printMap();
+	Response response(headerFields);
+	return (response.getResponse());
+
+}
+
+StringStringMap	Request::getHeaderFields()
+{
+	return (headerFields);
 }
 
 void	Request::printBody(void)
@@ -121,7 +144,9 @@ bool	Request::isFlagOn(int flag)
 	return ((bufferFlags & flag));
 }
 
-Request::Request(void)
+Request::Request(void) :
+	bufferFlags(0),
+	readCount(0)
 {
 }
 

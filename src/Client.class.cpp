@@ -1,13 +1,19 @@
 #include "Client.class.hpp"
 
-void	Client::getRequest()
+int		Client::getSocket()
 {
-	_Request.getRequest(_pollFd.fd);
+	return (_pollFd.fd);
 }
 
-void	Client::getResponse()
+std::string Client::getResponse()
 {
-	_Response.getResponse();
+	return (_responseMessage);
+}
+
+void	Client::getRequest()
+{
+	_responseMessage = _Request.getRequest(_pollFd.fd);
+	std::cout << "responseMessaage: " << _responseMessage << std::endl;
 }
 
 bool	Client::isRequestSent()

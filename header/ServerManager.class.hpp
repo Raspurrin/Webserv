@@ -25,7 +25,6 @@ class ServerManager
 		ClientVector		clients;
 		PollFdVector		clientSockets;
 		PollFdVector		serverSockets;
-		t_sockaddr_in		address;
 
 	private:
 		void	addServerSockets(void);
@@ -34,6 +33,7 @@ class ServerManager
 		void	addClientSocket(t_pollfd &serverSocket, ServerConfig &serverConfigs);
 		void	listenToServerSockets();
 		void	handleClientSockets();
+		void	sendResponse(Client &client, int indexToRemove);
 
 	public:
 		void	eventLoop(void);
