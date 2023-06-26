@@ -102,7 +102,7 @@ std::string	Request::readingHeader(int &socket)
 	std::cout << "bufferFlags: in readingHeader: " << bufferFlags << std::endl;
 	position = readString.find("\n\n");
 	headerBuffer += readString.substr(0, position);
-	bodyBuffer = readString.substr(position + 2, BUFLEN - position);
+//	bodyBuffer = readString.substr(position + 2, BUFLEN - position);
 	parseHeaderSection();
 	return (buildResponse());
 }
