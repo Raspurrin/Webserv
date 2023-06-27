@@ -14,10 +14,10 @@ t_sockaddr_in   ParsingConfig::setAddress(int port)
 
 serverConfigVector    ParsingConfig::parsing(std::string fileName)
 {
-    fileToBeParsed.open(fileName.c_str());
+    _fileToBeParsed.open(fileName.c_str());
     ServerConfig oneServerConfig = parsingOneServerConfig();
     addToVector(oneServerConfig);
-    return (serverConfigs);
+    return (_serverConfigs);
 }
 
 ServerConfig ParsingConfig::parsingOneServerConfig()
@@ -37,16 +37,16 @@ ServerConfig ParsingConfig::parsingOneServerConfig()
 ServerConfig::t_route ParsingConfig::addRoute()
 {
     ServerConfig::t_route newRoute;
-    newRoute.methods = POST & DELETE;
-    newRoute.directoryListing = true;
-    newRoute.root = "bigman";
-    newRoute.index = "somewhere";
+    newRoute._methods = POST & DELETE;
+    newRoute._directoryListing = true;
+    newRoute._root = "bigman";
+    newRoute._index = "somewhere";
     return (newRoute);
 }
 
 void    ParsingConfig::addToVector(ServerConfig &oneServerConfig)
 {
-    serverConfigs.push_back(oneServerConfig);
+    _serverConfigs.push_back(oneServerConfig);
 }
 
 ParsingConfig::ParsingConfig(void)

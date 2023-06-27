@@ -23,14 +23,14 @@ int		ServerConfig::getMethods(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
-	return (_routes.at(path).methods);
+	return (_routes.at(path)._methods);
 }
 
 bool	ServerConfig::isMethodAllowed(const std::string &path, const int methodToCheck) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
-	if (_routes.at(path).methods & methodToCheck)
+	if (_routes.at(path)._methods & methodToCheck)
 		return (true);
 	return (false);
 }
@@ -39,21 +39,21 @@ bool	ServerConfig::isDirListEnabled(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
-	return (_routes.at(path).directoryListing);
+	return (_routes.at(path)._directoryListing);
 }
 
 const std::string	ServerConfig::getRouteRoot(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
-	return (_routes.at(path).root);
+	return (_routes.at(path)._root);
 }
 
 const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
-	return (_routes.at(path).index);
+	return (_routes.at(path)._index);
 }
 
 t_sockaddr_in&		ServerConfig::getAddress()

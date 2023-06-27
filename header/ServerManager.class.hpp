@@ -20,17 +20,17 @@ typedef std::vector<ServerConfig>	ServerConfigVector;
 class ServerManager
 {
 	private:
-		int					opt;
-		ServerConfigVector	serverConfigs;
-		ClientVector		clients;
-		PollFdVector		clientSockets;
-		PollFdVector		serverSockets;
+		int					_opt;
+		ServerConfigVector	_serverConfigs;
+		ClientVector		_clients;
+		PollFdVector		_clientSockets;
+		PollFdVector		_serverSockets;
 
 	private:
 		void	addServerSockets(void);
 		void	addServerSocket(ServerConfig &serverConfig);
 		void	configureSocket(int newSocket);
-		void	addClientSocket(t_pollfd &serverSocket, ServerConfig &serverConfigs);
+		void	addClientSocket(t_pollfd &serverSocket, ServerConfig &_serverConfigs);
 		void	listenToServerSockets();
 		void	handleClientSockets();
 		void	sendResponse(Client &client, int indexToRemove);

@@ -42,7 +42,7 @@ class Response
 
 	public:
 		Response();
-		Response(StringStringMap headerFields);
+		Response(StringStringMap _headerFields);
 		//Response&	operator=(Response &assign);
 		~Response(void);
 };
