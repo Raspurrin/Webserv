@@ -4,7 +4,7 @@
 #include "webserv.hpp"
 #include "colours.hpp"
 #include "ServerConfig.class.hpp"
-#include "ParsingConfig.hpp"
+#include "ServerConfigParser.hpp"
 #include "Client.class.hpp"
 
 #define BACKLOG 3

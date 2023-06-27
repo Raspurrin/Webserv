@@ -12,7 +12,7 @@ typedef struct sockaddr_in	t_sockaddr_in;
 class ServerConfig
 {
 	private:
-		friend class ParsingConfig;
+		friend class ServerConfigParser;
 		
 		typedef struct route
 		{

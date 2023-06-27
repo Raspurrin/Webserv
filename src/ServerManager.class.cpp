@@ -1,10 +1,10 @@
 	#include "../header/ServerManager.class.hpp"
-	#include "../header/ParsingConfig.hpp"
+	#include "../header/ServerConfigParser.hpp"
 	
 	ServerManager::ServerManager(void) :
 		_opt(1)
 	{
-		ParsingConfig	parsingConfig("configuration.conf");
+		ServerConfigParser	parsingConfig("configuration.conf");
 	
 		_serverConfigs = parsingConfig.getServerConfigs();
 		addServerSockets();

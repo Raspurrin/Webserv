@@ -7,7 +7,7 @@
 typedef std::vector<ServerConfig> serverConfigVector;
 typedef struct sockaddr_in				t_sockaddr_in;
 
-class ParsingConfig
+class ServerConfigParser
 {
 	private:
 		std::ifstream			_fileToBeParsed;
@@ -19,6 +19,7 @@ class ParsingConfig
 		t_sockaddr_in   		setAddress(int port);
 		void					addToVector(ServerConfig &oneServerConfig);
 
+		void					removeCommentFrom(std::string &line);
 		std::string				trim(std::string str);
         std::string 			validateTrim(std::string str, int (*checkFunc)(int));
         void					extractKeyValue(std::string line, std::string &key, std::string &value);
@@ -30,8 +31,8 @@ class ParsingConfig
 		serverConfigVector		getServerConfigs();
 	
 	public:
-		ParsingConfig(std::string fileName);
-		~ParsingConfig(void);
+		ServerConfigParser(std::string fileName);
+		~ServerConfigParser(void);
 };
 
 #endif
