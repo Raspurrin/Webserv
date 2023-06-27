@@ -13,6 +13,7 @@ class Request
 {
 	private:
 		int				bufferFlags;
+		bool			isRead;
 		int				readCount;
 		std::string		headerBuffer;
 		std::string		bodyBuffer;
@@ -31,7 +32,7 @@ class Request
 		void			printMap();
 		std::string		getRequest(int &socket);
 		StringStringMap	getHeaderFields();
-		bool			isFlagOn(int flag);
+		bool			isFlagOn();
 
 		Request(void);
 		Request(Request const &src);

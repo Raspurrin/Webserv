@@ -124,6 +124,7 @@ std::string	Request::buildResponse()
 {
 	printMap();
 	Response response(headerFields);
+	isRead = true;
 	return (response.getResponse());
 
 }
@@ -138,9 +139,9 @@ void	Request::printBody(void)
 	std::cout << bodyBuffer << std::endl;
 }
 
-bool	Request::isFlagOn(int flag)
+bool	Request::isFlagOn()
 {
-	return ((bufferFlags & flag));
+	return (isRead);
 }
 
 Request::Request(void) :

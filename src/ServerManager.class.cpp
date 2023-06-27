@@ -87,15 +87,17 @@
 		std::cout << "==================" << std::endl;
 		send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
 		printf("HELLO MESSAGE SENT FROM SERVER\n");
-		clientSockets.erase(clientSockets.begin() + indexToRemove);
 		close(client.getSocket());
+		clientSockets.erase(clientSockets.begin() + indexToRemove);
+		clients.erase(clients.begin() + indexToRemove);
 	}
 
 	//TODO: remove client class and client socket from vector when disconnecting
 
 	void	ServerManager::handleClientSockets()
 	{
-		for (size_t i = 0; i < clients.size(); i++)
+
+		for (size_t i = 0, size = clients.size(); i < size; i++)
 		{
 			//std::cout << "we do a loop" << std::endl;
 			if (clientSockets[i].revents & POLLIN)
