@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include "webserv.hpp"
 #include "colours.hpp"
+#include "error.h"
 
 class Response
 {
@@ -26,9 +27,11 @@ class Response
 		void	methodID();
 		void	GETMethod();
 		void	buildResponse();
-		int		status404();
-		int		status403();
-		int		checkStat();
+		void	buildError(const Error);
+		int	status404();
+		int	status403();
+		void	status500();
+		int	checkStat();
 		void	status200();
 		void	readHTML();
 		std::string	lenToStr(std::string body);
