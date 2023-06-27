@@ -130,8 +130,8 @@ int Response::checkStat()
 	return (1);
 }
 
-void Response::buildError(const Error err) {
-	switch (err)
+void Response::buildError(const Error _err) {
+	switch (_err)
 	{
 	case Bad_Request:
 		// TODO
@@ -162,9 +162,9 @@ void Response::buildResponse()
 		_response["Version"] = "HTTP/1.1";
 		methodID();
 	} catch (const std::exception &e) {
-		const ErrC *err = dynamic_cast<const ErrC *>(&e);
-		if (err != NULL) {
-			buildError(err->getError());
+		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
+		if (_err != NULL) {
+			buildError(_err->getError());
 		} else {
 			std::cout << "Catched exception " << e.what() << std::endl;
 			buildError(Internal_Error);
@@ -179,7 +179,7 @@ void Response::GETMethod()
 {
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
 	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/index.html";
+		_headerFields["Path"] = "/_index.html";
 	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
 		throw ErrC(Not_Found);
 	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)

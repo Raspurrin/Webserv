@@ -10,8 +10,8 @@ typedef struct sockaddr_in				t_sockaddr_in;
 class ParsingConfig
 {
 	private:
-		std::ifstream			fileToBeParsed;
-		serverConfigVector		serverConfigs;
+		std::ifstream			_fileToBeParsed;
+		serverConfigVector		_serverConfigs;
 
 	private:
 		ServerConfig			parsingOneServerConfig();

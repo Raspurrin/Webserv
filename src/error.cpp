@@ -7,13 +7,13 @@ void	error_handle(std::string type)
 	exit(0);
 }
 
-ErrC::ErrC(Error err): err(err), desc("No desc provided") {}
-ErrC::ErrC(Error err, std::string desc): err(err), desc(desc) {}
+ErrC::ErrC(Error _err): _err(_err), _desc("No _desc provided") {}
+ErrC::ErrC(Error _err, std::string _desc): _err(_err), _desc(_desc) {}
 
 Error ErrC::getError() const {
-	return err;
+	return _err;
 }
 
 const char *ErrC::what() const throw() {
-	return desc.c_str();
+	return _desc.c_str();
 }

@@ -10,8 +10,8 @@ enum Error {
 
 class ErrC: public std::exception {
 private:
-	Error err;
-	std::string desc;
+	Error _err;
+	std::string _desc;
 
 public:
 	ErrC(Error);

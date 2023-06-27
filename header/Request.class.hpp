@@ -12,12 +12,12 @@
 class Request
 {
 	private:
-		int				bufferFlags;
-		bool			isRead;
-		int				readCount;
-		std::string		headerBuffer;
-		std::string		bodyBuffer;
-		std::map<std::string, std::string>	headerFields;
+		int				_bufferFlags;
+		bool			_isRead;
+		int				_readCount;
+		std::string		_headerBuffer;
+		std::string		_bodyBuffer;
+		std::map<std::string, std::string>	_headerFields;
 
 		std::string		buildResponse();
 		void			readingBody(int &socket);
