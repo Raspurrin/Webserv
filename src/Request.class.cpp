@@ -63,16 +63,14 @@ void Request::parseHeaderFields(std::string headerSection)
 	}
 }
 
-std::string readIntoString(int &socket)
+void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
-	int howmuch;
-	if ((howmuch = recv(socket, readBuffer, BUFLEN-1, 0)) == -1)
+	if (recv(socket, readBuffer, BUFLEN - 1, 0) == -1)
 		error_handle("Read failed");
 	std::cout << "received message: " << readBuffer;
-	std::string readString(readBuffer);
-	return (readString);
+	headerBuffer = readBuffer;
 }
 
 // void	Request::readingBody(int &socket)
@@ -88,8 +86,7 @@ std::string readIntoString(int &socket)
 
 std::string	Request::readingHeader(int &socket)
 {
-	int		position;
-	std::string readString = readIntoString(socket);
+/*	int		position;
 
 	std::cout << "in readingHeader" << std::endl;
 	if (!readString.find("\n\n"))
@@ -102,7 +99,9 @@ std::string	Request::readingHeader(int &socket)
 	std::cout << "bufferFlags: in readingHeader: " << bufferFlags << std::endl;
 	position = readString.find("\n\n");
 	headerBuffer += readString.substr(0, position);
-	bodyBuffer = readString.substr(position + 2, BUFLEN - position);
+//	bodyBuffer = readString.substr(position + 2, BUFLEN - position);
+	*/
+	readIntoString(socket);
 	parseHeaderSection();
 	return (buildResponse());
 }
@@ -125,6 +124,7 @@ std::string	Request::buildResponse()
 {
 	printMap();
 	Response response(headerFields);
+	isRead = true;
 	return (response.getResponse());
 
 }
@@ -139,9 +139,9 @@ void	Request::printBody(void)
 	std::cout << bodyBuffer << std::endl;
 }
 
-bool	Request::isFlagOn(int flag)
+bool	Request::isFlagOn()
 {
-	return ((bufferFlags & flag));
+	return (isRead);
 }
 
 Request::Request(void) :

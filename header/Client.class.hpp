@@ -22,8 +22,8 @@ class Client
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);
-		//Client(Client const &src);
-		//Client&	operator=(Client const &assign);
+		Client(Client const &obj);
+		Client&	operator=(Client const &rhs);
 		~Client(void);
 };
 

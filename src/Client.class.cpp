@@ -18,7 +18,7 @@ void	Client::getRequest()
 
 bool	Client::isRequestSent()
 {
-	return (_Request.isFlagOn(REACHED_BODY_END));
+	return (_Request.isFlagOn());
 }
 
 Client::Client(struct pollfd &pollFd, class ServerConfig& ServerConfig) :
@@ -30,4 +30,20 @@ Client::Client(struct pollfd &pollFd, class ServerConfig& ServerConfig) :
 
 Client::~Client(void)
 {
+}
+
+Client::Client(Client const& obj) : _serverConfig(obj._serverConfig)
+{
+	this->_pollFd = obj._pollFd;
+	this->_Request = obj._Request;
+	this->_responseMessage = obj._responseMessage;
+}
+
+Client& Client::operator=(Client const& rhs)
+{
+	this->_pollFd = rhs._pollFd;
+	this->_serverConfig = rhs._serverConfig;
+	this->_Request = rhs._Request;
+	this->_responseMessage = rhs._responseMessage;
+	return (*this);
 }

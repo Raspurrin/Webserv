@@ -1,4 +1,4 @@
- #include "ParsingConfig.hpp"
+ #include "../header/ParsingConfig.hpp"
 
  //hardcoded for testing xd
 
@@ -14,7 +14,7 @@ t_sockaddr_in   ParsingConfig::setAddress(int port)
 
 serverConfigVector    ParsingConfig::parsing(std::string fileName)
 {
-    fileToBeParsed.open(fileName);
+    fileToBeParsed.open(fileName.c_str());
     ServerConfig oneServerConfig = parsingOneServerConfig();
     addToVector(oneServerConfig);
     return (serverConfigs);
