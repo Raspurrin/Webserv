@@ -4,9 +4,9 @@
 	ServerManager::ServerManager(void) :
 		_opt(1)
 	{
-		ParsingConfig	parsingConfig;
+		ParsingConfig	parsingConfig("configuration.conf");
 	
-		_serverConfigs = parsingConfig.parsing("config");
+		_serverConfigs = parsingConfig.getServerConfigs();
 		addServerSockets();
 	}
 

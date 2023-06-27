@@ -1,23 +1,18 @@
- #include "../header/ParsingConfig.hpp"
+#include "ParsingConfig.hpp"
+#include "colours.hpp"
 
  //hardcoded for testing xd
 
-t_sockaddr_in   ParsingConfig::setAddress(int port)
+ParsingConfig::ParsingConfig(std::string fileName)
 {
-    t_sockaddr_in   address;
+    std::ifstream _fileToBeParsed(fileName);
+    std::string   buffer;
 
-    address.sin_family = AF_INET;
-   	address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(port);
-    return (address);
-}
-
-serverConfigVector    ParsingConfig::parsing(std::string fileName)
-{
-    _fileToBeParsed.open(fileName.c_str());
-    ServerConfig oneServerConfig = parsingOneServerConfig();
-    addToVector(oneServerConfig);
-    return (_serverConfigs);
+    while (getline(_fileToBeParsed, buffer, '#'))
+    {
+        ServerConfig oneServerConfig = parsingOneServerConfig();
+        addToVector(oneServerConfig);
+    }
 }
 
 ServerConfig ParsingConfig::parsingOneServerConfig()
@@ -34,6 +29,21 @@ ServerConfig ParsingConfig::parsingOneServerConfig()
     // oneServerConfig._routes.emplace("newroute", addRoute());
 }
 
+void    ParsingConfig::addToVector(ServerConfig &oneServerConfig)
+{
+    _serverConfigs.push_back(oneServerConfig);
+}
+
+t_sockaddr_in   ParsingConfig::setAddress(int port)
+{
+    t_sockaddr_in   address;
+
+    address.sin_family = AF_INET;
+   	address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(port);
+    return (address);
+}
+
 ServerConfig::t_route ParsingConfig::addRoute()
 {
     ServerConfig::t_route newRoute;
@@ -44,13 +54,47 @@ ServerConfig::t_route ParsingConfig::addRoute()
     return (newRoute);
 }
 
-void    ParsingConfig::addToVector(ServerConfig &oneServerConfig)
+// =========================================================================================
+
+std::string	ParsingConfig::trim(std::string str)
 {
-    _serverConfigs.push_back(oneServerConfig);
+    if (str.empty())
+        return ("");
+    int	first = str.find_first_not_of(" \t\n\r\v\f");
+    int	last = str.find_last_not_of(" \t\n\r\v\f");
+
+    return (str.substr(first, last + 1));
 }
 
-ParsingConfig::ParsingConfig(void)
+std::string	ParsingConfig::validateTrim(std::string str, int (*checkFunc)(int))
 {
+    if (std::all_of(str.begin(), str.end(), checkFunc) == false)
+        error_handle("Configuration key or value should contain only characters");
+    return (trim(str));
+}
+
+void	ParsingConfig::extractKeyValue(std::string line, std::string &key, std::string &value)
+{
+    int	equalSign = line.find('=');
+
+    key = line.substr(0, equalSign - 1);
+    value = line.substr(equalSign + 1);
+    key = trim(key);
+    value = trim(value);
+}
+
+template <typename Key, typename Value>
+void	ParsingConfig::printMap(const char *colourHeader, const char *colourBody, std::map<Key, Value> &map)
+{
+    std::cout << colourHeader << "\nPrinting map:\n" << DEF << std::endl;
+    for (typename std::map<Key, Value>::iterator it = map.begin(); it != map.end(); ++it)
+        std::cout << colourBody << it->first << " " << DEF << it->second << std::endl;
+    return;
+}
+
+serverConfigVector    ParsingConfig::getServerConfigs()
+{
+    return (_serverConfigs);
 }
 
 ParsingConfig::~ParsingConfig(void)
