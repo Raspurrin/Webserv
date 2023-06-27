@@ -28,10 +28,10 @@ class Response
 		void	GETMethod();
 		void	buildResponse();
 		void	buildError(const Error);
-		int	status404();
-		int	status403();
+		int		status404();
+		int		status403();
 		void	status500();
-		int	checkStat();
+		int		checkStat();
 		void	status200();
 		void	readHTML();
 		std::string	lenToStr(std::string body);
