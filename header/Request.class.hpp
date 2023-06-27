@@ -5,7 +5,7 @@
 #include "Response.class.hpp"
 #include "webserv.hpp"
 
-#define BUFLEN 512
+#define BUFLEN 30000
 #define REACHED_HEADER_END 1
 #define REACHED_BODY_END 2
 
@@ -20,6 +20,7 @@ class Request
 
 		std::string		buildResponse();
 		void			readingBody(int &socket);
+		void			readIntoString(int &socket);
 		std::string		readingHeader(int &socket);
 		void			parseHeaderSection();
 		void			parseStartLine(std::string startLine);
