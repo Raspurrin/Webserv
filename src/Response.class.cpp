@@ -91,23 +91,23 @@ void Response::status200()
 
 int Response::status404()
 {
-	response["Status code"] = "404 Not Found";
-	response["Path"] = "/error_pages/404.html";
+	_response["Status code"] = "404 Not Found";
+	_response["Path"] = "/error_pages/404.html";
 	readHTML();
 	return (1);
 }
 
 void Response::status500()
 {
-	response["Status code"] = "500 Internal Server Error";
-	response["Path"] = "/error_pages/500.html";
+	_response["Status code"] = "500 Internal Server Error";
+	_response["Path"] = "/error_pages/500.html";
 	readHTML();
 }
 
 int Response::status403()
 {
-	response["Status code"] = "403 Forbidden";
-	response["Path"] = "/error_pages/403.html";
+	_response["Status code"] = "403 Forbidden";
+	_response["Path"] = "/error_pages/403.html";
 	readHTML();
 	return (1);
 }
@@ -159,7 +159,7 @@ void Response::buildResponse()
 {
 	// TODO: this block can be moved to a different place, depending on djaisins changes
 	try {
-		response["Version"] = "HTTP/1.1";
+		_response["Version"] = "HTTP/1.1";
 		methodID();
 	} catch (const std::exception &e) {
 		const ErrC *err = dynamic_cast<const ErrC *>(&e);
@@ -171,18 +171,18 @@ void Response::buildResponse()
 		}
 	}
 
-	responseMessage += response["Version"] + " " + response["Status code"] + "\n" + "Content-Type: " + response["Content-Type:"] + "\n" + "Content-Length: " + response["Content-Length:"] + "\n\n" + response["Body"];
-	std::cout << "RESPONSE MESSAGE" << responseMessage << std::endl;
+	_responseMessage += _response["Version"] + " " + _response["Status code"] + "\n" + "Content-Type: " + _response["Content-Type:"] + "\n" + "Content-Length: " + _response["Content-Length:"] + "\n\n" + _response["Body"];
+	std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
 }
 
 void Response::GETMethod()
 {
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if (request["Path"] == "/")
-		request["Path"] = "/index.html";
-	if (access(request["Path"].c_str() + 1, F_OK) == -1)
+	if (_headerFields["Path"] == "/")
+		_headerFields["Path"] = "/index.html";
+	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
 		throw ErrC(Not_Found);
-	if (access(request["Path"].c_str() + 1, R_OK) == -1)
+	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
 		throw ErrC(Forbidden);
 	checkStat();
 	status200();

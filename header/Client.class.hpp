@@ -11,7 +11,7 @@ class Client
 	private:
 		struct pollfd			_pollFd;
 		class ServerConfig&		_serverConfig;
-		class Request			_Request;
+		class Request			_request;
 		std::string				_responseMessage;
 
 	public:
