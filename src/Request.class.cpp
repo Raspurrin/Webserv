@@ -4,16 +4,6 @@
 #include <string>
 #include <unistd.h>
 
-std::map<std::string, std::string> Request::getMap()
-{
-	return (headerFields);
-}
-
-std::string Request::getResponse()
-{
-	return (responseMessage);
-}
-
 void Request::printMap()
 {
 	std::cout << RED << "\nPrinting map of header fields...\n" << DEF << std::endl;
@@ -23,21 +13,18 @@ void Request::printMap()
 		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
 		++it;
 	}
-	return ;
 }
 
 void Request::parseHeaderSection()
 {
 	int	position, lpos;
 
-	position = requestMessage.find('\n');
-	parseStartLine(requestMessage.substr(0, position));
+	position = headerBuffer.find('\n');
+	parseStartLine(headerBuffer.substr(0, position));
 	position++;
 	lpos = position;
-	position = requestMessage.find("\n\n", lpos);
-	parseHeaderFields(requestMessage.substr(lpos, position - lpos));
-
-	return ;
+	position = headerBuffer.find("\n\n", lpos);
+	parseHeaderFields(headerBuffer.substr(lpos, position - lpos));
 }
 
 void Request::parseStartLine(std::string startLine)
@@ -54,8 +41,6 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	headerFields["Version"] = startLine.substr(lpos, position - lpos);
-
-	return ;
 }
 
 void Request::parseHeaderFields(std::string headerSection)
@@ -76,37 +61,111 @@ void Request::parseHeaderFields(std::string headerSection)
 		value = line.substr(position);
 		headerFields[key] = value;
 	}
-
-	return ;
 }
 
-Request::Request(void)
+void Request::readIntoString(int &socket)
 {
-	return ;
+	char	readBuffer[BUFLEN] = {0};
+
+	if (recv(socket, readBuffer, BUFLEN - 1, 0) == -1)
+		error_handle("Read failed");
+	std::cout << "received message: " << readBuffer;
+	headerBuffer = readBuffer;
 }
 
-Request::Request(std::string requestMessage) : 
-	requestMessage(requestMessage)
+// void	Request::readingBody(int &socket)
+// {
+// 	std::string readString = readIntoString(socket);
+
+// 	bodyBuffer += readString;
+// 	std::cout << "in reading Body bodyBuffer: " << bodyBuffer << std::endl;
+// 	readCount += BUFLEN;
+// 	if (readCount < atoi(headerFields["Content-Length"].c_str()))
+// 		bufferFlags = bufferFlags & REACHED_BODY_END;
+// }
+
+std::string	Request::readingHeader(int &socket)
 {
+/*	int		position;
+
+	std::cout << "in readingHeader" << std::endl;
+	if (!readString.find("\n\n"))
+	{
+		headerBuffer += readString;
+		std::cout << "headerBuffer: " << headerBuffer << std::endl;
+		return ("");
+	}
+	bufferFlags = bufferFlags | REACHED_HEADER_END;
+	std::cout << "bufferFlags: in readingHeader: " << bufferFlags << std::endl;
+	position = readString.find("\n\n");
+	headerBuffer += readString.substr(0, position);
+//	bodyBuffer = readString.substr(position + 2, BUFLEN - position);
+	*/
+	readIntoString(socket);
 	parseHeaderSection();
+	return (buildResponse());
+}
+
+std::string	Request::getRequest(int	&socket)
+{
+	std::cout << "getting request" << std::endl;
+	return(readingHeader(socket));
+	// if ((bufferFlags & REACHED_HEADER_END) == false)
+	// else if ((bufferFlags & REACHED_BODY_END) == false)
+	// {
+	// 	std::cout << "before reading body" << std::endl;
+	// 	readingBody(socket);
+	// 	_responseMessage = buildResponse();
+	// 	return (_responseMessage);
+	// }
+}
+
+std::string	Request::buildResponse()
+{
+	printMap();
 	Response response(headerFields);
-	responseMessage = response.getResponse();
-	return ;
+	isRead = true;
+	return (response.getResponse());
+
+}
+
+StringStringMap	Request::getHeaderFields()
+{
+	return (headerFields);
+}
+
+void	Request::printBody(void)
+{
+	std::cout << bodyBuffer << std::endl;
+}
+
+bool	Request::isFlagOn()
+{
+	return (isRead);
+}
+
+Request::Request(void) :
+	bufferFlags(0),
+	readCount(0)
+{
 }
 
 Request::Request(Request const &src)
 {
 	*this = src;
-	return ;
 }
 
-Request &	Request::operator=(const Request &assign)
+Request 		&Request::operator=(const Request &assign)
 {
 	(void) assign;
 	return (*this);
 }
 
+std::string 	Request::operator[](std::string const &key) 
+{
+	return headerFields[key];
+}
+
 Request::~Request(void)
 {
-	return ;
 }

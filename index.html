@@ -2,8 +2,38 @@
 <html lang="en">
 <head>
 	<title>webserv</title>
+	<style>
+		h1.title
+		{
+			font-style: bold;
+			text-align: center;
+			padding-top: 200px;
+			font-size: 60px;
+			color: RebeccaPurple;
+		}
+		h2.description
+		{
+			text-align: center;
+			font-size: 40px;
+		}
+		p.footer
+		{
+			text-align: right;
+			font-style: italic;
+			font-size: 20px;
+			text-align: center;
+			color: CadetBlue;
+		}
+	</style>
 </head>
 <body>
-	<h1>Hi there! I am index</h1>
+	<h1 class="title">Welcome!</h1>
+	<h2 class="description">This is our cool project.</h1>
+	<p class="footer">powered by webserv</p>
+	<form action="/" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+		<input type="file" id="myFile" name="myFile">
+		<input type="submit" value="Submit">
+  </form>
 </body>
 </html>
+

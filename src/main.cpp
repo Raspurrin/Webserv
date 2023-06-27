@@ -1,13 +1,14 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
-#include "../header/Server.class.hpp"
+#include "../header/ServerManager.class.hpp"
 #include <sys/socket.h>
+#include <fcntl.h>
 
 int main(void)
 {
-	Server Server;
+    std::cout << "asdf" << std::endl;
+	ServerManager ServerManager;
 
-	Server.checkConnections();
+	ServerManager.eventLoop();
 	return (0);
 }
-

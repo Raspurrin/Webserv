@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <set>
 #include <dirent.h>
+#include "webserv.hpp"
 #include "colours.hpp"
 #include "error.h"
 
@@ -18,9 +19,9 @@ class Response
 {
 	private:
 
-		std::map<std::string, std::string> response;
-		std::map<std::string, std::string> request;
-		std::string	responseMessage;
+		StringStringMap	_response;
+		StringStringMap	_headerFields;
+		std::string		_responseMessage;
 
 		bool	listDir();
 		void	methodID();
@@ -35,15 +36,15 @@ class Response
 		void	readHTML();
 		std::string	lenToStr(std::string body);
 
+	public:
+		void		postResponse(int socket, int indexToRemove);
+		std::string	getResponse();
 
 	public:
-
-		std::string	getResponse(void) const;
-
-		Response(std::map<std::string, std::string> request);
-		Response&	operator=(Response const &assign);
+		Response();
+		Response(StringStringMap headerFields);
+		//Response&	operator=(Response &assign);
 		~Response(void);
 };
 
 #endif
-

@@ -4,7 +4,7 @@
 
 /**
  * Writes a html page containing a List of files in the current directory
- * to the body of the Response object.
+ * to the body of the _response object.
  *
  * Returns true if successfull, otherwise false.
 */
@@ -14,7 +14,7 @@ bool Response::listDir()
 	DIR *dir;
 
 	if (getcwd(cwd, 256) != NULL)
-		dir = opendir((cwd + request["Path"]).c_str());
+		dir = opendir((cwd + _headerFields["Path"]).c_str());
 	else
 		return false;
 
@@ -25,27 +25,27 @@ bool Response::listDir()
 		// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
 		std::set<std::string> files;
 
+		// Return value of readdir is statically allocated and must not be freed!
 		while ((ent = readdir(dir)) != NULL)
 			files.insert(std::string(ent->d_name));
 
 		closedir(dir);
 
-		std::string body = "<h1>Content of " + request["Path"] + "</h1>";
+		std::string body = "<h1>Content of " + _headerFields["Path"] + "</h1>";
 
-		const char *insert = request["Path"][request["Path"].size() - 1] == '/' ? "" : "/";
+		const char *insert = _headerFields["Path"][_headerFields["Path"].size() - 1] == '/' ? "" : "/";
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-			body += "<a href=\"" + request["Path"] + insert + *it + "\">" + *it + "</a><br>";
+			body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
 
-		response["Status code"] = "200 OK";
-		response["Content-Type:"] = "text/html";
-		response["Body"] = body;
-		response["Content-Length:"] = lenToStr(body);
+		_response["Status code"] = "200 OK";
+		_response["Content-Type:"] = "text/html";
+		_response["Body"] = body;
+		_response["Content-Length:"] = lenToStr(body);
 		return true;
 	}
 	else
 		return false;
 }
-
 
 std::string Response::lenToStr(std::string body)
 {
@@ -60,31 +60,31 @@ std::string Response::lenToStr(std::string body)
 
 void Response::readHTML()
 {
-	std::ifstream	fin(response["Path"].c_str() + 1);
+	std::ifstream	fin(_response["Path"].c_str() + 1);
 
 	if (fin.is_open())
 	{
 		std::string	line, body;
 
-		response["Content-Type:"] = "text/html";
+		_response["Content-Type:"] = "text/html";
 		while (fin.good())
 		{
 			getline(fin, line);
 			body.append(line);
 		}
-		response["Body"] = body;
-		response["Content-Length:"] = lenToStr(body);
+		_response["Body"] = body;
+		_response["Content-Length:"] = lenToStr(body);
 	}
 	else
 		throw ErrC(Internal_Error, "Internal Error in readHtml");
-
 	return ;
 }
 
 void Response::status200()
 {
-	response["Status code"] = "200 OK";
-	response["Path"] = request["Path"];
+	std::cout << "in status200" << std::endl;
+	_response["Status code"] = "200 OK";
+	_response["Path"] = _headerFields["Path"];
 	readHTML();
 	return ;
 }
@@ -115,7 +115,7 @@ int Response::status403()
 int Response::checkStat()
 {
 	struct	stat s;
-	if (stat(request["Path"].c_str() + 1, &s) == 0)
+	if (stat(_headerFields["Path"].c_str() + 1, &s) == 0)
 	{
 		//FIXME: only list directory when enabled. Requires working config.
 		if (s.st_mode & S_IFDIR && listDir())
@@ -151,12 +151,12 @@ void Response::buildError(const Error err) {
 
 	default:
 		break;
+
 	}
 }
 
 void Response::buildResponse()
 {
-
 	// TODO: this block can be moved to a different place, depending on djaisins changes
 	try {
 		response["Version"] = "HTTP/1.1";
@@ -191,30 +191,34 @@ void Response::GETMethod()
 
 void Response::methodID()
 {
-	if (request["Method"] == "GET")
+	if (_headerFields["Method"] == "GET")
 		GETMethod();
 	return ;
 }
 
-std::string Response::getResponse(void) const
+std::string	Response::getResponse()
 {
-	return (this->responseMessage);
+	return (_responseMessage);
 }
 
-Response::Response(std::map<std::string, std::string> request) : request(request)
+Response::Response(StringStringMap _headerFields) : 
+	_headerFields(_headerFields)
 {
+	std::cout << "in Response constructor" << std::endl;
 	buildResponse();
 	return ;
 }
 
-Response &	Response::operator=(const Response &assign)
+// Response &	Response::operator=(Response &assign)
+// {
+// 	this->_responseMessage = assign.getResponse(_headerFields);
+// 	return (*this);
+// }
+
+Response::Response(void)
 {
-	this->responseMessage = assign.getResponse();
-	return (*this);
 }
 
 Response::~Response(void)
 {
-	return ;
 }
-
