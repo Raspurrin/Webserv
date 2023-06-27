@@ -179,7 +179,7 @@ void Response::GETMethod()
 {
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
 	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/_index.html";
+		_headerFields["Path"] = "/index.html";
 	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
 		throw ErrC(Not_Found);
 	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
