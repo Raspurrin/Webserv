@@ -88,14 +88,13 @@
 		send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
 		printf("HELLO MESSAGE SENT FROM SERVER\n");
 		close(client.getSocket());
-		clientSockets.erase(clientSockets.begin() + indexToRemove);
-		clients.erase(clients.begin() + indexToRemove);
+		(void)indexToRemove;
+	//	clientSockets.erase(clientSockets.begin() + indexToRemove);
+	//	clients.erase(clients.begin() + indexToRemove);
 	}
 
-	//TODO: remove client class and client socket from vector when disconnecting
-
-	void	ServerManager::handleClientSockets()
-	{
+void	ServerManager::handleClientSockets()
+{
 
 		for (size_t i = 0, size = clients.size(); i < size; i++)
 		{
