@@ -12,13 +12,15 @@ class ServerConfigParser
 	private:
 		std::ifstream			_fileToBeParsed;
 		serverConfigVector		_serverConfigs;
+		StringBoolMap			_availableOptions;
 
 	private:
+		void					addErrorPage(ServerConfig &oneServerConfig, std::string line);
 		ServerConfig			parsingOneServerConfig();
-		ServerConfig::t_route	addRoute();
+		void					initializeConfiguration(ServerConfig &oneServerConfig, std::string line);
+		ServerConfig::t_route	addRoute(std::ifstream &fileToBeParsed);
 		t_sockaddr_in   		setAddress(int port);
 		void					addToVector(ServerConfig &oneServerConfig);
-
 		void					removeCommentFrom(std::string &line);
 		std::string				trim(std::string str);
         std::string 			validateTrim(std::string str, int (*checkFunc)(int));

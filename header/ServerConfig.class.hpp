@@ -44,6 +44,7 @@ class ServerConfig
 		t_sockaddr_in&		getAddress();
 
 	public:
+		ServerConfig();
 		ServerConfig&	operator=(ServerConfig const &assign);
 		~ServerConfig(void);
 };

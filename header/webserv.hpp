@@ -22,6 +22,7 @@
 #include <netinet/tcp.h>
 
 typedef std::map<std::string, std::string>	StringStringMap;
+typedef std::map<std::string, bool>         StringBoolMap;
 
 void	error_handle(std::string type);
 

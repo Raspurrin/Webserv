@@ -110,14 +110,6 @@ std::string	Request::getRequest(int	&socket)
 {
 	std::cout << "getting request" << std::endl;
 	return(readingHeader(socket));
-	// if ((_bufferFlags & REACHED_HEADER_END) == false)
-	// else if ((_bufferFlags & REACHED_BODY_END) == false)
-	// {
-	// 	std::cout << "before reading body" << std::endl;
-	// 	readingBody(socket);
-	// 	_responseMessage = buildResponse();
-	// 	return (_responseMessage);
-	// }
 }
 
 std::string	Request::buildResponse()
@@ -126,7 +118,6 @@ std::string	Request::buildResponse()
 	Response response(_headerFields);
 	_isRead = true;
 	return (response.getResponse());
-
 }
 
 StringStringMap	Request::getHeaderFields()

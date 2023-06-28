@@ -100,10 +100,7 @@ void	ServerManager::handleClientSockets()
 		{
 			//std::cout << "we do a loop" << std::endl;
 			if (_clientSockets[i].revents & POLLIN)
-			{
-				std::cout << "POLLIN" << std::endl;
 				_clients[i].getRequest();
-			}
 			else if (_clients[i].isRequestSent() && _clientSockets[i].revents & POLLOUT)
 				sendResponse(_clients[i], i);
 			else if (_clientSockets[i].revents & POLLERR)

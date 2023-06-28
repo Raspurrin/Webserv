@@ -6,6 +6,12 @@
 
 // }
 
+ServerConfig::ServerConfig() :
+	_port(0),
+	_name(""),
+	_clientBodySize(0)
+{
+}
 
 int		ServerConfig::getPort() const
 {
