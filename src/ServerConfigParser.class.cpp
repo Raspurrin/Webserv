@@ -25,27 +25,35 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 	{
 		removeCommentFrom(line);
 		if (line[0] == '<')
-			addRoute(_fileToBeParsed);
+			addRoute(_fileToBeParsed, oneServerConfig);
 		else
 			initializeConfiguration(oneServerConfig, line);
 	}
 	return (oneServerConfig);
 }
 
-ServerConfig::t_route ServerConfigParser::addRoute(std::ifstream &fileToBeParsed)
+std::string 	ServerConfigParser::getRouteName(std::ifstream &fileToBeParsed)
+{
+	std::string		line;
+	std::string		routeName;
+
+	getline(fileToBeParsed, line);
+	routeName = line.substr(1, line.length() - 1);
+	return (routeName);
+}
+
+ServerConfig::t_route ServerConfigParser::addRoute(std::ifstream &fileToBeParsed, ServerConfig &oneServerConfig)
 {
 	std::string				line;
 	ServerConfig::t_route	newRoute;
+	std::string				routeName;
 	(void)fileToBeParsed;
 
+	routeName = getRouteName(fileToBeParsed);
 	while (getline(fileToBeParsed, line) && line.substr(0, 2) != "</")
-	{
 		initializeRoute(line, newRoute);
-	}
-	newRoute._methods = POST & DELETE;
-	newRoute._directoryListing = true;
-	newRoute._root = "bigman";
-	newRoute._index = "somewhere";
+	
+	oneServerConfig._routes[routeName] = newRoute;
 	return (newRoute);
 }
 
