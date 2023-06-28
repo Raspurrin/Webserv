@@ -34,13 +34,55 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 
 ServerConfig::t_route ServerConfigParser::addRoute(std::ifstream &fileToBeParsed)
 {
+	std::string				line;
+	ServerConfig::t_route	newRoute;
 	(void)fileToBeParsed;
-	ServerConfig::t_route newRoute;
+
+	while (getline(fileToBeParsed, line) && line.substr(0, 2) != "</")
+	{
+		initializeRoute(line, newRoute);
+	}
 	newRoute._methods = POST & DELETE;
 	newRoute._directoryListing = true;
 	newRoute._root = "bigman";
 	newRoute._index = "somewhere";
 	return (newRoute);
+}
+
+void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::t_route newRoute)
+{
+	std::string		key; 
+	std::string		value;
+
+	extractKeyValue(line, key, value);
+	if (key == "allowedMethod")
+		addAllowedMethod(value, newRoute._methods);
+	else if (key == "directoryListing")
+		newRoute._directoryListing = checkBooleanString(value);
+	else if (key == "root")
+		newRoute._root = value;
+	else if (key == "index")
+		newRoute._index = value;
+}
+
+bool	ServerConfigParser::checkBooleanString(std::string boolString)
+{
+	if (boolString == "on")
+		return (true);
+	else if (boolString == "off")
+		return (false);
+	else
+		throw std::invalid_argument("Invalid argument for boolean value");
+}
+
+void	ServerConfigParser::addAllowedMethod(std::string method, int &allowedMethod)
+{
+	if (method == "GET")
+		allowedMethod |= GET;
+	else if (method == "POST")
+		allowedMethod |= POST;
+	else if (method == "DELETE")
+		allowedMethod |= DELETE;
 }
 
 void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, std::string line)
