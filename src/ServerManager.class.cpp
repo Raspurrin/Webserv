@@ -1,11 +1,11 @@
 	#include "../header/ServerManager.class.hpp"
 	#include "../header/ParsingConfig.hpp"
-	
+
 	ServerManager::ServerManager(void) :
-		_opt(1)
+		_opt(1), _numServerSockets(0)
 	{
 		ParsingConfig	parsingConfig;
-	
+
 		_serverConfigs = parsingConfig.parsing("config");
 		addServerSockets();
 	}
@@ -17,9 +17,9 @@
 	}
 
 	void	ServerManager::addServerSocket(ServerConfig &serverConfig)
-	{ 
+	{
 		t_pollfd serverSocket;
-	
+
 		serverSocket.events = POLLIN;
 		if ((serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			error_handle("Socket error");
@@ -31,7 +31,8 @@
 			error_handle("Binding error");
 		if (listen(serverSocket.fd, BACKLOG) < 0)
 			error_handle("Listen error");
-		_serverSockets.push_back(serverSocket);
+		_sockets.push_back(serverSocket);
+		++_numServerSockets;
 	}
 
 	void	ServerManager::configureSocket(int newSocket)
@@ -45,26 +46,29 @@
 	void	ServerManager::eventLoop(void)
 	{
 		int	numEvent;
-		int serverEvents;
 
 		while (69)
 		{
-			serverEvents = poll(_serverSockets.data(), _serverSockets.size(), 300);
-			if (serverEvents > 0)
-				listenToServerSockets();
-			numEvent = poll(_clientSockets.data(), _clientSockets.size(), 300);
-			if (numEvent > 0)
-				handleClientSockets();
+			numEvent = poll(_sockets.data(), _sockets.size(), 300);
+			if (numEvent > 0) {
+				for (size_t i = 0; i < _sockets.size(); ++i) {
+					if (i < (size_t)_numServerSockets)
+						listenToServerSocket(i);
+					else {
+						handleClientSocket(i);
+					}
+				}
+				for (size_t i = 0; i < _indexesToRemove.size(); ++i)
+					_sockets.erase(_sockets.begin() + _indexesToRemove[i]);
+				_indexesToRemove.clear();
+			}
 		}
 	}
 
-	void	ServerManager::listenToServerSockets()
+	void	ServerManager::listenToServerSocket(int i)
 	{
-		for (size_t i = 0; i < _serverSockets.size(); i++)
-		{
-			if (_serverSockets[i].revents & POLLIN)
-				addClientSocket(_serverSockets[i], _serverConfigs[i]);
-		}
+			if (_sockets[i].revents & POLLIN)
+				addClientSocket(_sockets[i], _serverConfigs[i]);
 	}
 
 	void	ServerManager::addClientSocket(t_pollfd &serverSocket, ServerConfig &serverConfig)
@@ -75,7 +79,7 @@
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &_opt, sizeof(_opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
-		_clientSockets.push_back(newPfd);
+		_sockets.push_back(newPfd);
 		Client	newClient(newPfd, serverConfig);
 		_clients.push_back(newClient);
 	}
@@ -93,22 +97,20 @@
 	//	_clients.erase(_clients.begin() + indexToRemove);
 	}
 
-void	ServerManager::handleClientSockets()
-{
-
-		for (size_t i = 0, size = _clients.size(); i < size; i++)
+	void	ServerManager::handleClientSocket(int i)
+	{
+		// std::cout << "we do a loop" << std::endl;
+		if (_sockets[i].revents & POLLIN)
 		{
-			//std::cout << "we do a loop" << std::endl;
-			if (_clientSockets[i].revents & POLLIN)
-			{
-				std::cout << "POLLIN" << std::endl;
-				_clients[i].getRequest();
-			}
-			else if (_clients[i].isRequestSent() && _clientSockets[i].revents & POLLOUT)
-				sendResponse(_clients[i], i);
-			else if (_clientSockets[i].revents & POLLERR)
-				error_handle("Error occurred with a connection");
+			std::cout << "POLLIN with index " << i << "fd is " << _sockets[i].fd << std::endl;
+			_clients[i - _numServerSockets].getRequest();
 		}
+		else if (_clients[i - _numServerSockets].isRequestSent() && _sockets[i].revents & POLLOUT) {
+			sendResponse(_clients[i - _numServerSockets], i);
+			_indexesToRemove.push_back(i);
+		}
+		else if (_sockets[i].revents & POLLERR)
+			error_handle("Error occurred with a connection");
 	}
 
 	ServerManager::~ServerManager(void)
