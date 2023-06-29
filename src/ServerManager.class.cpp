@@ -1,6 +1,8 @@
 	#include "../header/ServerManager.class.hpp"
 	#include "../header/ParsingConfig.hpp"
 
+IntVector	_indexesToRemove;
+
 	ServerManager::ServerManager(void) :
 		_opt(1), _numServerSockets(0)
 	{
@@ -49,7 +51,7 @@
 
 		while (69)
 		{
-			numEvent = poll(_sockets.data(), _sockets.size(), 300);
+			numEvent = poll(_sockets.data(), _sockets.size(), 500);
 			if (numEvent > 0) {
 				for (size_t i = 0; i < _sockets.size(); ++i) {
 					if (i < (size_t)_numServerSockets)
@@ -57,10 +59,8 @@
 					else {
 						handleClientSocket(i);
 					}
+					removeIndexes();
 				}
-				for (size_t i = 0; i < _indexesToRemove.size(); ++i)
-					_sockets.erase(_sockets.begin() + _indexesToRemove[i]);
-				_indexesToRemove.clear();
 			}
 		}
 	}
@@ -86,6 +86,7 @@
 
 	void	ServerManager::sendResponse(Client &client, int indexToRemove)
 	{
+		std::cout << "index to remove: " << indexToRemove << std::endl;	
 		std::cout << "==================" << std::endl;
 		std::cout << "sending response" << std::endl;
 		std::cout << "==================" << std::endl;
@@ -113,6 +114,12 @@
 			error_handle("Error occurred with a connection");
 	}
 
+void	ServerManager::removeIndexes()
+{
+	for (size_t i = 0; i < _indexesToRemove.size(); ++i)
+		_sockets.erase(_sockets.begin() + _indexesToRemove[i]);
+	_indexesToRemove.clear();
+}
 	ServerManager::~ServerManager(void)
 	{
 	}

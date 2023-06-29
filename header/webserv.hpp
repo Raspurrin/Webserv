@@ -22,6 +22,9 @@
 #include <netinet/tcp.h>
 
 typedef std::map<std::string, std::string>	StringStringMap;
+typedef std::vector<int>			IntVector;
+
+extern IntVector			_indexesToRemove;
 
 void	error_handle(std::string type);
 

@@ -67,8 +67,12 @@ void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
-	if (recv(socket, readBuffer, BUFLEN - 1, 0) == -1)
-		error_handle("Read failed");
+	if (recv(socket, readBuffer, BUFLEN - 1, 0) <= 0)
+	{
+		close(socket);
+		_indexesToRemove.push_back(socket);		
+//		error_handle("Read failed");
+	}
 	std::cout << "received message: " << readBuffer;
 	_headerBuffer = readBuffer;
 }
