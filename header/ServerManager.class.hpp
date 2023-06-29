@@ -16,23 +16,25 @@ typedef struct server_config		t_server_config;
 typedef std::vector<t_pollfd>		PollFdVector;
 typedef	std::vector<class Client>	ClientVector;
 typedef std::vector<ServerConfig>	ServerConfigVector;
+typedef std::vector<int>			IntVector;
 
 class ServerManager
 {
 	private:
 		int					_opt;
+		int					_numServerSockets;
 		ServerConfigVector	_serverConfigs;
 		ClientVector		_clients;
-		PollFdVector		_clientSockets;
-		PollFdVector		_serverSockets;
+		PollFdVector		_sockets;
+		IntVector			_indexesToRemove;
 
 	private:
 		void	addServerSockets(void);
 		void	addServerSocket(ServerConfig &serverConfig);
 		void	configureSocket(int newSocket);
 		void	addClientSocket(t_pollfd &serverSocket, ServerConfig &_serverConfigs);
-		void	listenToServerSockets();
-		void	handleClientSockets();
+		void	listenToServerSocket(int i);
+		void	handleClientSocket(int i);
 		void	sendResponse(Client &client, int indexToRemove);
 
 	public:
