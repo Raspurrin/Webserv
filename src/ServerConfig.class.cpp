@@ -1,11 +1,5 @@
 #include "../header/ServerConfig.class.hpp"
 
-// template<typename T>
-// T	parsingKeyValue(std::stringstream Input)
-// {
-
-// }
-
 ServerConfig::ServerConfig() :
 	_port(0),
 	_name(""),
@@ -18,21 +12,44 @@ int		ServerConfig::getPort() const
 	return (_port);
 }
 
-bool	ServerConfig::checkRoutePath(const std::string &path) const
+std::string	ServerConfig::getName() const
+{
+	return (_name);
+}
+
+int		ServerConfig::getClientBodySize() const
+{
+	return (_clientBodySize);
+}
+
+std::string	ServerConfig::getErrorPage(std::string errorCode) const
+{
+	if (_errorPages.find(errorCode) != _errorPages.end())
+		error_handle("the error code does not exist");
+	return (_errorPages.at(errorCode));
+}
+
+void	ServerConfig::printErrorPages() const
+{
+	for (const auto &it : _errorPages)
+		std::cout << it.first << ": " << it.second << std::endl;
+}
+
+bool	ServerConfig::getRoutePath(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		return (true);
 	return (false);
 }
 
-int		ServerConfig::getMethods(const std::string &path) const
+int		ServerConfig::getRouteMethods(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
 	return (_routes.at(path)._methods);
 }
 
-bool	ServerConfig::isMethodAllowed(const std::string &path, const int methodToCheck) const
+bool	ServerConfig::isRouteMethodAllowed(const std::string &path, const int methodToCheck) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
@@ -41,7 +58,7 @@ bool	ServerConfig::isMethodAllowed(const std::string &path, const int methodToCh
 	return (false);
 }
 
-bool	ServerConfig::isDirListEnabled(const std::string &path) const
+bool	ServerConfig::isRouteDirListingEnabled(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
@@ -76,4 +93,31 @@ ServerConfig&	ServerConfig::operator=(ServerConfig const &assign)
 ServerConfig::~ServerConfig(void)
 {
 	// Chaoss!
+}
+
+void	ServerConfig::printServerConfig() const
+{
+	std::cout << "ServerConfig:" << std::endl;
+	std::cout << "  port: " << _port << std::endl;
+	std::cout << "  name: " << _name << std::endl;
+	std::cout << "  clientBodySize: " << _clientBodySize << std::endl;
+	std::cout << "  errorPages:" << std::endl;
+	for (const auto &it : _errorPages)
+		std::cout << "    " << it.first << ": " << it.second << std::endl;
+	std::cout << "  routes:" << std::endl;
+	for (const auto &it : _routes)
+	{
+		std::cout << "    " << it.first << ":" << std::endl;
+		std::cout << "      methods: " << it.second._methods << std::endl;
+		std::cout << "      directoryListing: " << it.second._directoryListing << std::endl;
+		std::cout << "      HTTPRedirect: " << it.second._HTTPRedirect << std::endl;
+		std::cout << "      root: " << it.second._root << std::endl;
+		std::cout << "      index: " << it.second._index << std::endl;
+	}
+}
+
+std::ostream&	operator<<(std::ostream &out, const ServerConfig &serverConfig)
+{
+	serverConfig.printServerConfig();
+	return (out);
 }

@@ -6,9 +6,12 @@
 
 int main(void)
 {
-    std::cout << "asdf" << std::endl;
-	ServerManager ServerManager;
+	// ServerManager ServerManager;
 
-	ServerManager.eventLoop();
+	// ServerManager.eventLoop();
+	ServerConfigParser parser("configuration.conf");
+	ServerConfigVector serverConfigs = parser.getServerConfigs();
+	for (const auto &it : serverConfigs)
+		it.printServerConfig();
 	return (0);
 }

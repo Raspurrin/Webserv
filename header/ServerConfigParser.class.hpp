@@ -15,14 +15,15 @@ class ServerConfigParser
 		StringBoolMap			_availableOptions;
 
 	private:
+		bool					checkForServerDeclaration();
 		std::string				getRouteName(std::ifstream &fileToBeParsed);
 		bool					checkBooleanString(std::string value);
 		void 					addAllowedMethod(std::string method, int &allowedMethod);
 		void					addErrorPage(ServerConfig &oneServerConfig, std::string line);
 		ServerConfig			parsingOneServerConfig();
 		void					initializeConfiguration(ServerConfig &oneServerConfig, std::string line);
-		void					initializeRoute(std::string line, ServerConfig::t_route newRoute);
-		ServerConfig::t_route	addRoute(std::ifstream &fileToBeParsed, ServerConfig &oneServerConfig);
+		void					initializeRoute(std::string line, ServerConfig::route newRoute);
+		ServerConfig::route	addRoute(std::ifstream &fileToBeParsed, ServerConfig &oneServerConfig);
 		t_sockaddr_in   		setAddress(int port);
 		void					addToVector(ServerConfig &oneServerConfig);
 		void					removeCommentFrom(std::string &line);

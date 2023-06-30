@@ -1,7 +1,7 @@
 NAME = webserv
 CC = c++
 RM = rm -rf
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
+CFLAGS = -Wall -Wextra -Werror -Wno-c++11-extensions -g
 
 HEADER_DIR = ./header
 SRC_DIR = ./src/

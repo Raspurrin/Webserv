@@ -4,14 +4,14 @@
 #include "webserv.hpp"
 #include "colours.hpp"
 #include "ServerConfig.class.hpp"
-#include "ServerConfigParser.hpp"
+#include "ServerConfigParser.class.hpp"
 #include "Client.class.hpp"
 
 #define BACKLOG 3
 
 typedef struct sockaddr_in			t_sockaddr_in;
 typedef struct pollfd				t_pollfd;
-typedef struct route				t_route;
+typedef struct route				route;
 typedef struct server_config		t_server_config;
 typedef std::vector<t_pollfd>		PollFdVector;
 typedef	std::vector<class Client>	ClientVector;

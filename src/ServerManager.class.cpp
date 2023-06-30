@@ -1,5 +1,5 @@
 	#include "../header/ServerManager.class.hpp"
-	#include "../header/ServerConfigParser.hpp"
+	#include "../header/ServerConfigParser.class.hpp"
 	
 	ServerManager::ServerManager(void) :
 		_opt(1)

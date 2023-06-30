@@ -14,17 +14,17 @@ class ServerConfig
 	private:
 		friend class ServerConfigParser;
 		
-		typedef struct route
+		typedef struct
 		{
 			int			_methods;
 			bool		_directoryListing;
 			std::string	_HTTPRedirect;
 			std::string	_root;
 			std::string	_index;
-		}	t_route;
+		} route;
 
 		typedef struct pollfd						t_pollfd;
-		typedef std::map<std::string, t_route> 		StringRouteMap;
+		typedef std::map<std::string, route> 		StringRouteMap;
 
 		int					_port;
 		std::string			_name;
@@ -35,13 +35,18 @@ class ServerConfig
 	
 	public:
 		int					getPort() const;
-		bool				checkRoutePath(const std::string &path) const;
-		int					getMethods(const std::string &path) const;
-		bool				isMethodAllowed(const std::string &path, const int methodToCheck) const;
-		bool				isDirListEnabled(const std::string &path) const;
+		std::string			getName() const;
+		int					getClientBodySize() const;
+		std::string			getErrorPage(std::string errorCode) const;
+		bool				getRoutePath(const std::string &path) const;
+		int					getRouteMethods(const std::string &path) const;
+		bool				isRouteMethodAllowed(const std::string &path, const int methodToCheck) const;
+		bool				isRouteDirListingEnabled(const std::string &path) const;
 		const std::string	getRouteRoot(const std::string &path) const;
 		const std::string	getRouteIndex(const std::string &path) const;
 		t_sockaddr_in&		getAddress();
+		void				printErrorPages() const;
+		void				printServerConfig() const;
 
 	public:
 		ServerConfig();
