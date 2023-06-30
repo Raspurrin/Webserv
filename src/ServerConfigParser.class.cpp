@@ -12,6 +12,8 @@ ServerConfigParser::ServerConfigParser(std::string fileName)
 		if (!checkForServerDeclaration())
 			break;
 		ServerConfig oneServerConfig = parsingOneServerConfig();
+		std::cout << RED << "\nInside Parser:" << DEF << std::endl;
+		oneServerConfig.printServerConfig();
 		addToVector(oneServerConfig);
 	}
 }
@@ -53,34 +55,31 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 		if (line.empty())
 			continue ;
 		if (trim(line)[0] == '<')
-			addRoute(_fileToBeParsed, oneServerConfig);
+			addRoute(line, oneServerConfig);
 		else
 			initializeConfiguration(oneServerConfig, line);
 	}
 	return (oneServerConfig);
 }
 
-std::string 	ServerConfigParser::getRouteName(std::ifstream &fileToBeParsed)
+std::string 	ServerConfigParser::getRouteName(std::string &firstLine)
 {
-	std::string		line;
 	std::string		routeName;
 
-	std::cout << "Getting route name" << std::endl;
-	getline(fileToBeParsed, line);
-	routeName = line.substr(1, line.length() - 1);
+	routeName = firstLine.substr(2, firstLine.length() - 3);
+	std::cout << "Getting route name: " << routeName << std::endl;
 	return (routeName);
 }
 
-ServerConfig::route ServerConfigParser::addRoute(std::ifstream &fileToBeParsed, ServerConfig &oneServerConfig)
+ServerConfig::route ServerConfigParser::addRoute(std::string firstLine, ServerConfig &oneServerConfig)
 {
 	std::string				line;
 	ServerConfig::route		newRoute;
 	std::string				routeName;
-	(void)fileToBeParsed;
 
 	std::cout << "Adding route" << std::endl;
-	routeName = getRouteName(fileToBeParsed);
-	while (getline(fileToBeParsed, line) && trim(line).substr(0, 2) != "</")
+	routeName = getRouteName(firstLine);
+	while (getline(_fileToBeParsed, line) && trim(line).substr(0, 2) != "</")
 		initializeRoute(line, newRoute);
 	
 	oneServerConfig._routes[routeName] = newRoute;

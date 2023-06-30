@@ -16,14 +16,14 @@ class ServerConfigParser
 
 	private:
 		bool					checkForServerDeclaration();
-		std::string				getRouteName(std::ifstream &fileToBeParsed);
+		std::string				getRouteName(std::string &firstLine);
 		bool					checkBooleanString(std::string value);
 		void 					addAllowedMethod(std::string method, int &allowedMethod);
 		void					addErrorPage(ServerConfig &oneServerConfig, std::string line);
 		ServerConfig			parsingOneServerConfig();
 		void					initializeConfiguration(ServerConfig &oneServerConfig, std::string line);
 		void					initializeRoute(std::string line, ServerConfig::route newRoute);
-		ServerConfig::route	addRoute(std::ifstream &fileToBeParsed, ServerConfig &oneServerConfig);
+		ServerConfig::route		addRoute(std::string firstLine, ServerConfig &oneServerConfig);
 		t_sockaddr_in   		setAddress(int port);
 		void					addToVector(ServerConfig &oneServerConfig);
 		void					removeCommentFrom(std::string &line);

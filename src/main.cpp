@@ -11,6 +11,7 @@ int main(void)
 	// ServerManager.eventLoop();
 	ServerConfigParser parser("configuration.conf");
 	ServerConfigVector serverConfigs = parser.getServerConfigs();
+	std::cout << RED << "\nOutside Parser:" << DEF << std::endl;
 	for (const auto &it : serverConfigs)
 		it.printServerConfig();
 	return (0);
