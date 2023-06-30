@@ -51,7 +51,8 @@ IntVector	_indexesToRemove;
 
 		while (69)
 		{
-			numEvent = poll(_sockets.data(), _sockets.size(), 500);
+			// no timeout needed since poll checks now both, servers and connections
+			numEvent = poll(_sockets.data(), _sockets.size(), -1);
 			if (numEvent > 0) {
 				for (size_t i = 0; i < _sockets.size(); ++i) {
 					if (i < (size_t)_numServerSockets)
