@@ -85,18 +85,17 @@ IntVector	_indexesToRemove;
 		_clients.push_back(newClient);
 	}
 
-	void	ServerManager::sendResponse(Client &client, int indexToRemove)
+	void	ServerManager::sendResponse(Client &client)
 	{
-		std::cout << "index to remove: " << indexToRemove << std::endl;	
+		static int i = 0;
+		std::cout << client.getResponse() << std::endl;
 		std::cout << "==================" << std::endl;
-		std::cout << "sending response" << std::endl;
+		std::cout << "sending response " << i << std::endl;
 		std::cout << "==================" << std::endl;
 		send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
 		printf("HELLO MESSAGE SENT FROM SERVER\n");
 		close(client.getSocket());
-		(void)indexToRemove;
-	//	_clientSockets.erase(_clientSockets.begin() + indexToRemove);
-	//	_clients.erase(_clients.begin() + indexToRemove);
+		i++;
 	}
 
 	void	ServerManager::handleClientSocket(int i)
@@ -108,19 +107,22 @@ IntVector	_indexesToRemove;
 			_clients[i - _numServerSockets].getRequest();
 		}
 		else if (_clients[i - _numServerSockets].isRequestSent() && _sockets[i].revents & POLLOUT) {
-			sendResponse(_clients[i - _numServerSockets], i);
+			sendResponse(_clients[i - _numServerSockets]);
 			_indexesToRemove.push_back(i);
 		}
 		else if (_sockets[i].revents & POLLERR)
 			error_handle("Error occurred with a connection");
 	}
 
-void	ServerManager::removeIndexes()
-{
-	for (size_t i = 0; i < _indexesToRemove.size(); ++i)
-		_sockets.erase(_sockets.begin() + _indexesToRemove[i]);
-	_indexesToRemove.clear();
-}
+	void	ServerManager::removeIndexes()
+	{
+		for (size_t i = 0; i < _indexesToRemove.size(); ++i) {
+			_sockets.erase(_sockets.begin() + _indexesToRemove[i]);
+			_clients.erase(_clients.begin() + (_indexesToRemove[i] - _numServerSockets));
+		}
+		_indexesToRemove.clear();
+	}
+
 	ServerManager::~ServerManager(void)
 	{
 	}

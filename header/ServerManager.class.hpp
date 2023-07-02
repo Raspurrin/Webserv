@@ -34,7 +34,7 @@ class ServerManager
 		void	addClientSocket(t_pollfd &serverSocket, ServerConfig &_serverConfigs);
 		void	listenToServerSocket(int i);
 		void	handleClientSocket(int i);
-		void	sendResponse(Client &client, int indexToRemove);
+		void	sendResponse(Client &client);
 
 	public:
 		void	eventLoop(void);
