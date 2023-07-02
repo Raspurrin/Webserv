@@ -5,7 +5,7 @@
 #include "Response.class.hpp"
 #include "webserv.hpp"
 
-#define BUFLEN 30000
+#define BUFLEN 120000
 #define REACHED_HEADER_END 1
 #define REACHED_BODY_END 2
 

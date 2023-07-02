@@ -171,8 +171,8 @@ void Response::buildResponse()
 		}
 	}
 
-	_responseMessage += _response["Version"] + " " + _response["Status code"] + "\n" + "Content-Type: " + _response["Content-Type:"] + "\n" + "Content-Length: " + _response["Content-Length:"] + "\n\n" + _response["Body"];
-	std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
+	_responseMessage += _response["Version"] + " " + _response["Status code"] + "\n" + "Content-Type: " + _response["Content-Type:"] + "\n" + "Connection: close\n" + "Content-Length: " + _response["Content-Length:"] + "\n\n" + _response["Body"];
+	// std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
 }
 
 void Response::GETMethod()
