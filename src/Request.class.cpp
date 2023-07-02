@@ -150,6 +150,7 @@ bool	Request::isFlagOn()
 
 Request::Request(void) :
 	_bufferFlags(0),
+	_isRead(false),
 	_readCount(0)
 {
 }
