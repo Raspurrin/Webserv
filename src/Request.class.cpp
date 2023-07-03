@@ -71,7 +71,6 @@ void Request::readIntoString(int &socket)
 	{
 		close(socket);
 		_indexesToRemove.push_back(socket);		
-//		error_handle("Read failed");
 	}
 	std::cout << "received message: " << readBuffer;
 	_headerBuffer = readBuffer;
@@ -88,7 +87,7 @@ void Request::readIntoString(int &socket)
 // 		_bufferFlags = _bufferFlags & REACHED_BODY_END;
 // }
 
-std::string	Request::readingHeader(int &socket)
+std::string	Request::readingRequest(int &socket)
 {
 /*	int		position;
 
@@ -113,7 +112,7 @@ std::string	Request::readingHeader(int &socket)
 std::string	Request::getRequest(int	&socket)
 {
 	std::cout << "getting request" << std::endl;
-	return(readingHeader(socket));
+	return(readingRequest(socket));
 	// if ((_bufferFlags & REACHED_HEADER_END) == false)
 	// else if ((_bufferFlags & REACHED_BODY_END) == false)
 	// {

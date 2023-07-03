@@ -22,7 +22,7 @@ class Request
 		std::string		buildResponse();
 		void			readingBody(int &socket);
 		void			readIntoString(int &socket);
-		std::string		readingHeader(int &socket);
+		std::string		readingRequest(int &socket);
 		void			parseHeaderSection();
 		void			parseStartLine(std::string startLine);
 		void			parseHeaderFields(std::string headerSection);
