@@ -1,4 +1,5 @@
 #include "../header/Response.class.hpp"
+#include <sstream>
 #include <sys/stat.h>
 
 
@@ -82,9 +83,16 @@ void Response::readHTML()
 
 void Response::status200()
 {
-	std::cout << "in status200" << std::endl;
 	_response["Status code"] = "200 OK";
 	_response["Path"] = _headerFields["Path"];
+	readHTML();
+	return ;
+}
+
+void Response::status201()
+{
+	_response["Status code"] = "201 CREATED";
+	_response["Path"] = "/success.html";
 	readHTML();
 	return ;
 }
@@ -177,9 +185,6 @@ void Response::buildResponse()
 
 void Response::GETMethod()
 {
-	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/index.html";
 	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
 		throw ErrC(Not_Found);
 	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
@@ -189,10 +194,37 @@ void Response::GETMethod()
 	return ;
 }
 
+void Response::POSTMethod()
+{
+	std::string str, str2, str3, str4, str5;
+	std::stringstream	ss(_headerFields["Body"]);
+	getline(ss, str);
+	getline(ss, str2);
+	int name = str2.find_last_of('"');
+	name -= 1;
+	int other = name;
+	while (str2[other] != '"')
+		other--;
+	std::string file = str2.substr(other + 1, name - other);
+//	std::cout << file << std::endl;
+	std::ofstream outfile(file.c_str());
+	getline(ss, str3);
+	getline(ss, str4);
+	getline(ss, str5);
+	outfile << str5 << std::endl;
+	outfile.close();
+	status201();
+}
+
 void Response::methodID()
 {
+	// "/" will always be a directory, so maybe we should solve this with a route later on?
+	if (_headerFields["Path"] == "/")
+		_headerFields["Path"] = "/index.html";
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
+	if (_headerFields["Method"] == "POST")
+		POSTMethod();
 	return ;
 }
 

@@ -19,8 +19,6 @@ void Request::parseHeaderSection()
 {
 	size_t	position, lpos;
 
-//	if(_readCount <= 0)
-//		return ;
 	position = _requestBuffer.find("\r\n");
 	parseStartLine(_requestBuffer.substr(0, position));
 	position += 2;
@@ -29,9 +27,13 @@ void Request::parseHeaderSection()
 	parseHeaderFields(_requestBuffer.substr(lpos, position - lpos));
 	position += 4;
 	if (_headerFields["Method"] == "POST")
-		_bodyBuffer = _requestBuffer.substr(position);
+		parseBody(_requestBuffer.substr(position));
 	printMap();
-	_isRead = true;
+}
+
+void Request::parseBody(std::string body)
+{
+	_headerFields["Body"] = body;
 }
 
 void Request::parseStartLine(std::string startLine)
@@ -80,6 +82,7 @@ void Request::readIntoString(int &socket)
 		close(socket);
 		_indexesToRemove.push_back(socket);		
 	}
+	_isRead = true;
 	std::cout << RED << "Received message:\n" << DEF << readBuffer << "END" << std::endl;
 	std::cout << RED << "Read count:\n" << DEF << _readCount << "END" << std::endl;
 	_requestBuffer = readBuffer;
@@ -102,7 +105,6 @@ void	Request::getRequest(int	&socket)
 std::string	Request::getResponse()
 {
 	return (_response);
-
 }
 
 StringStringMap	Request::getHeaderFields()
