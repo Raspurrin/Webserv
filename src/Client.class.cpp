@@ -1,4 +1,4 @@
-#include "Client.class.hpp"
+#include "../header/Client.class.hpp"
 
 int		Client::getSocket()
 {
