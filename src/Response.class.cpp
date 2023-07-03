@@ -1,6 +1,7 @@
 #include "../header/Response.class.hpp"
 #include <sstream>
 #include <sys/stat.h>
+#include <unistd.h>
 
 
 /**
@@ -207,12 +208,24 @@ void Response::POSTMethod()
 		other--;
 	std::string file = str2.substr(other + 1, name - other);
 //	std::cout << file << std::endl;
+	chdir("./files");
 	std::ofstream outfile(file.c_str());
+	if (!outfile)
+		std::cout << "ERROR OPENING FILE" << std::endl;
+	else if (outfile.good())
+		std::cout << "GOOD" << std::endl;
 	getline(ss, str3);
 	getline(ss, str4);
 	getline(ss, str5);
+	if (outfile.bad())
+		std::cout << "ERROR i/o" << std::endl;
+	else if (outfile.fail())
+		std::cout << "ERROR fail" << std::endl;
+	else if (outfile.eof())
+		std::cout << "GOOD" << std::endl;
 	outfile << str5 << std::endl;
 	outfile.close();
+	chdir("..");
 	status201();
 }
 
