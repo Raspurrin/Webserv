@@ -16,9 +16,9 @@ class Request
 		bool			_isRead;
 		int				_readCount;
 		std::string		_requestBuffer;
-		std::string		_bodyBuffer;
 		std::string		_response;
 		std::map<std::string, std::string>	_headerFields;
+		std::map<std::string, std::string>	_bodyFields;
 
 		std::string		buildResponse();
 		void			readIntoString(int &socket);
@@ -26,6 +26,7 @@ class Request
 		void			parseHeaderSection();
 		void			parseStartLine(std::string startLine);
 		void			parseHeaderFields(std::string headerSection);
+		void			parseBody(std::string body);
 
 	public:
 
