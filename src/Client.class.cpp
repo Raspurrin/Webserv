@@ -12,8 +12,8 @@ std::string Client::getResponse()
 
 void	Client::getRequest()
 {
-	_responseMessage = _request.getRequest(_pollFd.fd);
-	std::cout << "responseMessaage: " << _responseMessage << std::endl;
+	_request.getRequest(_pollFd.fd);
+	_responseMessage = _request.getResponse();
 }
 
 bool	Client::isRequestSent()

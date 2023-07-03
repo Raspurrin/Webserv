@@ -18,30 +18,24 @@ void Request::printMap()
 void Request::parseHeaderSection()
 {
 	size_t	position, lpos;
-	std::string delim = "\r\n\r\n";
 
-	if(_readCount <= 0)
-		return ;
+//	if(_readCount <= 0)
+//		return ;
 	position = _requestBuffer.find("\r\n");
-	std::cout << "position: " << position << std::endl;
 	parseStartLine(_requestBuffer.substr(0, position));
 	position += 2;
 	lpos = position;
-	std::cout << "lpos: " << lpos << std::endl;
-	position = _requestBuffer.find(delim, lpos);
-	std::cout << "position: " << position << std::endl;
+	position = _requestBuffer.find("\r\n\r\n", lpos);
 	parseHeaderFields(_requestBuffer.substr(lpos, position - lpos));
 	position += 4;
-	if ((int)position < _readCount)
-	{
+	if (_headerFields["Method"] == "POST")
 		_bodyBuffer = _requestBuffer.substr(position);
-		std::cout << "Body buffer:\n" << _bodyBuffer << "END" << std::endl;
-	}
+	printMap();
+	_isRead = true;
 }
 
 void Request::parseStartLine(std::string startLine)
 {
-	std::cout << "start line: " << startLine << "e";
 	int	position, lpos;
 
 	position = startLine.find(' ');
@@ -58,7 +52,6 @@ void Request::parseStartLine(std::string startLine)
 
 void Request::parseHeaderFields(std::string headerSection)
 {
-	std::cout << "header is: " << headerSection << "e";
 	std::istringstream	iss(headerSection);
 	std::string key, value, line;
 	int	position;
@@ -92,25 +85,23 @@ void Request::readIntoString(int &socket)
 	_requestBuffer = readBuffer;
 }
 
-std::string	Request::readingRequest(int &socket)
-{
-	readIntoString(socket);
-	parseHeaderSection();
-	return (buildResponse());
-}
-
-std::string	Request::getRequest(int	&socket)
+void	Request::getRequest(int	&socket)
 {
 	std::cout << RED << "Getting request..." << DEF << std::endl;
-	return(readingRequest(socket));
+	try {
+		readIntoString(socket);
+		parseHeaderSection();
+		Response response(_headerFields);
+		_response = response.getResponse();
+	} catch (const std::exception &e) {
+//		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
+		std::cout << "Catched exception " << e.what() << std::endl;
+	}
 }
 
-std::string	Request::buildResponse()
+std::string	Request::getResponse()
 {
-	printMap();
-	Response response(_headerFields);
-	_isRead = true;
-	return (response.getResponse());
+	return (_response);
 
 }
 
@@ -119,18 +110,12 @@ StringStringMap	Request::getHeaderFields()
 	return (_headerFields);
 }
 
-void	Request::printBody(void)
-{
-	std::cout << _bodyBuffer << std::endl;
-}
-
 bool	Request::isFlagOn()
 {
 	return (_isRead);
 }
 
 Request::Request(void) :
-	_bufferFlags(0),
 	_isRead(false),
 	_readCount(0)
 {
