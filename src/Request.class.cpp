@@ -17,18 +17,31 @@ void Request::printMap()
 
 void Request::parseHeaderSection()
 {
-	int	position, lpos;
+	size_t	position, lpos;
+	std::string delim = "\r\n\r\n";
 
-	position = _headerBuffer.find('\n');
-	parseStartLine(_headerBuffer.substr(0, position));
-	position++;
+	if(_readCount <= 0)
+		return ;
+	position = _requestBuffer.find("\r\n");
+	std::cout << "position: " << position << std::endl;
+	parseStartLine(_requestBuffer.substr(0, position));
+	position += 2;
 	lpos = position;
-	position = _headerBuffer.find("\n\n", lpos);
-	parseHeaderFields(_headerBuffer.substr(lpos, position - lpos));
+	std::cout << "lpos: " << lpos << std::endl;
+	position = _requestBuffer.find(delim, lpos);
+	std::cout << "position: " << position << std::endl;
+	parseHeaderFields(_requestBuffer.substr(lpos, position - lpos));
+	position += 4;
+	if ((int)position < _readCount)
+	{
+		_bodyBuffer = _requestBuffer.substr(position);
+		std::cout << "Body buffer:\n" << _bodyBuffer << "END" << std::endl;
+	}
 }
 
 void Request::parseStartLine(std::string startLine)
 {
+	std::cout << "start line: " << startLine << "e";
 	int	position, lpos;
 
 	position = startLine.find(' ');
@@ -45,6 +58,7 @@ void Request::parseStartLine(std::string startLine)
 
 void Request::parseHeaderFields(std::string headerSection)
 {
+	std::cout << "header is: " << headerSection << "e";
 	std::istringstream	iss(headerSection);
 	std::string key, value, line;
 	int	position;
@@ -67,43 +81,19 @@ void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
-	if (recv(socket, readBuffer, BUFLEN - 1, 0) <= 0)
+	_readCount = recv(socket, readBuffer, BUFLEN - 1, 0);
+	if (_readCount <= 0)
 	{
 		close(socket);
 		_indexesToRemove.push_back(socket);		
 	}
-	std::cout << "received message: " << readBuffer;
-	_headerBuffer = readBuffer;
+	std::cout << RED << "Received message:\n" << DEF << readBuffer << "END" << std::endl;
+	std::cout << RED << "Read count:\n" << DEF << _readCount << "END" << std::endl;
+	_requestBuffer = readBuffer;
 }
-
-// void	Request::readingBody(int &socket)
-// {
-// 	std::string readString = readIntoString(socket);
-
-// 	_bodyBuffer += readString;
-// 	std::cout << "in reading Body _bodyBuffer: " << _bodyBuffer << std::endl;
-// 	_readCount += BUFLEN;
-// 	if (_readCount < atoi(_headerFields["Content-Length"].c_str()))
-// 		_bufferFlags = _bufferFlags & REACHED_BODY_END;
-// }
 
 std::string	Request::readingRequest(int &socket)
 {
-/*	int		position;
-
-	std::cout << "in readingHeader" << std::endl;
-	if (!readString.find("\n\n"))
-	{
-		_headerBuffer += readString;
-		std::cout << "_headerBuffer: " << _headerBuffer << std::endl;
-		return ("");
-	}
-	_bufferFlags = _bufferFlags | REACHED_HEADER_END;
-	std::cout << "_bufferFlags: in readingHeader: " << _bufferFlags << std::endl;
-	position = readString.find("\n\n");
-	_headerBuffer += readString.substr(0, position);
-//	_bodyBuffer = readString.substr(position + 2, BUFLEN - position);
-	*/
 	readIntoString(socket);
 	parseHeaderSection();
 	return (buildResponse());
@@ -111,16 +101,8 @@ std::string	Request::readingRequest(int &socket)
 
 std::string	Request::getRequest(int	&socket)
 {
-	std::cout << "getting request" << std::endl;
+	std::cout << RED << "Getting request..." << DEF << std::endl;
 	return(readingRequest(socket));
-	// if ((_bufferFlags & REACHED_HEADER_END) == false)
-	// else if ((_bufferFlags & REACHED_BODY_END) == false)
-	// {
-	// 	std::cout << "before reading body" << std::endl;
-	// 	readingBody(socket);
-	// 	_responseMessage = buildResponse();
-	// 	return (_responseMessage);
-	// }
 }
 
 std::string	Request::buildResponse()
