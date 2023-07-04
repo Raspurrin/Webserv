@@ -88,8 +88,9 @@ IntVector	_indexesToRemove;
 
 	void	ServerManager::sendResponse(Client &client)
 	{
+		std::string	_response = client.getResponse();
 		static int i = 0;
-		std::cout << client.getResponse() << std::endl;
+
 		std::cout << "==================" << std::endl;
 		std::cout << "sending response " << i << std::endl;
 		std::cout << "==================" << std::endl;

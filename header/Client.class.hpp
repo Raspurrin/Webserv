@@ -12,8 +12,6 @@ class Client
 		struct pollfd			_pollFd;
 		class ServerConfig&		_serverConfig;
 		class Request			_request;
-		std::string				_responseMessage;
-		bool					_isCgi;
 
 	public:
 		int						getSocket();

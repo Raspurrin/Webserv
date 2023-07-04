@@ -28,12 +28,41 @@ void Request::parseHeaderSection()
 	position += 4;
 	if (_headerFields["Method"] == "POST")
 		parseBody(_requestBuffer.substr(position));
-	printMap();
+//	printMap();
 }
 
 void Request::parseBody(std::string body)
 {
-	_headerFields["Body"] = body;
+	std::string line;
+	size_t	found, lpos;
+
+	if (_headerFields.count("Content-Type") > 0)
+		_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
+	
+
+	std::stringstream	ss(body);
+	getline(ss, line);
+	found = line.find(_headerFields["Boundary"]);
+	if (found != std::string::npos)
+	{
+		getline(ss, _headerFields["Body-Disposition"]);
+		found = _headerFields["Body-Disposition"].find_last_of('"');
+		found -= 1;
+		lpos = found;
+		while (_headerFields["Body-Disposition"][lpos] != '"')
+			lpos--;
+		_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
+		getline(ss, _headerFields["Body-Type"]);
+		found = _headerFields["Body-Type"].find("text/plain");
+		if (found != std::string::npos)
+		{
+				std::cout << "HERE" << std::endl;
+			getline(ss, line);
+			getline(ss, _headerFields["Body-Text"], '\r');
+		}
+		else
+			_headerFields["Error"] = "415";
+	}
 }
 
 void Request::parseStartLine(std::string startLine)
@@ -81,11 +110,12 @@ void Request::readIntoString(int &socket)
 	{
 		close(socket);
 		_indexesToRemove.push_back(socket);		
+		std::cout << "DO I REACH HERE" << std::endl;
 	}
-	_isRead = true;
+		_isRead = true;
 	std::cout << RED << "Received message:\n" << DEF << readBuffer << "END" << std::endl;
 	std::cout << RED << "Read count:\n" << DEF << _readCount << "END" << std::endl;
-	_requestBuffer = readBuffer;
+	_requestBuffer.append(readBuffer);
 }
 
 void	Request::getRequest(int	&socket)
@@ -94,8 +124,6 @@ void	Request::getRequest(int	&socket)
 	try {
 		readIntoString(socket);
 		parseHeaderSection();
-		Response response(_headerFields);
-		_response = response.getResponse();
 	} catch (const std::exception &e) {
 //		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
 		std::cout << "Catched exception " << e.what() << std::endl;
@@ -104,7 +132,8 @@ void	Request::getRequest(int	&socket)
 
 std::string	Request::getResponse()
 {
-	return (_response);
+	Response response(_headerFields);
+	return (response.getResponse());
 }
 
 StringStringMap	Request::getHeaderFields()
