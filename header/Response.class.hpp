@@ -25,6 +25,7 @@ class Response
 
 		bool	listDir();
 		void	methodID();
+		void	checkRequestErrors();
 		void	GETMethod();
 		void	POSTMethod();
 		void	buildResponse();
@@ -32,6 +33,7 @@ class Response
 		int	status404();
 		int	status403();
 		void	status500();
+		void	status505();
 		int	checkStat();
 		void	status200();
 		void	status415();

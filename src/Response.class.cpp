@@ -113,6 +113,13 @@ void Response::status500()
 	readHTML();
 }
 
+void Response::status505()
+{
+	_response["Status code"] = "505 HTTP Version Not Supported";
+	_response["Path"] = "/error_pages/505.html";
+	readHTML();
+}
+
 void Response::status415()
 {
 	_response["Status code"] = "415 Unsupported Media Type";
@@ -127,6 +134,17 @@ int Response::status403()
 	_response["Path"] = "/error_pages/403.html";
 	readHTML();
 	return (1);
+}
+
+void Response::checkRequestErrors()
+{
+	if (_headerFields.count("Error") == 0)
+		return ;
+
+	if (_headerFields["Error"] == "415")
+		throw ErrC(Unsupported_Media_Type);
+	if (_headerFields["Error"] == "505")
+		throw ErrC(HTTP_Version_Not_Supported);
 }
 
 int Response::checkStat()
@@ -158,6 +176,10 @@ void Response::buildError(const Error _err) {
 		status415();
 		break;
 
+	case HTTP_Version_Not_Supported:
+		status505();
+		break;
+
 	case Forbidden:
 		status403();
 		break;
@@ -180,7 +202,7 @@ void Response::buildResponse()
 {
 	// TODO: this block can be moved to a different place, depending on djaisins changes
 	try {
-		_response["Version"] = "HTTP/1.1";
+		checkRequestErrors();
 		methodID();
 	} catch (const std::exception &e) {
 		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
@@ -209,11 +231,6 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	if (_headerFields.count("Error") > 0)
-	{
-		if (_headerFields["Error"] == "415")
-			throw ErrC(Unsupported_Media_Type);
-	}
 	std::cout << "body is" << _headerFields["Body"] << std::endl;
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
@@ -238,6 +255,7 @@ void Response::methodID()
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
 	if (_headerFields["Path"] == "/")
 		_headerFields["Path"] = "/index.html";
+	_response["Version"] = _headerFields["Version"];
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
 	if (_headerFields["Method"] == "POST")
