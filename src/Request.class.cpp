@@ -28,7 +28,8 @@ void Request::parseHeaderSection()
 	position += 4;
 	if (_headerFields["Method"] == "POST")
 		parseBody(_requestBuffer.substr(position));
-//	printMap();
+	if (DEBUG)
+		printMap();
 }
 
 void Request::parseBody(std::string body)
