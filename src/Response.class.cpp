@@ -116,6 +116,7 @@ void Response::status500()
 void Response::status505()
 {
 	_response["Status code"] = "505 HTTP Version Not Supported";
+	_response["Version"] = "HTTP/1.1";
 	_response["Path"] = "/error_pages/505.html";
 	readHTML();
 }
@@ -200,22 +201,15 @@ void Response::buildError(const Error _err) {
 
 void Response::buildResponse()
 {
-	// TODO: this block can be moved to a different place, depending on djaisins changes
-	try {
-		checkRequestErrors();
-		methodID();
-	} catch (const std::exception &e) {
-		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
-		if (_err != NULL) {
-			buildError(_err->getError());
-		} else {
-			std::cout << "Catched exception " << e.what() << std::endl;
-			buildError(Internal_Error);
-		}
-	}
+	_responseMessage += _response["Version"] + " "
+		+ _response["Status code"] + "\n" 
+		+ "Content-Type: " + _response["Content-Type:"] + "\n"
+		+ "Connection: close\n"
+		+ "Content-Length: " + _response["Content-Length:"] + "\n\n"
+		+ _response["Body"];
 
-	_responseMessage += _response["Version"] + " " + _response["Status code"] + "\n" + "Content-Type: " + _response["Content-Type:"] + "\n" + "Connection: close\n" + "Content-Length: " + _response["Content-Length:"] + "\n\n" + _response["Body"];
-//	std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
+	if (DEBUG)
+		std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
 }
 
 void Response::GETMethod()
@@ -231,7 +225,6 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	std::cout << "body is" << _headerFields["Body"] << std::endl;
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
 /*	if (!outfile)
@@ -255,7 +248,6 @@ void Response::methodID()
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
 	if (_headerFields["Path"] == "/")
 		_headerFields["Path"] = "/index.html";
-	_response["Version"] = _headerFields["Version"];
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
 	if (_headerFields["Method"] == "POST")
@@ -273,6 +265,25 @@ Response::Response(StringStringMap _headerFields) :
 {
 	if (DEBUG)
 		std::cout << "in Response constructor" << std::endl;
+	try
+	{
+		_response["Version"] = _headerFields["Version"];
+		checkRequestErrors();
+		methodID();
+	}
+	catch (const std::exception &e)
+	{
+		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
+		if (_err != NULL)
+		{
+			buildError(_err->getError());
+		}
+		else
+		{
+			std::cout << "Catched exception " << e.what() << std::endl;
+			buildError(Internal_Error);
+		}
+	}
 	buildResponse();
 	return ;
 }
