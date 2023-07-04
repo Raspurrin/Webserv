@@ -12,7 +12,6 @@ class Client
 		struct pollfd			_pollFd;
 		class ServerConfig&		_serverConfig;
 		class Request			_request;
-		std::string				_responseMessage;
 
 	public:
 		int						getSocket();

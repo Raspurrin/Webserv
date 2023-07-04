@@ -1,5 +1,7 @@
 #include "../header/Response.class.hpp"
+#include <sstream>
 #include <sys/stat.h>
+#include <unistd.h>
 
 
 /**
@@ -82,9 +84,16 @@ void Response::readHTML()
 
 void Response::status200()
 {
-	std::cout << "in status200" << std::endl;
 	_response["Status code"] = "200 OK";
 	_response["Path"] = _headerFields["Path"];
+	readHTML();
+	return ;
+}
+
+void Response::status201()
+{
+	_response["Status code"] = "201 CREATED";
+	_response["Path"] = "/success.html";
 	readHTML();
 	return ;
 }
@@ -104,12 +113,39 @@ void Response::status500()
 	readHTML();
 }
 
+void Response::status505()
+{
+	_response["Status code"] = "505 HTTP Version Not Supported";
+	_response["Version"] = "HTTP/1.1";
+	_response["Path"] = "/error_pages/505.html";
+	readHTML();
+}
+
+void Response::status415()
+{
+	_response["Status code"] = "415 Unsupported Media Type";
+	_response["Path"] = "/error_pages/415.html";
+	readHTML();
+	return ;
+}
+
 int Response::status403()
 {
 	_response["Status code"] = "403 Forbidden";
 	_response["Path"] = "/error_pages/403.html";
 	readHTML();
 	return (1);
+}
+
+void Response::checkRequestErrors()
+{
+	if (_headerFields.count("Error") == 0)
+		return ;
+
+	if (_headerFields["Error"] == "415")
+		throw ErrC(Unsupported_Media_Type);
+	if (_headerFields["Error"] == "505")
+		throw ErrC(HTTP_Version_Not_Supported);
 }
 
 int Response::checkStat()
@@ -137,6 +173,14 @@ void Response::buildError(const Error _err) {
 		// TODO
 		break;
 
+	case Unsupported_Media_Type:
+		status415();
+		break;
+
+	case HTTP_Version_Not_Supported:
+		status505();
+		break;
+
 	case Forbidden:
 		status403();
 		break;
@@ -157,29 +201,19 @@ void Response::buildError(const Error _err) {
 
 void Response::buildResponse()
 {
-	// TODO: this block can be moved to a different place, depending on djaisins changes
-	try {
-		_response["Version"] = "HTTP/1.1";
-		methodID();
-	} catch (const std::exception &e) {
-		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
-		if (_err != NULL) {
-			buildError(_err->getError());
-		} else {
-			std::cout << "Catched exception " << e.what() << std::endl;
-			buildError(Internal_Error);
-		}
-	}
+	_responseMessage += _response["Version"] + " "
+		+ _response["Status code"] + "\n" 
+		+ "Content-Type: " + _response["Content-Type:"] + "\n"
+		+ "Connection: close\n"
+		+ "Content-Length: " + _response["Content-Length:"] + "\n\n"
+		+ _response["Body"];
 
-	_responseMessage += _response["Version"] + " " + _response["Status code"] + "\n" + "Content-Type: " + _response["Content-Type:"] + "\n" + "Connection: close\n" + "Content-Length: " + _response["Content-Length:"] + "\n\n" + _response["Body"];
-	// std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
+	if (DEBUG)
+		std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
 }
 
 void Response::GETMethod()
 {
-	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/index.html";
 	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
 		throw ErrC(Not_Found);
 	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
@@ -189,10 +223,35 @@ void Response::GETMethod()
 	return ;
 }
 
+void Response::POSTMethod()
+{
+	chdir("./files");
+	std::ofstream outfile(_headerFields["Filename"].c_str());
+/*	if (!outfile)
+		std::cout << "ERROR OPENING FILE" << std::endl;
+	else if (outfile.good())
+		std::cout << "GOOD" << std::endl;
+	if (outfile.bad())
+		std::cout << "ERROR i/o" << std::endl;
+	else if (outfile.fail())
+		std::cout << "ERROR fail" << std::endl;
+	else if (outfile.eof())
+		std::cout << "GOOD" << std::endl;*/
+	outfile << _headerFields["Body-Text"] << std::endl;
+	outfile.close();
+	chdir("..");
+	status201();
+}
+
 void Response::methodID()
 {
+	// "/" will always be a directory, so maybe we should solve this with a route later on?
+	if (_headerFields["Path"] == "/")
+		_headerFields["Path"] = "/index.html";
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
+	if (_headerFields["Method"] == "POST")
+		POSTMethod();
 	return ;
 }
 
@@ -204,7 +263,27 @@ std::string	Response::getResponse()
 Response::Response(StringStringMap _headerFields) : 
 	_headerFields(_headerFields)
 {
-	std::cout << "in Response constructor" << std::endl;
+	if (DEBUG)
+		std::cout << "in Response constructor" << std::endl;
+	try
+	{
+		_response["Version"] = _headerFields["Version"];
+		checkRequestErrors();
+		methodID();
+	}
+	catch (const std::exception &e)
+	{
+		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
+		if (_err != NULL)
+		{
+			buildError(_err->getError());
+		}
+		else
+		{
+			std::cout << "Catched exception " << e.what() << std::endl;
+			buildError(Internal_Error);
+		}
+	}
 	buildResponse();
 	return ;
 }
