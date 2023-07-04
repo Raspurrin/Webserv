@@ -13,6 +13,7 @@ class Client
 		class ServerConfig&		_serverConfig;
 		class Request			_request;
 		std::string				_responseMessage;
+		bool					_isCgi;
 
 	public:
 		int						getSocket();
@@ -20,6 +21,7 @@ class Client
 		std::string				getResponse();
 		bool					isRequestSent();
 		StringStringMap			getHeaderFields();
+		bool					_getIsCgi();
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);
