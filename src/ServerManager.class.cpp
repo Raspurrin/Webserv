@@ -41,7 +41,8 @@ IntVector	_indexesToRemove;
 	void	ServerManager::configureSocket(int newSocket)
 	{
 		int		flags;
-		std::cout << "socket2 " << newSocket << std::endl;
+		if (DEBUG)
+			std::cout << "socket2 " << newSocket << std::endl;
 		flags = fcntl(newSocket, F_GETFL, 0);
 		fcntl(newSocket, F_SETFL, flags | O_NONBLOCK);
 	}
@@ -111,7 +112,8 @@ IntVector	_indexesToRemove;
 		// std::cout << "we do a loop" << std::endl;
 		if (_sockets[i].revents & POLLIN)
 		{
-			std::cout << "POLLIN with index " << i << "fd is " << _sockets[i].fd << std::endl;
+			if (DEBUG)
+				std::cout << "POLLIN with index " << i << "fd is " << _sockets[i].fd << std::endl;
 			_clients[i - _numServerSockets].getRequest();
 		}
 		else if (_clients[i - _numServerSockets].isRequestSent() && _sockets[i].revents & POLLOUT) {

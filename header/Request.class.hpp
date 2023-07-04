@@ -17,7 +17,6 @@ class Request
 		int				_readCount;
 		std::string		_requestBuffer;
 		std::map<std::string, std::string>	_headerFields;
-		std::map<std::string, std::string>	_bodyFields;
 
 		std::string		buildResponse();
 		void			readIntoString(int &socket);
