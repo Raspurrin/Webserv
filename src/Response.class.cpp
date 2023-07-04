@@ -253,7 +253,8 @@ std::string	Response::getResponse()
 Response::Response(StringStringMap _headerFields) : 
 	_headerFields(_headerFields)
 {
-	std::cout << "in Response constructor" << std::endl;
+	if (DEBUG)
+		std::cout << "in Response constructor" << std::endl;
 	buildResponse();
 	return ;
 }
