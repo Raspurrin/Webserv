@@ -34,6 +34,7 @@ class Response
 		void	status500();
 		int	checkStat();
 		void	status200();
+		void	status415();
 		void	status201();
 		void	readHTML();
 		std::string	lenToStr(std::string body);

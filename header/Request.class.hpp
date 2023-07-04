@@ -16,7 +16,6 @@ class Request
 		bool			_isRead;
 		int				_readCount;
 		std::string		_requestBuffer;
-		std::string		_response;
 		std::map<std::string, std::string>	_headerFields;
 		std::map<std::string, std::string>	_bodyFields;
 

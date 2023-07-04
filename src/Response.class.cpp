@@ -113,6 +113,14 @@ void Response::status500()
 	readHTML();
 }
 
+void Response::status415()
+{
+	_response["Status code"] = "415 Unsupported Media Type";
+	_response["Path"] = "/error_pages/415.html";
+	readHTML();
+	return ;
+}
+
 int Response::status403()
 {
 	_response["Status code"] = "403 Forbidden";
@@ -144,6 +152,10 @@ void Response::buildError(const Error _err) {
 	{
 	case Bad_Request:
 		// TODO
+		break;
+
+	case Unsupported_Media_Type:
+		status415();
 		break;
 
 	case Forbidden:
@@ -181,7 +193,7 @@ void Response::buildResponse()
 	}
 
 	_responseMessage += _response["Version"] + " " + _response["Status code"] + "\n" + "Content-Type: " + _response["Content-Type:"] + "\n" + "Connection: close\n" + "Content-Length: " + _response["Content-Length:"] + "\n\n" + _response["Body"];
-	// std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
+//	std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
 }
 
 void Response::GETMethod()
@@ -197,33 +209,25 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	std::string str, str2, str3, str4, str5;
-	std::stringstream	ss(_headerFields["Body"]);
-	getline(ss, str);
-	getline(ss, str2);
-	int name = str2.find_last_of('"');
-	name -= 1;
-	int other = name;
-	while (str2[other] != '"')
-		other--;
-	std::string file = str2.substr(other + 1, name - other);
-//	std::cout << file << std::endl;
+	if (_headerFields.count("Error") > 0)
+	{
+		if (_headerFields["Error"] == "415")
+			throw ErrC(Unsupported_Media_Type);
+	}
+	std::cout << "body is" << _headerFields["Body"] << std::endl;
 	chdir("./files");
-	std::ofstream outfile(file.c_str());
+	std::ofstream outfile(_headerFields["Filename"].c_str());
 	if (!outfile)
 		std::cout << "ERROR OPENING FILE" << std::endl;
 	else if (outfile.good())
 		std::cout << "GOOD" << std::endl;
-	getline(ss, str3);
-	getline(ss, str4);
-	getline(ss, str5);
 	if (outfile.bad())
 		std::cout << "ERROR i/o" << std::endl;
 	else if (outfile.fail())
 		std::cout << "ERROR fail" << std::endl;
 	else if (outfile.eof())
 		std::cout << "GOOD" << std::endl;
-	outfile << str5 << std::endl;
+	outfile << _headerFields["Body-Text"] << std::endl;
 	outfile.close();
 	chdir("..");
 	status201();

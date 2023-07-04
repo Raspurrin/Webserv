@@ -87,13 +87,14 @@ IntVector	_indexesToRemove;
 
 	void	ServerManager::sendResponse(Client &client)
 	{
+		std::string	_response = client.getResponse();
 		static int i = 0;
-		std::cout << client.getResponse() << std::endl;
+
 		std::cout << "==================" << std::endl;
 		std::cout << "sending response " << i << std::endl;
 		std::cout << "==================" << std::endl;
-		send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
-		printf("HELLO MESSAGE SENT FROM SERVER\n");
+		send(client.getSocket(),_response.c_str(), _response.length(), 0);
+		printf("MESSAGE SENT FROM SERVER\n");
 		close(client.getSocket());
 		i++;
 	}
