@@ -56,7 +56,6 @@ void Request::parseBody(std::string body)
 		found = _headerFields["Body-Type"].find("text/plain");
 		if (found != std::string::npos)
 		{
-				std::cout << "HERE" << std::endl;
 			getline(ss, line);
 			getline(ss, _headerFields["Body-Text"], '\r');
 		}
@@ -110,11 +109,14 @@ void Request::readIntoString(int &socket)
 	{
 		close(socket);
 		_indexesToRemove.push_back(socket);		
-		std::cout << "DO I REACH HERE" << std::endl;
 	}
 		_isRead = true;
-	std::cout << RED << "Received message:\n" << DEF << readBuffer << "END" << std::endl;
-	std::cout << RED << "Read count:\n" << DEF << _readCount << "END" << std::endl;
+	
+	if (DEBUG)
+	{
+		std::cout << RED << "Received message:\n" << DEF << readBuffer << "END" << std::endl;
+		std::cout << RED << "Read count:\n" << DEF << _readCount << "END" << std::endl;
+	}
 	_requestBuffer.append(readBuffer);
 }
 

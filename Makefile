@@ -1,7 +1,8 @@
 NAME = webserv
 CC = c++
 RM = rm -rf
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -g -D DEBUG=0
+DFLAGS = -Wall -Wextra -Werror -std=c++98 -g -D DEBUG=1
 
 HEADER_DIR = ./header
 SRC_DIR = ./src/
@@ -30,6 +31,11 @@ $(OBJ_PREF): .build/%.o: src/%.cpp
 
 all: $(NAME)
 
+re: fclean all
+
+debug:	CFLAGS = $(DFLAGS)
+debug:	all ./$(NAME)
+
 run: all
 	@./$(NAME)
 
@@ -43,7 +49,4 @@ fclean: clean
 	@$(RM) $(NAME)
 	@echo "Success, directory cleaned."
 
-re: fclean all
-
-.PHONY: all clean fclean re run leaks
-
+.PHONY: all clean fclean re run leaks debug

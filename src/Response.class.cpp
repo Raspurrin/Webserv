@@ -217,7 +217,7 @@ void Response::POSTMethod()
 	std::cout << "body is" << _headerFields["Body"] << std::endl;
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
-	if (!outfile)
+/*	if (!outfile)
 		std::cout << "ERROR OPENING FILE" << std::endl;
 	else if (outfile.good())
 		std::cout << "GOOD" << std::endl;
@@ -226,7 +226,7 @@ void Response::POSTMethod()
 	else if (outfile.fail())
 		std::cout << "ERROR fail" << std::endl;
 	else if (outfile.eof())
-		std::cout << "GOOD" << std::endl;
+		std::cout << "GOOD" << std::endl;*/
 	outfile << _headerFields["Body-Text"] << std::endl;
 	outfile.close();
 	chdir("..");
