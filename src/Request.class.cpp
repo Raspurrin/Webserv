@@ -80,7 +80,7 @@ void Request::parseStartLine(std::string startLine)
 	position = startLine.find(' ', lpos);
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
 	size_t found = _headerFields["Version"].find("HTTP/1.1");
-	if (found != std::string::npos)
+	if (found == std::string::npos)
 		_headerFields["Error"] = "505";
 }
 
