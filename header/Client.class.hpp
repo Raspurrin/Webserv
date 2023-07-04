@@ -19,7 +19,6 @@ class Client
 		std::string				getResponse();
 		bool					isRequestSent();
 		StringStringMap			getHeaderFields();
-		bool					_getIsCgi();
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);
