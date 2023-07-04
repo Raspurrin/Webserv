@@ -6,7 +6,8 @@ enum Error {
 	Forbidden,
 	Not_Found,
 	Internal_Error,
-	Unsupported_Media_Type
+	Unsupported_Media_Type,
+	HTTP_Version_Not_Supported
 };
 
 class ErrC: public std::exception {
