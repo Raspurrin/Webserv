@@ -1,5 +1,6 @@
 	#include "../header/ServerManager.class.hpp"
 	#include "../header/ParsingConfig.hpp"
+	#include "../header/Cgi.class.hpp"
 
 IntVector	_indexesToRemove;
 
@@ -92,8 +93,14 @@ IntVector	_indexesToRemove;
 		std::cout << "==================" << std::endl;
 		std::cout << "sending response " << i << std::endl;
 		std::cout << "==================" << std::endl;
-		send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
-		printf("HELLO MESSAGE SENT FROM SERVER\n");
+
+		if (client.getHeaderFields()["Path"].find("/cgi-bin/") != std::string::npos) {
+			Cgi cgi(client);
+		} else {
+			send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
+			printf("HELLO MESSAGE SENT FROM SERVER\n");
+		}
+
 		close(client.getSocket());
 		i++;
 	}
