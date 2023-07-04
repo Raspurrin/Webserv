@@ -19,6 +19,7 @@ class Client
 		void					getRequest();
 		std::string				getResponse();
 		bool					isRequestSent();
+		StringStringMap			getHeaderFields();
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);
