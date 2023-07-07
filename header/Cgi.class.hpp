@@ -9,10 +9,10 @@ typedef std::vector<std::string>			ArgVec;
 
 class Cgi {
 private:
-	Client&		_client;
-	ArgVec		_env;
+	StringStringMap	_headerFields;
+	ArgVec			_env;
 public:
-	Cgi(Client &);
+	Cgi(StringStringMap&);
 
 	void prepareCgi();
 	std::string runGet();

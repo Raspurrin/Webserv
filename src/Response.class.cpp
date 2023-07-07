@@ -1,5 +1,6 @@
 #include "../header/Response.class.hpp"
 #include <sstream>
+#include "../header/Cgi.class.hpp"
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -202,7 +203,7 @@ void Response::buildError(const Error _err) {
 void Response::buildResponse()
 {
 	_responseMessage += _response["Version"] + " "
-		+ _response["Status code"] + "\n" 
+		+ _response["Status code"] + "\n"
 		+ "Content-Type: " + _response["Content-Type:"] + "\n"
 		+ "Connection: close\n"
 		+ "Content-Length: " + _response["Content-Length:"] + "\n\n"
@@ -260,7 +261,7 @@ std::string	Response::getResponse()
 	return (_responseMessage);
 }
 
-Response::Response(StringStringMap _headerFields) : 
+Response::Response(StringStringMap _headerFields) :
 	_headerFields(_headerFields)
 {
 	if (DEBUG)
