@@ -39,7 +39,6 @@ class Response
 		void	status415();
 		void	status201();
 		void	readHTML();
-		std::string	lenToStr(std::string body);
 
 	public:
 		void		postResponse(int socket, int indexToRemove);

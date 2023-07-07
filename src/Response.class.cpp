@@ -1,6 +1,7 @@
 #include "../header/Response.class.hpp"
 #include <sstream>
 #include "../header/Cgi.class.hpp"
+#include "../header/utils.hpp"
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -48,17 +49,6 @@ bool Response::listDir()
 	}
 	else
 		return false;
-}
-
-std::string Response::lenToStr(std::string body)
-{
-	size_t	len = body.length();
-	std::ostringstream str1;
-
-	str1 << len;
-	std::string	lenStr = str1.str();
-
-	return (lenStr);
 }
 
 void Response::readHTML()
