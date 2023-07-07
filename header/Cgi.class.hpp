@@ -5,14 +5,15 @@
 #include <map>
 #include "Client.class.hpp"
 
-typedef std::vector<const char *>			ArgVec;
-typedef std::map<std::string, std::string>	VarMap;
+typedef std::vector<std::string>			ArgVec;
 
 class Cgi {
 private:
 	Client&		_client;
-	ArgVec	_env;
-	VarMap		_var;
+	ArgVec		_env;
 public:
 	Cgi(Client &);
+
+	void prepareCgi();
+	std::string runGet();
 };
