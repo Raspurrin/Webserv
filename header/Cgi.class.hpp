@@ -15,5 +15,5 @@ public:
 	Cgi(StringStringMap&);
 
 	void prepareCgi();
-	std::string runGet();
+	StringStringMap runGet();
 };

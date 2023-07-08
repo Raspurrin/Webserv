@@ -210,7 +210,13 @@ void Response::GETMethod()
 	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
 		throw ErrC(Forbidden);
 	checkStat();
-	status200();
+	if (_headerFields["Path"].find("/cgi-bin/") != std::string::npos) {
+		Cgi cgi(_headerFields);
+		cgi.prepareCgi();
+		_response = cgi.runGet();
+	} else {
+		status200();
+	}
 	return ;
 }
 
