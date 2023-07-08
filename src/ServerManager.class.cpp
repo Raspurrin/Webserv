@@ -89,22 +89,16 @@ IntVector	_indexesToRemove;
 
 	void	ServerManager::sendResponse(Client &client)
 	{
-		std::string	_response = client.getResponse();
 		static int i = 0;
+			if (DEBUG) {
+			std::string	_response = client.getResponse();
 
-		std::cout << "==================" << std::endl;
-		std::cout << "sending response " << i << std::endl;
-		std::cout << "==================" << std::endl;
-
-		send(client.getSocket(),_response.c_str(), _response.length(), 0);
-		if (DEBUG) {
-				printf("MESSAGE SENT FROM SERVER\n");
-		if (client.getHeaderFields()["Path"].find("/cgi-bin/") != std::string::npos) {
-			Cgi cgi(client);
-		} else {
-			send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
+			std::cout << "==================" << std::endl;
+			std::cout << "sending response " << i << std::endl;
+			std::cout << "==================" << std::endl;
 			printf("HELLO MESSAGE SENT FROM SERVER\n");
 		}
+		send(client.getSocket(), client.getResponse().c_str(), client.getResponse().length(), 0);
 
 		close(client.getSocket());
 		i++;
