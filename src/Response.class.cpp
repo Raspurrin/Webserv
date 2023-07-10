@@ -273,6 +273,7 @@ Response::Response(StringStringMap _headerFields) :
 		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
 		if (_err != NULL)
 		{
+			std::cout << "Exception message: " << _err->what() << std::endl;
 			buildError(_err->getError());
 		}
 		else
