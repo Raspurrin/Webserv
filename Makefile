@@ -1,7 +1,7 @@
 NAME = webserv
 CC = c++
 RM = rm -rf
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -g -D DEBUG=0
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -O3 -D DEBUG=0
 DFLAGS = -Wall -Wextra -Werror -std=c++98 -g -D DEBUG=1
 
 HEADER_DIR = ./header
