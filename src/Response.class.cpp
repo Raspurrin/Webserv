@@ -200,7 +200,7 @@ void Response::buildResponse()
 		+ _response["Body"];
 
 	if (DEBUG)
-		std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
+		std::cout << "RESPONSE MESSAGE" << std::endl << _responseMessage << std::endl;
 }
 
 void Response::GETMethod()
