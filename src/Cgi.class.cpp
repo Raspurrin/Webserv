@@ -2,6 +2,7 @@
 #include "../header/error.h"
 #include "../header/utils.hpp"
 #include "sys/wait.h"
+#include "time.h"
 #include "sys/types.h"
 
 Cgi::Cgi(StringStringMap &headerFields): _headerFields(headerFields) {
@@ -75,7 +76,7 @@ static void check_output(StringStringMap &output) {
 }
 
 StringStringMap Cgi::runGet() {
-	//FIXME: Replace with a safe implementation
+	//FIXME: Replace with a safe random implementation
 	std::string tmp_file = "tmp";
 	int pid = fork();
 	if (pid == 0) {
@@ -91,8 +92,6 @@ StringStringMap Cgi::runGet() {
 		argv[0] = const_cast<char *>(cgi_file_path.c_str());
 		mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 		int tmp_fd = open(tmp_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
-		std::cout << cgi_file_path << std::endl;
-		std::cout << "tmp_fd: " << tmp_fd << std::endl;
 		int ret = dup2(tmp_fd, STDOUT_FILENO);
 		if (ret == -1)
 			perror("Dup2");
@@ -100,12 +99,17 @@ StringStringMap Cgi::runGet() {
 		perror("Execve failed");
 		exit(1);
 	} else {
-		int i = 0;
-		// do {
-
-		// } while ()
-		waitpid(pid, &i, 0);
-		if (!WIFEXITED(i) || WEXITSTATUS(i) != EXIT_SUCCESS) {
+		int status = 0;
+		time_t start = time(NULL);
+		do {
+			int ret = waitpid(pid, &status, WNOHANG);
+			if (ret == -1) {
+				throw ErrC(Internal_Error, "waitpid failed");
+			} else if (ret != 0) {
+				break;
+			}
+		} while (time(NULL) - start < CGI_TIMEOUT_S);
+		if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS) {
 			throw ErrC(Internal_Error, "Child process failed");
 		}
 		std::ifstream output_file(tmp_file.c_str());
