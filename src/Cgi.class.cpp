@@ -27,7 +27,11 @@ void Cgi::prepareCgi() {
 	}
 	_env.push_back("SERVER_NAME=" + host.substr(0, pos));
 	std::string& path = _headerFields["Path"];
-	_env.push_back("QUERY_STRING=" + path.substr(path.find('?') + 1));
+	if (path.find('?') != std::string::npos) {
+		_env.push_back("QUERY_STRING=" + path.substr(path.find('?') + 1));
+	} else {
+		_env.push_back("QUERY_STRING=");
+	}
 	_env.push_back("SCRIPT_NAME=" + path.substr(0, path.find('?')));
 	_env.push_back("SERVER_SOFTWARE=webserv");
 	for (StringStringMap::iterator it = _headerFields.begin(); it != _headerFields.end(); it++) {
