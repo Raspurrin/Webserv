@@ -76,6 +76,9 @@ static void check_output(StringStringMap &output) {
 
 	if (output.find("Content-Length:") == output.end()) {
 		output["Content-Length:"] = lenToStr(output["Body"]);
+	} else if (output["Content-Length:"] != lenToStr(output["Body"])) {
+		// enforce correct content lengthg
+		throw ErrC(Internal_Error, "Content-Length provided by cgi does not match size of returned body");
 	}
 
 	if (output.find("Status:") != output.end()) {
