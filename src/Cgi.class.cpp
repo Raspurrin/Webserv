@@ -4,6 +4,8 @@
 #include "sys/wait.h"
 #include "time.h"
 #include "sys/types.h"
+#include <cstdio>
+#include <cstdlib>
 
 Cgi::Cgi(StringStringMap &headerFields): _headerFields(headerFields) {
 }
@@ -58,7 +60,6 @@ static StringStringMap parse_output(const std::string &output) {
 		response[key] = value;
 	}
 	response["Version"] = "HTTP/1.1";
-	response["Status code"] = "200 OK";
 
 	response["Body"] = output.substr(header_end + 4);
 	return response;
@@ -73,11 +74,22 @@ static void check_output(StringStringMap &output) {
 		output["Content-Length:"] = lenToStr(output["Body"]);
 	}
 
+	if (output.find("Status:") != output.end()) {
+		output["Status code"] = output["Status:"];
+	} else {
+		output["Status code"] = "200 OK";
+	}
 }
 
 StringStringMap Cgi::runGet() {
 	//FIXME: Replace with a safe random implementation
-	std::string tmp_file = "tmp";
+	std::string tmp_file;
+	// std::stringstream str;
+	// str << rand();
+	// str >> tmp_file;
+	// tmp_file = "/tmp/webserv" + tmp_file;
+	// std::cout << "Tmp file is: " << tmp_file << std::endl;
+	tmp_file = "tmp";
 	int pid = fork();
 	if (pid == 0) {
 		std::vector<const char*> env;
@@ -88,7 +100,7 @@ StringStringMap Cgi::runGet() {
 		char *argv[2];
 		argv[1] = NULL;
 		std::string& path = _headerFields["Path"];
-		std::string cgi_file_path = path.substr(1, path.find('?'));
+		std::string cgi_file_path = path.substr(1, path.find('?') - 1);
 		argv[0] = const_cast<char *>(cgi_file_path.c_str());
 		mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
 		int tmp_fd = open(tmp_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
@@ -112,12 +124,18 @@ StringStringMap Cgi::runGet() {
 		if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS) {
 			throw ErrC(Internal_Error, "Child process failed");
 		}
-		std::ifstream output_file(tmp_file.c_str());
+
+		std::ifstream output_file(tmp_file);
 		if (output_file.bad()) {
 			throw ErrC(Internal_Error, "Fd is bad.");
 		}
+
 		std::ostringstream output;
 		output << output_file.rdbuf();
+
+		// if (std::remove(tmp_file.c_str())) {
+		// 	std::cout << "Could not remove tmp file";
+		// }
 
 		StringStringMap response = parse_output(output.str());
 		check_output(response);
