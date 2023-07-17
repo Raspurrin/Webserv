@@ -92,11 +92,15 @@ void Response::buildError(const Error _err) {
 	switch (_err)
 	{
 	case Bad_Request:
-		// TODO
+		status400();
 		break;
 
 	case Unsupported_Media_Type:
 		status415();
+		break;
+
+	case Not_Implemented:
+		status501();
 		break;
 
 	case HTTP_Version_Not_Supported:
