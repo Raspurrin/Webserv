@@ -123,6 +123,7 @@ void Response::buildError(const Error _err) {
 
 void Response::buildResponse()
 {
+	readHTML();
 	_responseMessage += _response["Version"] + " "
 		+ _response["Status code"] + "\n";
 
@@ -240,7 +241,6 @@ void Response::status200()
 {
 	_response["Status code"] = "200 OK";
 	_response["Path"] = _headerFields["Path"];
-	readHTML();
 	return ;
 }
 
@@ -250,7 +250,6 @@ void Response::status201()
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
 	_response["Location:"] = dir.append(_headerFields["Filename"]);
-	readHTML();
 	return ;
 }
 
@@ -258,7 +257,6 @@ int Response::status403()
 {
 	_response["Status code"] = "403 Forbidden";
 	_response["Path"] = "/error_pages/403.html";
-	readHTML();
 	return (1);
 }
 
@@ -266,7 +264,6 @@ int Response::status404()
 {
 	_response["Status code"] = "404 Not Found";
 	_response["Path"] = "/error_pages/404.html";
-	readHTML();
 	return (1);
 }
 
@@ -274,7 +271,6 @@ void Response::status415()
 {
 	_response["Status code"] = "415 Unsupported Media Type";
 	_response["Path"] = "/error_pages/415.html";
-	readHTML();
 	return ;
 }
 
@@ -282,7 +278,6 @@ void Response::status500()
 {
 	_response["Status code"] = "500 Internal Server Error";
 	_response["Path"] = "/error_pages/500.html";
-	readHTML();
 }
 
 void Response::status505()
@@ -290,7 +285,6 @@ void Response::status505()
 	_response["Status code"] = "505 HTTP Version Not Supported";
 	_response["Version"] = "HTTP/1.1";
 	_response["Path"] = "/error_pages/505.html";
-	readHTML();
 }
 
 std::string	Response::getResponse()
