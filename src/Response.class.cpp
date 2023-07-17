@@ -142,7 +142,9 @@ void Response::checkRequestErrors()
 int Response::checkStat()
 {
 	struct	stat s;
-	if (stat(_headerFields["Path"].c_str() + 1, &s) == 0)
+	std::string path = _headerFields["Path"];
+	path = path.substr(0, path.find('?'));
+	if (stat(path.c_str() + 1, &s) == 0)
 	{
 		//FIXME: only list directory when enabled. Requires working config.
 		if (s.st_mode & S_IFDIR && listDir())
@@ -205,16 +207,20 @@ void Response::buildResponse()
 
 void Response::GETMethod()
 {
-	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
+	std::string path = _headerFields["Path"];
+	path = path.substr(0, path.find('?'));
+	if (access(path.c_str() + 1, F_OK) == -1)
 		throw ErrC(Not_Found);
-	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
-		throw ErrC(Forbidden);
 	checkStat();
-	if (_headerFields["Path"].find("/cgi-bin/") != std::string::npos) {
+	if (path.find("/cgi-bin/") != std::string::npos) {
+		if (access(path.c_str() + 1, X_OK) == -1)
+		throw ErrC(Forbidden);
 		Cgi cgi(_headerFields);
 		cgi.prepareCgi();
 		_response = cgi.runGet();
 	} else {
+		if (access(path.c_str() + 1, R_OK) == -1)
+			throw ErrC(Forbidden);
 		status200();
 	}
 	return ;
