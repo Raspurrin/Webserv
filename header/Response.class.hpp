@@ -27,6 +27,7 @@ class Response
 		void	methodID();
 		void	checkRequestErrors();
 		void	GETMethod();
+		void	DELETEMethod();
 		void	POSTMethod();
 		void	buildResponse();
 		void	buildError(const Error);

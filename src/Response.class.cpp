@@ -250,8 +250,10 @@ void Response::methodID()
 		_headerFields["Path"] = "/index.html";
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
-	if (_headerFields["Method"] == "POST")
+	else if (_headerFields["Method"] == "POST")
 		POSTMethod();
+	else if (_headerFields["Method"] == "DELETE")
+		DELETEMethod();
 	return ;
 }
 
