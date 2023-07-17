@@ -253,18 +253,22 @@ void Response::status201()
 	return ;
 }
 
-int Response::status403()
+void Response::status400()
+{
+	_response["Status code"] = "400 Bad Request";
+	_response["Path"] = "/error_pages/400.html";
+}
+
+void Response::status403()
 {
 	_response["Status code"] = "403 Forbidden";
 	_response["Path"] = "/error_pages/403.html";
-	return (1);
 }
 
-int Response::status404()
+void Response::status404()
 {
 	_response["Status code"] = "404 Not Found";
 	_response["Path"] = "/error_pages/404.html";
-	return (1);
 }
 
 void Response::status415()
@@ -278,6 +282,12 @@ void Response::status500()
 {
 	_response["Status code"] = "500 Internal Server Error";
 	_response["Path"] = "/error_pages/500.html";
+}
+
+void Response::status501()
+{
+	_response["Status code"] = "501 Not Implemented";
+	_response["Path"] = "/error_pages/501.html";
 }
 
 void Response::status505()

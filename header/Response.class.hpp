@@ -32,13 +32,15 @@ class Response
 		void	DELETEMethod();
 		void	POSTMethod();
 
-		int		status404();
-		int		status403();
-		void	status500();
-		void	status505();
 		void	status200();
-		void	status415();
 		void	status201();
+		void	status400();
+		void	status403();
+		void	status404();
+		void	status415();
+		void	status500();
+		void	status501();
+		void	status505();
 
 		void	readHTML();
 		std::string	lenToStr(std::string body);
