@@ -88,6 +88,8 @@ void Response::POSTMethod()
 
 void Response::DELETEMethod()
 {
+	if (_headerFields["Path"].find("/files/") == std::string::npos)
+		throw ErrC(Forbidden);
 	std::cout << "IN DELETE METHOD" << std::endl;
 }
 
