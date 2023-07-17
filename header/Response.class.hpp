@@ -37,6 +37,7 @@ class Response
 		void	status400();
 		void	status403();
 		void	status404();
+		void	status409();
 		void	status415();
 		void	status500();
 		void	status501();

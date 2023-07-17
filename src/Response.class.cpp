@@ -136,6 +136,10 @@ void Response::buildError(const Error _err) {
 		status404();
 		break;
 
+	case Conflict:
+		status409();
+		break;
+
 	case Internal_Error:
 		status500();
 		break;
@@ -292,6 +296,12 @@ void Response::status404()
 {
 	_response["Status code"] = "404 Not Found";
 	_response["Path"] = "/error_pages/404.html";
+}
+
+void Response::status409()
+{
+	_response["Status code"] = "409 Conflict";
+	_response["Path"] = "/error_pages/409.html";
 }
 
 void Response::status415()

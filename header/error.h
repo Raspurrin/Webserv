@@ -8,6 +8,7 @@ enum Error {
 	HTTP_Version_Not_Supported,
 	Forbidden,
 	Not_Found,
+	Conflict,
 	Internal_Error
 };
 
