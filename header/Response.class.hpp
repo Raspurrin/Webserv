@@ -24,6 +24,7 @@ class Response
 		std::string		_responseMessage;
 
 		void	buildResponse();
+		void	buildError(const Error);
 		void	methodID();
 		void	checkRequestErrors();
 
@@ -41,7 +42,6 @@ class Response
 
 		void	readHTML();
 		std::string	lenToStr(std::string body);
-		void	buildError(const Error);
 		int		checkStat();
 		bool	listDir();
 
