@@ -28,6 +28,7 @@ Response::Response(StringStringMap _headerFields) :
 			std::cout << "Catched exception " << e.what() << std::endl;
 			buildError(Internal_Error);
 		}
+		readHTML();
 	}
 	buildResponse();
 	return ;
@@ -77,7 +78,10 @@ void Response::POSTMethod()
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
 	if (!outfile || outfile.bad() || outfile.fail())
+	{
+		chdir("..");
 		throw ErrC(Internal_Error, "Internal Error when creating file");
+	}
 	if (outfile.good())
 	{
 		outfile << _headerFields["Body-Text"] << std::endl;
@@ -91,13 +95,25 @@ void Response::DELETEMethod()
 {
 	if (_headerFields["Path"].rfind("/files/", 0) == std::string::npos)
 		throw ErrC(Forbidden);
-
 	int start = _headerFields["Path"].find_last_of('/');
 	_headerFields["Filename"] = _headerFields["Path"].substr(start + 1);
 
 	chdir("./files");
-	if (access(_headerFields["Filename"].c_str() + 1, F_OK) == -1)
+
+	if (access(_headerFields["Filename"].c_str(), F_OK) == -1)
+	{
+		chdir("..");
 		throw ErrC(Not_Found);
+	}
+
+	std::fstream file(_headerFields["Filename"].c_str(), std::ios::in);
+	if (!file.is_open())
+	{
+		chdir("..");
+		throw ErrC(Conflict);
+	}
+	file.close();
+
 	int rem = std::remove(_headerFields["Filename"].c_str());
 	chdir("..");
 	if (rem != 0)
@@ -245,6 +261,9 @@ std::string Response::lenToStr(std::string body)
 
 void Response::readHTML()
 {
+		char cwd[120000];
+   		getcwd(cwd, sizeof(cwd));
+		printf("Current working dir: %s\n", cwd);
 	std::ifstream	fin(_response["Path"].c_str() + 1);
 
 	if (fin.is_open())
@@ -294,6 +313,9 @@ void Response::status403()
 
 void Response::status404()
 {
+		char cwd[120000];
+   		getcwd(cwd, sizeof(cwd));
+		printf("Current working dir: %s\n", cwd);
 	_response["Status code"] = "404 Not Found";
 	_response["Path"] = "/error_pages/404.html";
 }
