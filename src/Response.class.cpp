@@ -83,6 +83,11 @@ void Response::POSTMethod()
 	}
 }
 
+void Response::DELETEMethod()
+{
+	std::cout << "IN DELETE METHOD" << std::endl;
+}
+
 void Response::buildError(const Error _err) {
 	switch (_err)
 	{
@@ -119,14 +124,20 @@ void Response::buildError(const Error _err) {
 void Response::buildResponse()
 {
 	_responseMessage += _response["Version"] + " "
-		+ _response["Status code"] + "\n" 
-		+ "Content-Type: " + _response["Content-Type:"] + "\n"
-		+ "Connection: close\n"
-		+ "Content-Length: " + _response["Content-Length:"] + "\n\n"
+		+ _response["Status code"] + "\n";
+
+	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
+	{
+		if ((*it).first.find(':') != std::string::npos)
+		{
+			_responseMessage += (*it).first + " " + (*it).second + "\n";
+		}
+	}
+	_responseMessage += "Connection: close\r\n\r\n"
 		+ _response["Body"];
 
 	if (DEBUG)
-		std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
+		std::cout << "RESPONSE MESSAGE: \n" << _responseMessage << std::endl;
 }
 
 int Response::checkStat()
@@ -238,7 +249,7 @@ void Response::status201()
 	std::string dir = "/files/";
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
-	_response["Location"] = dir.append(_headerFields["Filename"]);
+	_response["Location:"] = dir.append(_headerFields["Filename"]);
 	readHTML();
 	return ;
 }
