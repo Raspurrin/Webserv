@@ -13,6 +13,7 @@ Response::Response(StringStringMap _headerFields) :
 		_response["Version"] = _headerFields["Version"];
 		checkRequestErrors();
 		methodID();
+		readHTML();
 	}
 	catch (const std::exception &e)
 	{
@@ -70,6 +71,8 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
+	if (_headerFields["Path"] != "/files/")
+		throw ErrC(Forbidden);
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
 	if (!outfile || outfile.bad() || outfile.fail())
@@ -127,7 +130,6 @@ void Response::buildError(const Error _err) {
 
 void Response::buildResponse()
 {
-	readHTML();
 	_responseMessage += _response["Version"] + " "
 		+ _response["Status code"] + "\n";
 
@@ -250,10 +252,9 @@ void Response::status200()
 
 void Response::status201()
 {
-	std::string dir = "/files/";
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
-	_response["Location:"] = dir.append(_headerFields["Filename"]);
+	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
 	return ;
 }
 
