@@ -23,26 +23,30 @@ class Response
 		StringStringMap	_headerFields;
 		std::string		_responseMessage;
 
-		bool	listDir();
+		void	buildResponse();
 		void	methodID();
 		void	checkRequestErrors();
+
 		void	GETMethod();
 		void	DELETEMethod();
 		void	POSTMethod();
-		void	buildResponse();
-		void	buildError(const Error);
-		int	status404();
-		int	status403();
+
+		int		status404();
+		int		status403();
 		void	status500();
 		void	status505();
-		int	checkStat();
 		void	status200();
 		void	status415();
 		void	status201();
+
 		void	readHTML();
 		std::string	lenToStr(std::string body);
+		void	buildError(const Error);
+		int		checkStat();
+		bool	listDir();
 
 	public:
+
 		void		postResponse(int socket, int indexToRemove);
 		std::string	getResponse();
 
