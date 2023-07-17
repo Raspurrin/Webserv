@@ -227,20 +227,15 @@ void Response::POSTMethod()
 {
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
-/*	if (!outfile)
-		std::cout << "ERROR OPENING FILE" << std::endl;
-	else if (outfile.good())
-		std::cout << "GOOD" << std::endl;
-	if (outfile.bad())
-		std::cout << "ERROR i/o" << std::endl;
-	else if (outfile.fail())
-		std::cout << "ERROR fail" << std::endl;
-	else if (outfile.eof())
-		std::cout << "GOOD" << std::endl;*/
-	outfile << _headerFields["Body-Text"] << std::endl;
-	outfile.close();
-	chdir("..");
-	status201();
+	if (!outfile || outfile.bad() || outfile.fail())
+		throw ErrC(Internal_Error, "Internal Error when creating file");
+	if (outfile.good())
+	{
+		outfile << _headerFields["Body-Text"] << std::endl;
+		outfile.close();
+		chdir("..");
+		status201();
+	}
 }
 
 void Response::methodID()
