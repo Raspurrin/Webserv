@@ -1,4 +1,5 @@
 #include "../header/Response.class.hpp"
+#include <cstdio>
 #include <sstream>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -88,9 +89,24 @@ void Response::POSTMethod()
 
 void Response::DELETEMethod()
 {
-	if (_headerFields["Path"].find("/files/") == std::string::npos)
+	if (_headerFields["Path"].rfind("/files/", 0) == std::string::npos)
 		throw ErrC(Forbidden);
-	std::cout << "IN DELETE METHOD" << std::endl;
+
+	int start = _headerFields["Path"].find_last_of('/');
+	_headerFields["Filename"] = _headerFields["Path"].substr(start + 1);
+
+	chdir("./files");
+	if (access(_headerFields["Filename"].c_str() + 1, F_OK) == -1)
+		throw ErrC(Not_Found);
+	int rem = std::remove(_headerFields["Filename"].c_str());
+	chdir("..");
+	if (rem != 0)
+		throw ErrC(Internal_Error);
+	else
+	{
+		_response["Status code"] = "200 OK";
+		_response["Path"] = "/error_pages/deleted.html";
+	}
 }
 
 void Response::buildError(const Error _err) {
