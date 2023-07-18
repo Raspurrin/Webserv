@@ -18,4 +18,5 @@ public:
 
 	void prepareCgi();
 	StringStringMap runGet();
+	StringStringMap runPost();
 };
