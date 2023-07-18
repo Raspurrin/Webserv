@@ -1,8 +1,207 @@
 #include "../header/Response.class.hpp"
+#include <cstdio>
 #include <sstream>
 #include <sys/stat.h>
 #include <unistd.h>
 
+Response::Response(StringStringMap _headerFields) : 
+	_headerFields(_headerFields)
+{
+	if (DEBUG)
+		std::cout << "in Response constructor" << std::endl;
+	try
+	{
+		_response["Version"] = _headerFields["Version"];
+		checkRequestErrors();
+		methodID();
+		readHTML();
+	}
+	catch (const std::exception &e)
+	{
+		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
+		if (_err != NULL)
+		{
+			buildError(_err->getError());
+		}
+		else
+		{
+			std::cout << "Catched exception " << e.what() << std::endl;
+			buildError(Internal_Error);
+		}
+		readHTML();
+	}
+	buildResponse();
+	return ;
+}
+
+void Response::checkRequestErrors()
+{
+	if (_headerFields.count("Error") == 0)
+		return ;
+
+	if (_headerFields["Error"] == "415")
+		throw ErrC(Unsupported_Media_Type);
+	if (_headerFields["Error"] == "505")
+		throw ErrC(HTTP_Version_Not_Supported);
+}
+
+void Response::methodID()
+{
+	// "/" will always be a directory, so maybe we should solve this with a route later on?
+	if (_headerFields["Path"] == "/")
+		_headerFields["Path"] = "/index.html";
+
+	if (_headerFields["Method"] == "GET")
+		GETMethod();
+	else if (_headerFields["Method"] == "POST")
+		POSTMethod();
+	else if (_headerFields["Method"] == "DELETE")
+		DELETEMethod();
+	return ;
+}
+
+void Response::GETMethod()
+{
+	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
+		throw ErrC(Not_Found);
+	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
+		throw ErrC(Forbidden);
+	checkStat();
+	status200();
+	return ;
+}
+
+void Response::POSTMethod()
+{
+	if (_headerFields["Path"] != "/files/")
+		throw ErrC(Forbidden);
+	chdir("./files");
+	std::ofstream outfile(_headerFields["Filename"].c_str());
+	if (!outfile || outfile.bad() || outfile.fail())
+	{
+		chdir("..");
+		throw ErrC(Internal_Error, "Internal Error when creating file");
+	}
+	if (outfile.good())
+	{
+		outfile << _headerFields["Body-Text"] << std::endl;
+		outfile.close();
+		chdir("..");
+		status201();
+	}
+}
+
+void Response::DELETEMethod()
+{
+	if (_headerFields["Path"].rfind("/files/", 0) == std::string::npos)
+		throw ErrC(Forbidden);
+	int start = _headerFields["Path"].find_last_of('/');
+	_headerFields["Filename"] = _headerFields["Path"].substr(start + 1);
+
+	chdir("./files");
+
+	if (access(_headerFields["Filename"].c_str(), F_OK) == -1)
+	{
+		chdir("..");
+		throw ErrC(Not_Found);
+	}
+
+	std::fstream file(_headerFields["Filename"].c_str(), std::ios::in);
+	if (!file.is_open())
+	{
+		chdir("..");
+		throw ErrC(Conflict);
+	}
+	file.close();
+
+	int rem = std::remove(_headerFields["Filename"].c_str());
+	chdir("..");
+	if (rem != 0)
+		throw ErrC(Internal_Error);
+	else
+	{
+		_response["Status code"] = "200 OK";
+		_response["Path"] = "/error_pages/deleted.html";
+	}
+}
+
+void Response::buildError(const Error _err) {
+	switch (_err)
+	{
+	case Bad_Request:
+		status400();
+		break;
+
+	case Unsupported_Media_Type:
+		status415();
+		break;
+
+	case Not_Implemented:
+		status501();
+		break;
+
+	case HTTP_Version_Not_Supported:
+		status505();
+		break;
+
+	case Forbidden:
+		status403();
+		break;
+
+	case Not_Found:
+		status404();
+		break;
+
+	case Conflict:
+		status409();
+		break;
+
+	case Internal_Error:
+		status500();
+		break;
+
+	default:
+		break;
+
+	}
+}
+
+void Response::buildResponse()
+{
+	_responseMessage += _response["Version"] + " "
+		+ _response["Status code"] + "\n";
+
+	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
+	{
+		if ((*it).first.find(':') != std::string::npos)
+		{
+			_responseMessage += (*it).first + " " + (*it).second + "\n";
+		}
+	}
+	_responseMessage += "Connection: close\r\n\r\n"
+		+ _response["Body"];
+
+	if (DEBUG)
+		std::cout << "RESPONSE MESSAGE: \n" << _responseMessage << std::endl;
+}
+
+int Response::checkStat()
+{
+	struct	stat s;
+	if (stat(_headerFields["Path"].c_str() + 1, &s) == 0)
+	{
+		//FIXME: only list directory when enabled. Requires working config.
+		if (s.st_mode & S_IFDIR && listDir())
+		{
+			return (1);
+		}
+		else
+			return (0);
+	}
+	else
+		throw ErrC(Internal_Error, "Internal Error in checkStat");
+	return (1);
+}
 
 /**
  * Writes a html page containing a List of files in the current directory
@@ -86,7 +285,6 @@ void Response::status200()
 {
 	_response["Status code"] = "200 OK";
 	_response["Path"] = _headerFields["Path"];
-	readHTML();
 	return ;
 }
 
@@ -94,23 +292,51 @@ void Response::status201()
 {
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
-	readHTML();
+	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
 	return ;
 }
 
-int Response::status404()
+void Response::status400()
+{
+	_response["Status code"] = "400 Bad Request";
+	_response["Path"] = "/error_pages/400.html";
+}
+
+void Response::status403()
+{
+	_response["Status code"] = "403 Forbidden";
+	_response["Path"] = "/error_pages/403.html";
+}
+
+void Response::status404()
 {
 	_response["Status code"] = "404 Not Found";
 	_response["Path"] = "/error_pages/404.html";
-	readHTML();
-	return (1);
+}
+
+void Response::status409()
+{
+	_response["Status code"] = "409 Conflict";
+	_response["Path"] = "/error_pages/409.html";
+}
+
+void Response::status415()
+{
+	_response["Status code"] = "415 Unsupported Media Type";
+	_response["Path"] = "/error_pages/415.html";
+	return ;
 }
 
 void Response::status500()
 {
 	_response["Status code"] = "500 Internal Server Error";
 	_response["Path"] = "/error_pages/500.html";
-	readHTML();
+}
+
+void Response::status501()
+{
+	_response["Status code"] = "501 Not Implemented";
+	_response["Path"] = "/error_pages/501.html";
 }
 
 void Response::status505()
@@ -118,141 +344,6 @@ void Response::status505()
 	_response["Status code"] = "505 HTTP Version Not Supported";
 	_response["Version"] = "HTTP/1.1";
 	_response["Path"] = "/error_pages/505.html";
-	readHTML();
-}
-
-void Response::status415()
-{
-	_response["Status code"] = "415 Unsupported Media Type";
-	_response["Path"] = "/error_pages/415.html";
-	readHTML();
-	return ;
-}
-
-int Response::status403()
-{
-	_response["Status code"] = "403 Forbidden";
-	_response["Path"] = "/error_pages/403.html";
-	readHTML();
-	return (1);
-}
-
-void Response::checkRequestErrors()
-{
-	if (_headerFields.count("Error") == 0)
-		return ;
-
-	if (_headerFields["Error"] == "415")
-		throw ErrC(Unsupported_Media_Type);
-	if (_headerFields["Error"] == "505")
-		throw ErrC(HTTP_Version_Not_Supported);
-}
-
-int Response::checkStat()
-{
-	struct	stat s;
-	if (stat(_headerFields["Path"].c_str() + 1, &s) == 0)
-	{
-		//FIXME: only list directory when enabled. Requires working config.
-		if (s.st_mode & S_IFDIR && listDir())
-		{
-			return (1);
-		}
-		else
-			return (0);
-	}
-	else
-		throw ErrC(Internal_Error, "Internal Error in checkStat");
-	return (1);
-}
-
-void Response::buildError(const Error _err) {
-	switch (_err)
-	{
-	case Bad_Request:
-		// TODO
-		break;
-
-	case Unsupported_Media_Type:
-		status415();
-		break;
-
-	case HTTP_Version_Not_Supported:
-		status505();
-		break;
-
-	case Forbidden:
-		status403();
-		break;
-
-	case Not_Found:
-		status404();
-		break;
-
-	case Internal_Error:
-		status500();
-		break;
-
-	default:
-		break;
-
-	}
-}
-
-void Response::buildResponse()
-{
-	_responseMessage += _response["Version"] + " "
-		+ _response["Status code"] + "\n" 
-		+ "Content-Type: " + _response["Content-Type:"] + "\n"
-		+ "Connection: close\n"
-		+ "Content-Length: " + _response["Content-Length:"] + "\n\n"
-		+ _response["Body"];
-
-	if (DEBUG)
-		std::cout << "RESPONSE MESSAGE" << _responseMessage << std::endl;
-}
-
-void Response::GETMethod()
-{
-	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
-		throw ErrC(Not_Found);
-	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
-		throw ErrC(Forbidden);
-	checkStat();
-	status200();
-	return ;
-}
-
-void Response::POSTMethod()
-{
-	chdir("./files");
-	std::ofstream outfile(_headerFields["Filename"].c_str());
-/*	if (!outfile)
-		std::cout << "ERROR OPENING FILE" << std::endl;
-	else if (outfile.good())
-		std::cout << "GOOD" << std::endl;
-	if (outfile.bad())
-		std::cout << "ERROR i/o" << std::endl;
-	else if (outfile.fail())
-		std::cout << "ERROR fail" << std::endl;
-	else if (outfile.eof())
-		std::cout << "GOOD" << std::endl;*/
-	outfile << _headerFields["Body-Text"] << std::endl;
-	outfile.close();
-	chdir("..");
-	status201();
-}
-
-void Response::methodID()
-{
-	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/index.html";
-	if (_headerFields["Method"] == "GET")
-		GETMethod();
-	if (_headerFields["Method"] == "POST")
-		POSTMethod();
-	return ;
 }
 
 std::string	Response::getResponse()
@@ -260,33 +351,6 @@ std::string	Response::getResponse()
 	return (_responseMessage);
 }
 
-Response::Response(StringStringMap _headerFields) : 
-	_headerFields(_headerFields)
-{
-	if (DEBUG)
-		std::cout << "in Response constructor" << std::endl;
-	try
-	{
-		_response["Version"] = _headerFields["Version"];
-		checkRequestErrors();
-		methodID();
-	}
-	catch (const std::exception &e)
-	{
-		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
-		if (_err != NULL)
-		{
-			buildError(_err->getError());
-		}
-		else
-		{
-			std::cout << "Catched exception " << e.what() << std::endl;
-			buildError(Internal_Error);
-		}
-	}
-	buildResponse();
-	return ;
-}
 
 // Response &	Response::operator=(Response &assign)
 // {
