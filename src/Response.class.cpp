@@ -72,7 +72,12 @@ void Response::GETMethod()
 	if (stat(path, &s) == 0)
 	{
 		if (S_ISDIR(s.st_mode))
-			status200("/directory.html");
+		{
+			if (listDir())
+				status200("/temp.html");
+			else
+				status200("/directory.html");
+		}
 		else if (S_ISREG(s.st_mode))
 			status200(_headerFields["Path"]);
 		else
@@ -88,11 +93,6 @@ void Response::POSTMethod()
 		throw ErrC(Forbidden);
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
-	if (!outfile || outfile.bad() || outfile.fail())
-	{
-		chdir("..");
-		throw ErrC(Internal_Error, "Internal Error when creating file");
-	}
 	if (outfile.good())
 	{
 		outfile << _headerFields["Body-Text"] << std::endl;
@@ -100,24 +100,33 @@ void Response::POSTMethod()
 		chdir("..");
 		status201();
 	}
+	else
+	{
+		chdir("..");
+		throw ErrC(Internal_Error, "Internal Error when creating file");
+	}
 }
 
 void Response::DELETEMethod()
 {
-	if (_headerFields["Path"].rfind("/files/", 0) == std::string::npos)
+	std::string path = _headerFields["Path"];
+
+	if (path.rfind("/files/", 0) == std::string::npos)
 		throw ErrC(Forbidden);
-	int start = _headerFields["Path"].find_last_of('/');
-	_headerFields["Filename"] = _headerFields["Path"].substr(start + 1);
+
+	int start = path.find_last_of('/');
+	_headerFields["Filename"] = path.substr(start + 1);
+	const char *filename = _headerFields["Filename"].c_str();
 
 	chdir("./files");
 
-	if (access(_headerFields["Filename"].c_str(), F_OK) == -1)
+	if (access(filename, F_OK) == -1)
 	{
 		chdir("..");
 		throw ErrC(Not_Found);
 	}
 
-	std::fstream file(_headerFields["Filename"].c_str(), std::ios::in);
+	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
 	{
 		chdir("..");
@@ -125,7 +134,7 @@ void Response::DELETEMethod()
 	}
 	file.close();
 
-	int rem = std::remove(_headerFields["Filename"].c_str());
+	int rem = std::remove(filename);
 	chdir("..");
 	if (rem != 0)
 		throw ErrC(Internal_Error);
@@ -193,25 +202,6 @@ void Response::buildResponse()
 		std::cout << "RESPONSE MESSAGE: \n" << _responseMessage << std::endl;
 }
 
-int Response::checkStat()
-{
-	struct	stat s;
-	if (stat(_headerFields["Path"].c_str() + 1, &s) == 0)
-	{
-		//FIXME: only list directory when enabled. Requires working config.
-		if (s.st_mode & S_IFDIR)
-		/* if (s.st_mode & S_IFDIR && listDir()) */
-		{
-			return (1);
-		}
-		else
-			return (0);
-	}
-	else
-		throw ErrC(Internal_Error, "Internal Error in checkStat");
-	return (1);
-}
-
 /**
  * Writes a html page containing a List of files in the current directory
  * to the body of the _response object.
@@ -247,10 +237,9 @@ bool Response::listDir()
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
 			body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
 
-		_response["Status code"] = "200 OK";
-		_response["Content-Type:"] = "text/html";
-		_response["Body"] = body;
-		_response["Content-Length:"] = lenToStr(body);
+		std::ofstream outfile("temp.html");
+		outfile << body << std::endl;
+		outfile.close();
 		return true;
 	}
 	else
@@ -293,9 +282,7 @@ void Response::readHTML()
 void Response::status200(std::string path)
 {
 	_response["Status code"] = "200 OK";
-	/* _response["Path"] = _headerFields["Path"]; */
 	_response["Path"] = path;
-	return ;
 }
 
 void Response::status201()
@@ -303,7 +290,6 @@ void Response::status201()
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
 	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
-	return ;
 }
 
 void Response::status400()
@@ -334,7 +320,6 @@ void Response::status415()
 {
 	_response["Status code"] = "415 Unsupported Media Type";
 	_response["Path"] = "/error_pages/415.html";
-	return ;
 }
 
 void Response::status500()
