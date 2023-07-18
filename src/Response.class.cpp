@@ -62,13 +62,24 @@ void Response::methodID()
 
 void Response::GETMethod()
 {
-	if (access(_headerFields["Path"].c_str() + 1, F_OK) == -1)
+	struct	stat s;
+	const char *path = _headerFields["Path"].c_str() + 1;
+
+	if (access(path, F_OK) == -1)
 		throw ErrC(Not_Found);
-	if (access(_headerFields["Path"].c_str() + 1, R_OK) == -1)
+	if (access(path, R_OK) == -1)
 		throw ErrC(Forbidden);
-	checkStat();
-	status200();
-	return ;
+	if (stat(path, &s) == 0)
+	{
+		if (S_ISDIR(s.st_mode))
+			status200("/directory.html");
+		else if (S_ISREG(s.st_mode))
+			status200(_headerFields["Path"]);
+		else
+			throw ErrC(Internal_Error);
+	}
+	else
+		throw ErrC(Internal_Error);
 }
 
 void Response::POSTMethod()
@@ -119,10 +130,7 @@ void Response::DELETEMethod()
 	if (rem != 0)
 		throw ErrC(Internal_Error);
 	else
-	{
-		_response["Status code"] = "200 OK";
-		_response["Path"] = "/error_pages/deleted.html";
-	}
+		status200("/error_pages/deleted.html");
 }
 
 void Response::buildError(const Error _err) {
@@ -191,7 +199,8 @@ int Response::checkStat()
 	if (stat(_headerFields["Path"].c_str() + 1, &s) == 0)
 	{
 		//FIXME: only list directory when enabled. Requires working config.
-		if (s.st_mode & S_IFDIR && listDir())
+		if (s.st_mode & S_IFDIR)
+		/* if (s.st_mode & S_IFDIR && listDir()) */
 		{
 			return (1);
 		}
@@ -281,10 +290,11 @@ void Response::readHTML()
 	return ;
 }
 
-void Response::status200()
+void Response::status200(std::string path)
 {
 	_response["Status code"] = "200 OK";
-	_response["Path"] = _headerFields["Path"];
+	/* _response["Path"] = _headerFields["Path"]; */
+	_response["Path"] = path;
 	return ;
 }
 

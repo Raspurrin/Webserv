@@ -32,7 +32,7 @@ class Response
 		void	DELETEMethod();
 		void	POSTMethod();
 
-		void	status200();
+		void	status200(std::string path);
 		void	status201();
 		void	status400();
 		void	status403();
@@ -45,7 +45,6 @@ class Response
 
 		void	readHTML();
 		std::string	lenToStr(std::string body);
-		int		checkStat();
 		bool	listDir();
 
 	public:
