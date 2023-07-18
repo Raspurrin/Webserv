@@ -1,10 +1,13 @@
 #include "../header/Response.class.hpp"
 #include <cstdio>
 #include <sstream>
+#include <sstream>
+#include "../header/Cgi.class.hpp"
+#include "../header/utils.hpp"
 #include <sys/stat.h>
 #include <unistd.h>
 
-Response::Response(StringStringMap _headerFields) : 
+Response::Response(StringStringMap _headerFields) :
 	_headerFields(_headerFields)
 {
 	if (DEBUG)
@@ -246,17 +249,6 @@ bool Response::listDir()
 		return false;
 }
 
-std::string Response::lenToStr(std::string body)
-{
-	size_t	len = body.length();
-	std::ostringstream str1;
-
-	str1 << len;
-	std::string	lenStr = str1.str();
-
-	return (lenStr);
-}
-
 void Response::readHTML()
 {
 	std::ifstream	fin(_response["Path"].c_str() + 1);
@@ -345,7 +337,6 @@ std::string	Response::getResponse()
 {
 	return (_responseMessage);
 }
-
 
 // Response &	Response::operator=(Response &assign)
 // {

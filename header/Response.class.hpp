@@ -23,10 +23,12 @@ class Response
 		StringStringMap	_headerFields;
 		std::string		_responseMessage;
 
-		void	buildResponse();
-		void	buildError(const Error);
+		bool	listDir();
 		void	methodID();
 		void	checkRequestErrors();
+		
+		void	buildResponse();
+		void	buildError(const Error);
 
 		void	GETMethod();
 		void	DELETEMethod();
@@ -44,8 +46,6 @@ class Response
 		void	status505();
 
 		void	readHTML();
-		std::string	lenToStr(std::string body);
-		bool	listDir();
 
 	public:
 

@@ -21,6 +21,10 @@
 //#include "Request.class.hpp"
 #include <netinet/tcp.h>
 
+#ifndef DEBUG
+# define DEBUG 0
+#endif
+
 typedef std::map<std::string, std::string>	StringStringMap;
 typedef std::vector<int>			IntVector;
 
