@@ -86,6 +86,46 @@ static void check_output(StringStringMap &output) {
 	}
 }
 
+static std::string get_child_output(std::string &file, int pid) {int status = 0;
+	time_t start = time(NULL);
+	do {
+		int ret = waitpid(pid, &status, WNOHANG);
+		if (ret == -1) {
+			throw ErrC(Internal_Error, "waitpid failed");
+		} else if (ret != 0) {
+			break;
+		}
+	} while (time(NULL) - start < CGI_TIMEOUT_S);
+	if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS) {
+		throw ErrC(Internal_Error, "Child process failed");
+	}
+
+	std::ifstream output_file(file.c_str());
+	if (output_file.bad()) {
+		throw ErrC(Internal_Error, "Fd is bad.");
+	}
+
+	std::ostringstream output;
+	output << output_file.rdbuf();
+
+	// if (std::remove(file.c_str())) {
+	// 	std::cout << "Could not remove tmp file";
+	// }
+
+	return output.str();
+}
+
+static std::string generate_filename() {
+	std::string tmp_file;
+	// std::stringstream str;
+	// str << rand();
+	// str >> tmp_file;
+	// tmp_file = "/tmp/webserv" + tmp_file;
+	// std::cout << "Tmp file is: " << tmp_file << std::endl;
+	tmp_file = "tmp";
+	return tmp_file;
+}
+
 EnvVec Cgi::prepareEnvVec() {
 	EnvVec env;
 	for (ArgVec::iterator it = _env.begin(); it < _env.end(); it++) {
@@ -96,14 +136,7 @@ EnvVec Cgi::prepareEnvVec() {
 }
 
 StringStringMap Cgi::runGet() {
-	//FIXME: Replace with a safe random implementation
-	std::string tmp_file;
-	// std::stringstream str;
-	// str << rand();
-	// str >> tmp_file;
-	// tmp_file = "/tmp/webserv" + tmp_file;
-	// std::cout << "Tmp file is: " << tmp_file << std::endl;
-	tmp_file = "tmp";
+	std::string tmp_file = generate_filename();
 	int pid = fork();
 	if (pid == 0) {
 		EnvVec env = prepareEnvVec();
@@ -121,51 +154,19 @@ StringStringMap Cgi::runGet() {
 		perror("Execve failed");
 		exit(1);
 	} else {
-		int status = 0;
-		time_t start = time(NULL);
-		do {
-			int ret = waitpid(pid, &status, WNOHANG);
-			if (ret == -1) {
-				throw ErrC(Internal_Error, "waitpid failed");
-			} else if (ret != 0) {
-				break;
-			}
-		} while (time(NULL) - start < CGI_TIMEOUT_S);
-		if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS) {
-			throw ErrC(Internal_Error, "Child process failed");
-		}
-
-		std::ifstream output_file(tmp_file.c_str());
-		if (output_file.bad()) {
-			throw ErrC(Internal_Error, "Fd is bad.");
-		}
-
-		std::ostringstream output;
-		output << output_file.rdbuf();
-
-		// if (std::remove(tmp_file.c_str())) {
-		// 	std::cout << "Could not remove tmp file";
-		// }
-
-		StringStringMap response = parse_output(output.str());
+		std::string output = get_child_output(tmp_file, pid);
+		StringStringMap response = parse_output(output);
 		check_output(response);
 		return response;
 	}
 }
 
 StringStringMap Cgi::runPost() {
-	//FIXME: Replace with a safe random implementation
-	std::string tmp_file;
-	// std::stringstream str;
-	// str << rand();
-	// str >> tmp_file;
-	// tmp_file = "/tmp/webserv" + tmp_file;
-	// std::cout << "Tmp file is: " << tmp_file << std::endl;
-	tmp_file = "tmp";
-	std::string infile = tmp_file + "_in";
+	std::string out_file = generate_filename();
+	std::string in_file = out_file + "_in";
 
 	{
-		std::ofstream inputfile(infile.c_str());
+		std::ofstream inputfile(in_file.c_str());
 		inputfile << _headerFields["Body"];
 	}
 
@@ -178,8 +179,8 @@ StringStringMap Cgi::runPost() {
 		std::string cgi_file_path = path.substr(1, path.find('?') - 1);
 		argv[0] = const_cast<char *>(cgi_file_path.c_str());
 		mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-		int out_fd = open(tmp_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
-		int in_fd = open(infile.c_str(), O_RDONLY);
+		int out_fd = open(out_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, mode);
+		int in_fd = open(in_file.c_str(), O_RDONLY);
 		int ret = dup2(out_fd, STDOUT_FILENO);
 		ret |= dup2(in_fd, STDIN_FILENO);
 		if (ret == -1)
@@ -188,33 +189,11 @@ StringStringMap Cgi::runPost() {
 		perror("Execve failed");
 		exit(1);
 	} else {
-		int status = 0;
-		time_t start = time(NULL);
-		do {
-			int ret = waitpid(pid, &status, WNOHANG);
-			if (ret == -1) {
-				throw ErrC(Internal_Error, "waitpid failed");
-			} else if (ret != 0) {
-				break;
-			}
-		} while (time(NULL) - start < CGI_TIMEOUT_S);
-		if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS) {
-			throw ErrC(Internal_Error, "Child process failed");
-		}
-
-		std::ifstream output_file(tmp_file.c_str());
-		if (output_file.bad()) {
-			throw ErrC(Internal_Error, "Fd is bad.");
-		}
-
-		std::ostringstream output;
-		output << output_file.rdbuf();
-
-		// if (std::remove(tmp_file.c_str())) {
+		// if (std::remove(in_file.c_str())) {
 		// 	std::cout << "Could not remove tmp file";
 		// }
-
-		StringStringMap response = parse_output(output.str());
+		std::string output = get_child_output(out_file, pid);
+		StringStringMap response = parse_output(output);
 		check_output(response);
 		return response;
 	}
