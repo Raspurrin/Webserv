@@ -261,9 +261,6 @@ std::string Response::lenToStr(std::string body)
 
 void Response::readHTML()
 {
-		char cwd[120000];
-   		getcwd(cwd, sizeof(cwd));
-		printf("Current working dir: %s\n", cwd);
 	std::ifstream	fin(_response["Path"].c_str() + 1);
 
 	if (fin.is_open())
@@ -313,9 +310,6 @@ void Response::status403()
 
 void Response::status404()
 {
-		char cwd[120000];
-   		getcwd(cwd, sizeof(cwd));
-		printf("Current working dir: %s\n", cwd);
 	_response["Status code"] = "404 Not Found";
 	_response["Path"] = "/error_pages/404.html";
 }
