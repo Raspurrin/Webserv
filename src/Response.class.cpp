@@ -216,7 +216,6 @@ void Response::GETMethod()
 		if (access(path.c_str() + 1, X_OK) == -1)
 		throw ErrC(Forbidden);
 		Cgi cgi(_headerFields);
-		cgi.prepareCgi();
 		_response = cgi.runGet();
 	} else {
 		if (access(path.c_str() + 1, R_OK) == -1)

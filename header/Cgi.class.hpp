@@ -16,7 +16,6 @@ private:
 public:
 	Cgi(StringStringMap&);
 
-	void prepareCgi();
 	StringStringMap runGet();
 	StringStringMap runPost();
 };

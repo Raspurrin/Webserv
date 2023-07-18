@@ -8,9 +8,6 @@
 #include <cstdlib>
 
 Cgi::Cgi(StringStringMap &headerFields): _headerFields(headerFields) {
-}
-
-void Cgi::prepareCgi() {
 	_env.push_back("SERVER_PROTOCOL=HTTP/1.1");
 	_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	if (_headerFields["Method"] == "POST") {
@@ -39,6 +36,7 @@ void Cgi::prepareCgi() {
 	}
 	//TODO: investigate if REMOTE_* variables are necessary.
 	//TODO: implement PATH_INFO and PATH_TRANSLATED. https://www.mnm-team.org/pub/Diplomarbeiten/haub95/HTML-Version/node144.html https://www.rfc-editor.org/rfc/rfc3875#section-4.1.2
+
 }
 
 static StringStringMap parse_output(const std::string &output) {
