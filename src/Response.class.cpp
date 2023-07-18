@@ -296,14 +296,6 @@ void Response::status403()
 	_response["Path"] = "/error_pages/403.html";
 }
 
-void Response::status201()
-{
-	_response["Status code"] = "201 CREATED";
-	_response["Path"] = "/success.html";
-	readHTML();
-	return ;
-}
-
 void Response::status404()
 {
 	_response["Status code"] = "404 Not Found";
@@ -328,37 +320,10 @@ void Response::status500()
 	_response["Path"] = "/error_pages/500.html";
 }
 
-void Response::status505()
-{
-	_response["Status code"] = "505 HTTP Version Not Supported";
-	_response["Version"] = "HTTP/1.1";
-	_response["Path"] = "/error_pages/505.html";
-	readHTML();
-}
-
-void Response::status415()
-{
-	_response["Status code"] = "415 Unsupported Media Type";
-	_response["Path"] = "/error_pages/415.html";
-	readHTML();
-	return;
-}
-
 void Response::status501()
 {
 	_response["Status code"] = "501 Not Implemented";
 	_response["Path"] = "/error_pages/501.html";
-}
-
-void Response::checkRequestErrors()
-{
-	if (_headerFields.count("Error") == 0)
-		return ;
-
-	if (_headerFields["Error"] == "415")
-		throw ErrC(Unsupported_Media_Type);
-	if (_headerFields["Error"] == "505")
-		throw ErrC(HTTP_Version_Not_Supported);
 }
 
 void Response::status505()
@@ -371,14 +336,6 @@ void Response::status505()
 std::string	Response::getResponse()
 {
 	return (_responseMessage);
-}
-
-Response::Response(StringStringMap _headerFields) :
-	_headerFields(_headerFields)
-{
-	std::cout << "in Response constructor" << std::endl;
-	buildResponse();
-	return ;
 }
 
 // Response &	Response::operator=(Response &assign)

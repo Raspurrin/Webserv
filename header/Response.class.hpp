@@ -26,12 +26,9 @@ class Response
 		bool	listDir();
 		void	methodID();
 		void	checkRequestErrors();
-		void	GETMethod();
-		void	POSTMethod();
+		
 		void	buildResponse();
 		void	buildError(const Error);
-		void	methodID();
-		void	checkRequestErrors();
 
 		void	GETMethod();
 		void	DELETEMethod();
