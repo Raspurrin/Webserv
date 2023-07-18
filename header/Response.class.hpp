@@ -30,17 +30,28 @@ class Response
 		void	POSTMethod();
 		void	buildResponse();
 		void	buildError(const Error);
-		int	status404();
-		int	status403();
-		void	status500();
-		void	status505();
-		int	checkStat();
-		void	status200();
-		void	status415();
+		void	methodID();
+		void	checkRequestErrors();
+
+		void	GETMethod();
+		void	DELETEMethod();
+		void	POSTMethod();
+
+		void	status200(std::string path);
 		void	status201();
+		void	status400();
+		void	status403();
+		void	status404();
+		void	status409();
+		void	status415();
+		void	status500();
+		void	status501();
+		void	status505();
+
 		void	readHTML();
 
 	public:
+
 		void		postResponse(int socket, int indexToRemove);
 		std::string	getResponse();
 

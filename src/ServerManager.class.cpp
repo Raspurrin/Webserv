@@ -91,15 +91,16 @@ IntVector	_indexesToRemove;
 	{
 		std::string	_response = client.getResponse();
 		static int i = 0;
-			if (DEBUG) {
 
+		if (DEBUG)
+		{
 			std::cout << "==================" << std::endl;
 			std::cout << "sending response " << i << std::endl;
 			std::cout << "==================" << std::endl;
-			printf("HELLO MESSAGE SENT FROM SERVER\n");
 		}
-		send(client.getSocket(), _response.c_str(), _response.length(), 0);
-
+		send(client.getSocket(),_response.c_str(), _response.length(), 0);
+		if (DEBUG)
+			printf("MESSAGE SENT FROM SERVER\n");
 		close(client.getSocket());
 		i++;
 	}

@@ -3,8 +3,12 @@
 
 enum Error {
 	Bad_Request,
+	Unsupported_Media_Type,
+	Not_Implemented,
+	HTTP_Version_Not_Supported,
 	Forbidden,
 	Not_Found,
+	Conflict,
 	Internal_Error,
 	Unsupported_Media_Type,
 	HTTP_Version_Not_Supported
