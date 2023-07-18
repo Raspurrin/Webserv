@@ -86,6 +86,15 @@ static void check_output(StringStringMap &output) {
 	}
 }
 
+EnvVec Cgi::prepareEnvVec() {
+	EnvVec env;
+	for (ArgVec::iterator it = _env.begin(); it < _env.end(); it++) {
+		env.push_back((*it).c_str());
+	}
+	env.push_back(NULL);
+	return env;
+}
+
 StringStringMap Cgi::runGet() {
 	//FIXME: Replace with a safe random implementation
 	std::string tmp_file;
@@ -97,11 +106,7 @@ StringStringMap Cgi::runGet() {
 	tmp_file = "tmp";
 	int pid = fork();
 	if (pid == 0) {
-		std::vector<const char*> env;
-		for (ArgVec::iterator it = _env.begin(); it < _env.end(); it++) {
-			env.push_back((*it).c_str());
-		}
-		env.push_back(NULL);
+		EnvVec env = prepareEnvVec();
 		char *argv[2];
 		argv[1] = NULL;
 		std::string& path = _headerFields["Path"];
@@ -166,11 +171,7 @@ StringStringMap Cgi::runPost() {
 
 	int pid = fork();
 	if (pid == 0) {
-		std::vector<const char*> env;
-		for (ArgVec::iterator it = _env.begin(); it < _env.end(); it++) {
-			env.push_back((*it).c_str());
-		}
-		env.push_back(NULL);
+		EnvVec env = prepareEnvVec();
 		char *argv[2];
 		argv[1] = NULL;
 		std::string& path = _headerFields["Path"];
