@@ -2,6 +2,7 @@
 # define WEBSERV_HPP
 
 #include <vector>
+#include <csignal>
 #include <list>
 #include <map>
 #include <sys/poll.h>
