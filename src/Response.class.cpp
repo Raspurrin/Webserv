@@ -42,6 +42,8 @@ void Response::checkRequestErrors()
 	if (_headerFields.count("Error") == 0)
 		return ;
 
+	if (_headerFields["Error"] == "400")
+		throw ErrC(Bad_Request);
 	if (_headerFields["Error"] == "415")
 		throw ErrC(Unsupported_Media_Type);
 	if (_headerFields["Error"] == "505")

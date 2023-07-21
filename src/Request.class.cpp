@@ -37,9 +37,13 @@ void Request::parseBody(std::string body)
 	std::string line;
 	size_t	found, lpos;
 
-	if (_headerFields.count("Content-Type") > 0)
-		_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
+	if (_headerFields.count("Content-Type") == 0 || _headerFields.count("Content-Length") == 0 || _headerFields["Content-Length"] == "0")
+	{
+		_headerFields["Error"] = "400";
+		return ;
+	}
 	
+	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
 	std::stringstream	ss(body);
 	getline(ss, line);
