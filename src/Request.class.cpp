@@ -6,7 +6,7 @@
 
 void Request::printMap()
 {
-	std::cout << RED << "\nPrinting map of header fields...\n" << DEF << std::endl;
+	std::cout << CYAN << "\nPrinting map of header fields...\n" << DEF << std::endl;
 	std::map<std::string, std::string>::iterator it = _headerFields.begin();
 	while (it != _headerFields.end())
 	{
@@ -118,15 +118,16 @@ void Request::readIntoString(int &socket)
 	
 	if (DEBUG)
 	{
-		std::cout << RED << "Received message:\n" << DEF << readBuffer << "END" << std::endl;
-		std::cout << RED << "Read count:\n" << DEF << _readCount << "END" << std::endl;
+		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
+		std::cout << CYAN << "Read count:\n" << DEF << _readCount << std::endl;
 	}
 	_requestBuffer.append(readBuffer);
 }
 
 void	Request::getRequest(int	&socket)
 {
-	std::cout << RED << "Getting request..." << DEF << std::endl;
+	if (DEBUG)
+		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
 		readIntoString(socket);
 		parseHeaderSection();
