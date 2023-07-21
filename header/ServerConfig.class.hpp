@@ -33,12 +33,15 @@ class ServerConfig
 		StringRouteMap		_routes;
 		t_sockaddr_in		_address;
 	
+	private:
+		size_t				calculateStringOverlap(const std::string &str1, const std::string &str2) const;
+
 	public:
 		int					getPort() const;
 		std::string			getName() const;
 		int					getClientBodySize() const;
 		std::string			getErrorPage(std::string errorCode) const;
-		bool				getRoutePath(const std::string &path) const;
+		std::string			getMostOverlappingPath(const std::string &path) const;
 		int					getRouteMethods(const std::string &path) const;
 		bool				isRouteMethodAllowed(const std::string &path, const int methodToCheck) const;
 		bool				isRouteDirListingEnabled(const std::string &path) const;

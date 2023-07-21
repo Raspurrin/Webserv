@@ -34,12 +34,32 @@ void	ServerConfig::printErrorPages() const
 	for (const auto &it : _errorPages)
 		std::cout << it.first << ": " << it.second << std::endl;
 }
+size_t	ServerConfig::calculateStringOverlap(const std::string &str1, const std::string &str2) const
 
-bool	ServerConfig::getRoutePath(const std::string &path) const
 {
-	if (_routes.find(path) != _routes.end())
-		return (true);
-	return (false);
+	size_t	i = 0;
+
+	while (str1[i] && str2[i] && str1[i] == str2[i])
+		i++;
+	return (i);
+}
+
+std::string	ServerConfig::getMostOverlappingPath(const std::string &path) const
+{
+	size_t	biggestOverlap = 0;
+	size_t	currentOverlap;
+	StringRouteMap::const_iterator	mostOverlappingPath;
+
+	for (StringRouteMap::const_iterator it = _routes.begin(); it != _routes.end(); it++)
+	{
+		currentOverlap = calculateStringOverlap(it->first, path);
+		if (biggestOverlap < currentOverlap)
+		{
+			biggestOverlap = currentOverlap;
+			mostOverlappingPath = it;
+		}
+	}
+	return (mostOverlappingPath->first);
 }
 
 int		ServerConfig::getRouteMethods(const std::string &path) const
