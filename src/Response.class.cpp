@@ -8,7 +8,7 @@ Response::Response(StringStringMap _headerFields) :
 	_headerFields(_headerFields)
 {
 	if (DEBUG)
-		std::cout << "in Response constructor" << std::endl;
+		std::cout << CYAN << "\nIn response constructor...\n\n" << DEF;
 	try
 	{
 		_response["Version"] = _headerFields["Version"];
@@ -199,7 +199,7 @@ void Response::buildResponse()
 		+ _response["Body"];
 
 	if (DEBUG)
-		std::cout << "RESPONSE MESSAGE: \n" << _responseMessage << std::endl;
+		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
 }
 
 /**

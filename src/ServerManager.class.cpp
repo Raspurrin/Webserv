@@ -25,7 +25,8 @@ IntVector	_indexesToRemove;
 		serverSocket.events = POLLIN;
 		if ((serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			error_handle("Socket error");
-		std::cout << "socket " << serverSocket.fd << std::endl;
+		if (DEBUG)
+			std::cout << "- addServerSocket: Socket " << serverSocket.fd << std::endl;
 		configureSocket(serverSocket.fd);
 		if (setsockopt(serverSocket.fd, SOL_SOCKET, SO_REUSEADDR, &_opt, sizeof(_opt)))
 			error_handle("setsockopt");
@@ -41,7 +42,7 @@ IntVector	_indexesToRemove;
 	{
 		int		flags;
 		if (DEBUG)
-			std::cout << "socket2 " << newSocket << std::endl;
+			std::cout << "- configureSocket: Socket " << newSocket << std::endl;
 		flags = fcntl(newSocket, F_GETFL, 0);
 		fcntl(newSocket, F_SETFL, flags | O_NONBLOCK);
 	}
@@ -93,13 +94,14 @@ IntVector	_indexesToRemove;
 
 		if (DEBUG)
 		{
-			std::cout << "==================" << std::endl;
-			std::cout << "sending response " << i << std::endl;
-			std::cout << "==================" << std::endl;
+			std::cout
+				<< YELLOW << "========= "
+				<< DEF << "Sending response: " << i
+				<< YELLOW << " =========\n\n" << DEF;
 		}
 		send(client.getSocket(),_response.c_str(), _response.length(), 0);
 		if (DEBUG)
-			printf("MESSAGE SENT FROM SERVER\n");
+			std::cout << RED << "------> SUCCESS: Message sent from server. <-------\n\n" << DEF;
 		close(client.getSocket());
 		i++;
 	}
@@ -110,7 +112,7 @@ IntVector	_indexesToRemove;
 		if (_sockets[i].revents & POLLIN)
 		{
 			if (DEBUG)
-				std::cout << "POLLIN with index " << i << "fd is " << _sockets[i].fd << std::endl;
+				std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;
 			_clients[i - _numServerSockets].getRequest();
 		}
 		else if (_clients[i - _numServerSockets].isRequestSent() && _sockets[i].revents & POLLOUT) {
