@@ -1,5 +1,6 @@
 #pragma once
 #include <exception>
+#include "webserv.hpp"
 
 enum Error {
 	Bad_Request,
