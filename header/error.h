@@ -1,11 +1,16 @@
 #pragma once
 #include <exception>
+#include "webserv.hpp"
 
 enum Error {
 	Bad_Request,
+	Not_Implemented,
 	Forbidden,
 	Not_Found,
-	Internal_Error
+	Conflict,
+	Internal_Error,
+	Unsupported_Media_Type,
+	HTTP_Version_Not_Supported
 };
 
 class ErrC: public std::exception {

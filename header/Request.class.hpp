@@ -5,32 +5,32 @@
 #include "Response.class.hpp"
 #include "webserv.hpp"
 
-#define BUFLEN 30000
+#define BUFLEN 120000
 #define REACHED_HEADER_END 1
 #define REACHED_BODY_END 2
 
 class Request
 {
 	private:
-		int				_bufferFlags;
+
 		bool			_isRead;
 		int				_readCount;
-		std::string		_headerBuffer;
-		std::string		_bodyBuffer;
+		std::string		_requestBuffer;
 		std::map<std::string, std::string>	_headerFields;
 
 		std::string		buildResponse();
-		void			readingBody(int &socket);
 		void			readIntoString(int &socket);
-		std::string		readingHeader(int &socket);
+		std::string		readingRequest(int &socket);
 		void			parseHeaderSection();
 		void			parseStartLine(std::string startLine);
 		void			parseHeaderFields(std::string headerSection);
+		void			parseBody(std::string body);
 
 	public:
-		void			printBody(void);
+
 		void			printMap();
-		std::string		getRequest(int &socket);
+		void		getRequest(int &socket);
+		std::string		getResponse();
 		StringStringMap	getHeaderFields();
 		bool			isFlagOn();
 

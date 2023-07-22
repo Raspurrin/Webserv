@@ -6,7 +6,7 @@
 
 void Request::printMap()
 {
-	std::cout << RED << "\nPrinting map of header fields...\n" << DEF << std::endl;
+	std::cout << CYAN << "\nPrinting map of header fields...\n" << DEF << std::endl;
 	std::map<std::string, std::string>::iterator it = _headerFields.begin();
 	while (it != _headerFields.end())
 	{
@@ -17,14 +17,56 @@ void Request::printMap()
 
 void Request::parseHeaderSection()
 {
-	int	position, lpos;
+	size_t	position, lpos;
 
-	position = _headerBuffer.find('\n');
-	parseStartLine(_headerBuffer.substr(0, position));
-	position++;
+	position = _requestBuffer.find("\r\n");
+	parseStartLine(_requestBuffer.substr(0, position));
+	position += 2;
 	lpos = position;
-	position = _headerBuffer.find("\n\n", lpos);
-	parseHeaderFields(_headerBuffer.substr(lpos, position - lpos));
+	position = _requestBuffer.find("\r\n\r\n", lpos);
+	parseHeaderFields(_requestBuffer.substr(lpos, position - lpos));
+	position += 4;
+	if (_headerFields["Method"] == "POST")
+		parseBody(_requestBuffer.substr(position));
+	if (DEBUG)
+		printMap();
+}
+
+void Request::parseBody(std::string body)
+{
+	std::string line;
+	size_t	found, lpos;
+
+	if (_headerFields.count("Content-Type") == 0 || _headerFields.count("Content-Length") == 0 || _headerFields["Content-Length"] == "0")
+	{
+		_headerFields["Error"] = "400";
+		return ;
+	}
+	
+	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
+
+	std::stringstream	ss(body);
+	getline(ss, line);
+	found = line.find(_headerFields["Boundary"]);
+	if (found != std::string::npos)
+	{
+		getline(ss, _headerFields["Body-Disposition"]);
+		found = _headerFields["Body-Disposition"].find_last_of('"');
+		found -= 1;
+		lpos = found;
+		while (_headerFields["Body-Disposition"][lpos] != '"')
+			lpos--;
+		_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
+		getline(ss, _headerFields["Body-Type"]);
+		found = _headerFields["Body-Type"].find("text/plain");
+		if (found != std::string::npos)
+		{
+			getline(ss, line);
+			getline(ss, _headerFields["Body-Text"], '\r');
+		}
+		else
+			_headerFields["Error"] = "415";
+	}
 }
 
 void Request::parseStartLine(std::string startLine)
@@ -41,6 +83,9 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
+	size_t found = _headerFields["Version"].find("HTTP/1.1");
+	if (found == std::string::npos)
+		_headerFields["Error"] = "505";
 }
 
 void Request::parseHeaderFields(std::string headerSection)
@@ -67,56 +112,38 @@ void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
-	if (recv(socket, readBuffer, BUFLEN - 1, 0) == -1)
-		error_handle("Read failed");
-	std::cout << "received message: " << readBuffer;
-	_headerBuffer = readBuffer;
-}
-
-// void	Request::readingBody(int &socket)
-// {
-// 	std::string readString = readIntoString(socket);
-
-// 	_bodyBuffer += readString;
-// 	std::cout << "in reading Body _bodyBuffer: " << _bodyBuffer << std::endl;
-// 	_readCount += BUFLEN;
-// 	if (_readCount < atoi(_headerFields["Content-Length"].c_str()))
-// 		_bufferFlags = _bufferFlags & REACHED_BODY_END;
-// }
-
-std::string	Request::readingHeader(int &socket)
-{
-/*	int		position;
-
-	std::cout << "in readingHeader" << std::endl;
-	if (!readString.find("\n\n"))
+	_readCount = recv(socket, readBuffer, BUFLEN - 1, 0);
+	if (_readCount <= 0)
 	{
-		_headerBuffer += readString;
-		std::cout << "_headerBuffer: " << _headerBuffer << std::endl;
-		return ("");
+		close(socket);
+		_indexesToRemove.push_back(socket);		
 	}
-	_bufferFlags = _bufferFlags | REACHED_HEADER_END;
-	std::cout << "_bufferFlags: in readingHeader: " << _bufferFlags << std::endl;
-	position = readString.find("\n\n");
-	_headerBuffer += readString.substr(0, position);
-//	_bodyBuffer = readString.substr(position + 2, BUFLEN - position);
-	*/
-	readIntoString(socket);
-	parseHeaderSection();
-	return (buildResponse());
+		_isRead = true;
+	
+	if (DEBUG)
+	{
+		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
+		std::cout << CYAN << "Read count:\n" << DEF << _readCount << std::endl;
+	}
+	_requestBuffer.append(readBuffer);
 }
 
-std::string	Request::getRequest(int	&socket)
+void	Request::getRequest(int	&socket)
 {
-	std::cout << "getting request" << std::endl;
-	return(readingHeader(socket));
+	if (DEBUG)
+		std::cout << CYAN << "\nGetting request...\n" << DEF;
+	try {
+		readIntoString(socket);
+		parseHeaderSection();
+	} catch (const std::exception &e) {
+//		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
+		std::cout << "Catched exception " << e.what() << std::endl;
+	}
 }
 
-std::string	Request::buildResponse()
+std::string	Request::getResponse()
 {
-	printMap();
 	Response response(_headerFields);
-	_isRead = true;
 	return (response.getResponse());
 }
 
@@ -125,18 +152,13 @@ StringStringMap	Request::getHeaderFields()
 	return (_headerFields);
 }
 
-void	Request::printBody(void)
-{
-	std::cout << _bodyBuffer << std::endl;
-}
-
 bool	Request::isFlagOn()
 {
 	return (_isRead);
 }
 
 Request::Request(void) :
-	_bufferFlags(0),
+	_isRead(false),
 	_readCount(0)
 {
 }

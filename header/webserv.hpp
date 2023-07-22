@@ -2,6 +2,7 @@
 # define WEBSERV_HPP
 
 #include <vector>
+#include <csignal>
 #include <list>
 #include <map>
 #include <sys/poll.h>
@@ -21,8 +22,15 @@
 //#include "Request.class.hpp"
 #include <netinet/tcp.h>
 
+#ifndef DEBUG
+# define DEBUG 0
+#endif
+
 typedef std::map<std::string, std::string>	StringStringMap;
 typedef std::map<std::string, bool>         StringBoolMap;
+typedef std::vector<int>			IntVector;
+
+extern IntVector			_indexesToRemove;
 
 void	error_handle(std::string type);
 

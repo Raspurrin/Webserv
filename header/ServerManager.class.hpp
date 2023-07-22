@@ -21,19 +21,20 @@ class ServerManager
 {
 	private:
 		int					_opt;
+		int					_numServerSockets;
 		ServerConfigVector	_serverConfigs;
 		ClientVector		_clients;
-		PollFdVector		_clientSockets;
-		PollFdVector		_serverSockets;
+		PollFdVector		_sockets;
 
 	private:
+		void	removeIndexes(void);
 		void	addServerSockets(void);
 		void	addServerSocket(ServerConfig &serverConfig);
 		void	configureSocket(int newSocket);
 		void	addClientSocket(t_pollfd &serverSocket, ServerConfig &_serverConfigs);
-		void	listenToServerSockets();
-		void	handleClientSockets();
-		void	sendResponse(Client &client, int indexToRemove);
+		void	listenToServerSocket(int i);
+		void	handleClientSocket(int i);
+		void	sendResponse(Client &client);
 
 	public:
 		void	eventLoop(void);

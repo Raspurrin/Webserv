@@ -12,13 +12,14 @@ class Client
 		struct pollfd			_pollFd;
 		class ServerConfig&		_serverConfig;
 		class Request			_request;
-		std::string				_responseMessage;
 
 	public:
 		int						getSocket();
 		void					getRequest();
 		std::string				getResponse();
 		bool					isRequestSent();
+		StringStringMap			getHeaderFields();
+		bool					_getIsCgi();
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);

@@ -25,18 +25,30 @@ class Response
 
 		bool	listDir();
 		void	methodID();
-		void	GETMethod();
+		void	checkRequestErrors();
+		
 		void	buildResponse();
 		void	buildError(const Error);
-		int		status404();
-		int		status403();
+
+		void	GETMethod();
+		void	DELETEMethod();
+		void	POSTMethod();
+
+		void	status200(std::string path);
+		void	status201();
+		void	status400();
+		void	status403();
+		void	status404();
+		void	status409();
+		void	status415();
 		void	status500();
-		int		checkStat();
-		void	status200();
+		void	status501();
+		void	status505();
+
 		void	readHTML();
-		std::string	lenToStr(std::string body);
 
 	public:
+
 		void		postResponse(int socket, int indexToRemove);
 		std::string	getResponse();
 

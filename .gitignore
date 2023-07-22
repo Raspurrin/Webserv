@@ -33,3 +33,6 @@
 
 .vscode/
 webserv
+
+# Temporary files
+tmp*

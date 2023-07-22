@@ -4,9 +4,19 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 
+void signalHandler(int sigNum)
+{
+	std::cout
+		<< RED << "\nInterrupt signal caught.\n"
+		<< CYAN << "Shutting down web server...Bye!"
+		<< DEF << std::endl;
+	exit(sigNum);
+}
+
 int main(void)
 {
-	// ServerManager ServerManager;
+	signal(SIGINT, signalHandler);
+	ServerManager ServerManager;
 
 	// ServerManager.eventLoop();
 	ServerConfigParser parser("configuration.conf");
