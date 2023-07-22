@@ -187,8 +187,9 @@ std::string	ServerConfigParser::trim(std::string str)
 
 std::string	ServerConfigParser::validateTrim(std::string str, int (*checkFunc)(int))
 {
-	if (std::all_of(str.begin(), str.end(), checkFunc) == false)
-		error_handle("Configuration key or value should contain only characters");
+	for (int i = 0; i < (int)str.length(); i++)
+		if (!checkFunc(str[i]))
+			error_handle("Invalid character in configuration file");
 	return (trim(str));
 }
 
