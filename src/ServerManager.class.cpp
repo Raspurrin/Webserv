@@ -119,6 +119,7 @@ IntVector	_indexesToRemove;
 			sendResponse(_clients[i - _numServerSockets]);
 			_indexesToRemove.push_back(i);
 		}
+		// FIXME: Handle errors and closed sockets properly without exiting or crashing.
 		else if (_sockets[i].revents & POLLERR)
 			error_handle("Error occurred with a connection");
 	}
