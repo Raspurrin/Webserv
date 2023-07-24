@@ -15,23 +15,6 @@ void Request::printMap()
 	}
 }
 
-void Request::parseHeaderSection()
-{
-	size_t	position, lpos;
-
-	position = _requestBuffer.find("\r\n");
-	parseStartLine(_requestBuffer.substr(0, position));
-	position += 2;
-	lpos = position;
-	position = _requestBuffer.find("\r\n\r\n", lpos);
-	parseHeaderFields(_requestBuffer.substr(lpos, position - lpos));
-	position += 4;
-	if (_headerFields["Method"] == "POST")
-		parseBody(_requestBuffer.substr(position));
-	if (DEBUG)
-		printMap();
-}
-
 void Request::parseBody(std::string body)
 {
 	std::string line;
@@ -42,7 +25,7 @@ void Request::parseBody(std::string body)
 		_headerFields["Error"] = "400";
 		return ;
 	}
-	
+
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
 	std::stringstream	ss(body);
@@ -88,16 +71,17 @@ void Request::parseStartLine(std::string startLine)
 		_headerFields["Error"] = "505";
 }
 
-void Request::parseHeaderFields(std::string headerSection)
+void Request::parseHeaderFields(std::istringstream &iss)
 {
-	std::istringstream	iss(headerSection);
 	std::string key, value, line;
 	int	position;
 
 	while (getline(iss, line))
 	{
-		if (line.size() == 1)
+		if (line.size() == 1) {
+			_header_done = true;
 			break ;
+		}
 		position = line.find(':');
 		key = line.substr(0, position);
 		position++;
@@ -108,18 +92,51 @@ void Request::parseHeaderFields(std::string headerSection)
 	}
 }
 
+// TODO: Maybe find a way to avoid so many if statements?
 void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
-	_readCount = recv(socket, readBuffer, BUFLEN - 1, 0);
-	if (_readCount <= 0)
+	int bytes_read = recv(socket, readBuffer, BUFLEN - 1, 0);
+	if (bytes_read <= 0)
 	{
 		close(socket);
-		_indexesToRemove.push_back(socket);		
+		_indexesToRemove.push_back(socket);
 	}
+
+	// We need the number of bytes read here since we cant be sure that we didnt read any zero bytes,
+	// which would lead to a truncation of the string.
+	std::string read(readBuffer, bytes_read);
+
+	if (!_first_line && read.find("\r\n") != std::string::npos) {
+		parseStartLine(read.substr(0, read.find("\r\n")));
+		read = read.substr(read.find("\r\n") + 2);
+		_first_line = true;
+	}
+
+	std::istringstream iss(read);
+
+	if (!_header_done)
+		parseHeaderFields(iss);
+
+	if (_content_len == 0 && _headerFields.find("Content-Length") != _headerFields.end()) {
+		_content_len = atoi(_headerFields["Content-Length"].c_str());
+	}
+
+	if (_readCount < _content_len) {
+		std::stringstream remainder;
+		remainder << iss.rdbuf();
+		_bodyBuffer += remainder.str();
+		_readCount += remainder.str().length();
+	}
+
+	if (_header_done && _readCount >= _content_len) {
+		if (_readCount > 0) {
+			parseBody(_bodyBuffer);
+		}
 		_isRead = true;
-	
+	}
+
 	if (DEBUG)
 	{
 		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
@@ -134,7 +151,6 @@ void	Request::getRequest(int	&socket)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
 		readIntoString(socket);
-		parseHeaderSection();
 	} catch (const std::exception &e) {
 //		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
 		std::cout << "Catched exception " << e.what() << std::endl;
@@ -159,7 +175,10 @@ bool	Request::isFlagOn()
 
 Request::Request(void) :
 	_isRead(false),
-	_readCount(0)
+	_readCount(0),
+	_first_line(false),
+	_header_done(false),
+	_content_len(0)
 {
 }
 
@@ -174,7 +193,7 @@ Request 		&Request::operator=(const Request &assign)
 	return (*this);
 }
 
-std::string 	Request::operator[](std::string const &key) 
+std::string 	Request::operator[](std::string const &key)
 {
 	return _headerFields[key];
 }
