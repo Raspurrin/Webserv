@@ -1,10 +1,11 @@
 #include "../header/Response.class.hpp"
 #include <cstdio>
 #include <sstream>
+#include "../header/utils.hpp"
 #include <sys/stat.h>
 #include <unistd.h>
 
-Response::Response(StringStringMap _headerFields) : 
+Response::Response(StringStringMap _headerFields) :
 	_headerFields(_headerFields)
 {
 	if (DEBUG)
@@ -246,17 +247,6 @@ bool Response::listDir()
 	}
 	else
 		return false;
-}
-
-std::string Response::lenToStr(std::string body)
-{
-	size_t	len = body.length();
-	std::ostringstream str1;
-
-	str1 << len;
-	std::string	lenStr = str1.str();
-
-	return (lenStr);
 }
 
 void Response::readHTML()

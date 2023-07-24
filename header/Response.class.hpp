@@ -44,12 +44,11 @@ class Response
 		void	status505();
 
 		void	readHTML();
-		std::string	lenToStr(std::string body);
-		bool	listDir();
 
 	public:
 
 		void		postResponse(int socket, int indexToRemove);
+		bool		listDir();
 		std::string	getResponse();
 
 	public:

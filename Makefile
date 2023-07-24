@@ -16,7 +16,8 @@ SRCS =	main.cpp \
 		ServerConfig.class.cpp \
 		ServerManager.class.cpp \
 		Client.class.cpp \
-		ParsingConfig.class.cpp
+		ParsingConfig.class.cpp \
+		utils.cpp
 
 OBJ = $(SRCS:.cpp=.o)
 OBJ_PREF := $(addprefix $(OBJ_DIR), $(OBJ))
