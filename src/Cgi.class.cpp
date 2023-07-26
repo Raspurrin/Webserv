@@ -1,5 +1,5 @@
 #include "../header/Cgi.class.hpp"
-#include "../header/error.h"
+#include "../header/Error.class.hpp"
 #include "../header/utils.hpp"
 #include "sys/wait.h"
 #include "time.h"

@@ -10,7 +10,8 @@ enum ErrorType {
 	Conflict,
 	Internal_Error,
 	Unsupported_Media_Type,
-	HTTP_Version_Not_Supported
+	HTTP_Version_Not_Supported,
+	None
 };
 
 class ErrorResponse: public std::exception {
@@ -20,6 +21,7 @@ private:
 
 public:
 
+	ErrorResponse();
 	ErrorResponse(ErrorType);
 	ErrorResponse(ErrorType, std::string);
 	virtual ~ErrorResponse() throw() {};

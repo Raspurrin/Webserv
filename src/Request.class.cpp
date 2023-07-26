@@ -131,16 +131,15 @@ void	Request::getRequest(int	&socket)
 	try {
 		readIntoString(socket);
 		parseHeaderSection();
-	} catch (const std::exception &e) {
-//		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
-		std::cout << "Catched exception " << e.what() << std::endl;
+	} catch (const ErrorResponse& error) {
+		_response._hasError = true;
+		_response._requestParsingError = error;
 	}
 }
 
 std::string	Request::getResponse()
 {
-	Response response(_headerFields);
-	return (response.getResponse());
+	return (_response.getResponse());
 }
 
 StringStringMap	Request::getHeaderFields()
@@ -157,6 +156,7 @@ Request::Request(void) :
 	_isRead(false),
 	_readCount(0)
 {
+	_response._headerFields = &_headerFields;
 }
 
 Request::Request(Request const &src)

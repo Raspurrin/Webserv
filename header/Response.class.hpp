@@ -20,14 +20,14 @@ class Response
 	private:
 
 		StringStringMap	_response;
-		StringStringMap	_headerFields;
 		std::string		_responseMessage;
 
 		bool	listDir();
 		void	methodID();
 		void	checkRequestErrors();
 		
-		void	buildResponse();
+		void	processRequest();
+		void	assembleResponse();
 		void	buildError(const ErrorType);
 
 		void	GETMethod();
@@ -49,12 +49,14 @@ class Response
 
 	public:
 
+		StringStringMap*	_headerFields;
+		bool	_hasError;
+		ErrorResponse	_requestParsingError;
 		void		postResponse(int socket, int indexToRemove);
 		std::string	getResponse();
 
 	public:
 		Response();
-		Response(StringStringMap _headerFields);
 		//Response&	operator=(Response &assign);
 		~Response(void);
 };

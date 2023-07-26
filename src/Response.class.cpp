@@ -2,60 +2,36 @@
 #include "../header/Cgi.class.hpp"
 #include "../header/utils.hpp"
 
-Response::Response(StringStringMap _headerFields) :
-	_headerFields(_headerFields)
+Response::Response(void) : _hasError(false)
 {
 	if (DEBUG)
 		std::cout << CYAN << "\nIn response constructor...\n\n" << DEF;
-	try
-	{
-		_response["Version"] = _headerFields["Version"];
-		checkRequestErrors();
-		methodID();
-		readHTML();
-	}
-	catch (const std::exception &e)
-	{
-		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
-		if (_errorType != NULL)
-		{
-			buildError(_errorType->getError());
-		}
-		else
-		{
-			std::cout << "Catched exception " << e.what() << std::endl;
-			buildError(Internal_Error);
-		}
-		readHTML();
-	}
-	buildResponse();
-	return ;
 }
 
 void Response::checkRequestErrors()
 {
-	if (_headerFields.count("Error") == 0)
+	if (_headerFields->count("Error") == 0)
 		return ;
 
-	if (_headerFields["Error"] == "400")
+	if ((*_headerFields)["Error"] == "400")
 		throw ErrorResponse(Bad_Request);
-	if (_headerFields["Error"] == "415")
+	if ((*_headerFields)["Error"] == "415")
 		throw ErrorResponse(Unsupported_Media_Type);
-	if (_headerFields["Error"] == "505")
+	if ((*_headerFields)["Error"] == "505")
 		throw ErrorResponse(HTTP_Version_Not_Supported);
 }
 
 void Response::methodID()
 {
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/index.html";
+	if ((*_headerFields)["Path"] == "/")
+		(*_headerFields)["Path"] = "/index.html";
 
-	if (_headerFields["Method"] == "GET")
+	if ((*_headerFields)["Method"] == "GET")
 		GETMethod();
-	else if (_headerFields["Method"] == "POST")
+	if ((*_headerFields)["Method"] == "POST")
 		POSTMethod();
-	else if (_headerFields["Method"] == "DELETE")
+	if ((*_headerFields)["Method"] == "DELETE")
 		DELETEMethod();
 	return ;
 }
@@ -63,7 +39,7 @@ void Response::methodID()
 void Response::GETMethod()
 {
 	struct	stat s;
-	const char *path = _headerFields["Path"].c_str() + 1;
+	const char *path = (*_headerFields)["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(Not_Found);
@@ -79,7 +55,7 @@ void Response::GETMethod()
 				status200("/directory.html");
 		}
 		else if (S_ISREG(s.st_mode))
-			status200(_headerFields["Path"]);
+			status200((*_headerFields)["Path"]);
 		else
 			throw ErrorResponse(Internal_Error);
 	}
@@ -89,13 +65,13 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	if (_headerFields["Path"] != "/files/")
+	if ((*_headerFields)["Path"] != "/files/")
 		throw ErrorResponse(Forbidden);
 	chdir("./files");
-	std::ofstream outfile(_headerFields["Filename"].c_str());
+	std::ofstream outfile((*_headerFields)["Filename"].c_str());
 	if (outfile.good())
 	{
-		outfile << _headerFields["Body-Text"] << std::endl;
+		outfile << (*_headerFields)["Body-Text"] << std::endl;
 		outfile.close();
 		chdir("..");
 		status201();
@@ -109,14 +85,14 @@ void Response::POSTMethod()
 
 void Response::DELETEMethod()
 {
-	std::string path = _headerFields["Path"];
+	std::string path = (*_headerFields)["Path"];
 
 	if (path.rfind("/files/", 0) == std::string::npos)
 		throw ErrorResponse(Forbidden);
 
 	int start = path.find_last_of('/');
-	_headerFields["Filename"] = path.substr(start + 1);
-	const char *filename = _headerFields["Filename"].c_str();
+	(*_headerFields)["Filename"] = path.substr(start + 1);
+	const char *filename = (*_headerFields)["Filename"].c_str();
 
 	chdir("./files");
 
@@ -183,7 +159,7 @@ void Response::buildError(const ErrorType _errorType) {
 	}
 }
 
-void Response::buildResponse()
+void Response::assembleResponse()
 {
 	_responseMessage += _response["Version"] + " "
 		+ _response["Status code"] + "\n";
@@ -202,6 +178,30 @@ void Response::buildResponse()
 		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
 }
 
+void Response::processRequest()
+{
+	try
+	{
+		_response["Version"] = (*_headerFields)["Version"];
+		checkRequestErrors();
+		methodID();
+	}
+	catch (const std::exception &e)
+	{
+		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
+		if (_errorType != NULL)
+		{
+			buildError(_errorType->getError());
+		}
+		else
+		{
+			std::cout << "Catched exception " << e.what() << std::endl;
+			buildError(Internal_Error);
+		}
+	}
+	return ;
+}
+
 /**
  * Writes a html page containing a List of files in the current directory
  * to the body of the _response object.
@@ -214,7 +214,7 @@ bool Response::listDir()
 	DIR *dir;
 
 	if (getcwd(cwd, 256) != NULL)
-		dir = opendir((cwd + _headerFields["Path"]).c_str());
+		dir = opendir((cwd + (*_headerFields)["Path"]).c_str());
 	else
 		return false;
 
@@ -231,11 +231,11 @@ bool Response::listDir()
 
 		closedir(dir);
 
-		std::string body = "<h1>Content of " + _headerFields["Path"] + "</h1>";
+		std::string body = "<h1>Content of " + (*_headerFields)["Path"] + "</h1>";
 
-		const char *insert = _headerFields["Path"][_headerFields["Path"].size() - 1] == '/' ? "" : "/";
+		const char *insert = (*_headerFields)["Path"][(*_headerFields)["Path"].size() - 1] == '/' ? "" : "/";
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-			body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
+			body += "<a href=\"" + (*_headerFields)["Path"] + insert + *it + "\">" + *it + "</a><br>";
 
 		std::ofstream outfile("temp.html");
 		outfile << body << std::endl;
@@ -278,7 +278,7 @@ void Response::status201()
 {
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
-	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
+	_response["Location:"] = (*_headerFields)["Path"].append((*_headerFields)["Filename"]);
 }
 
 void Response::status400()
@@ -332,6 +332,9 @@ void Response::status505()
 
 std::string	Response::getResponse()
 {
+	processRequest();
+	readHTML();
+	assembleResponse();
 	return (_responseMessage);
 }
 
@@ -341,9 +344,6 @@ std::string	Response::getResponse()
 // 	return (*this);
 // }
 
-Response::Response(void)
-{
-}
 
 Response::~Response(void)
 {
