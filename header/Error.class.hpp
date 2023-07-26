@@ -2,7 +2,7 @@
 #include <exception>
 #include "webserv.hpp"
 
-enum Error {
+enum ErrorType {
 	Bad_Request,
 	Not_Implemented,
 	Forbidden,
@@ -13,16 +13,17 @@ enum Error {
 	HTTP_Version_Not_Supported
 };
 
-class ErrC: public std::exception {
+class ErrorResponse: public std::exception {
 private:
-	Error _err;
-	std::string _desc;
+	ErrorType _errorType;
+	std::string _description;
 
 public:
-	ErrC(Error);
-	ErrC(Error, std::string);
-	virtual ~ErrC() throw() {};
 
-	Error getError() const;
+	ErrorResponse(ErrorType);
+	ErrorResponse(ErrorType, std::string);
+	virtual ~ErrorResponse() throw() {};
+
+	ErrorType getError() const throw();
 	virtual const char *what() const throw();
 };
