@@ -1,11 +1,6 @@
 #include "../header/Response.class.hpp"
-#include <cstdio>
-#include <sstream>
-#include <sstream>
 #include "../header/Cgi.class.hpp"
 #include "../header/utils.hpp"
-#include <sys/stat.h>
-#include <unistd.h>
 
 Response::Response(StringStringMap _headerFields) :
 	_headerFields(_headerFields)
@@ -21,10 +16,10 @@ Response::Response(StringStringMap _headerFields) :
 	}
 	catch (const std::exception &e)
 	{
-		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
-		if (_err != NULL)
+		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
+		if (_errorType != NULL)
 		{
-			buildError(_err->getError());
+			buildError(_errorType->getError());
 		}
 		else
 		{
@@ -43,11 +38,11 @@ void Response::checkRequestErrors()
 		return ;
 
 	if (_headerFields["Error"] == "400")
-		throw ErrC(Bad_Request);
+		throw ErrorResponse(Bad_Request);
 	if (_headerFields["Error"] == "415")
-		throw ErrC(Unsupported_Media_Type);
+		throw ErrorResponse(Unsupported_Media_Type);
 	if (_headerFields["Error"] == "505")
-		throw ErrC(HTTP_Version_Not_Supported);
+		throw ErrorResponse(HTTP_Version_Not_Supported);
 }
 
 void Response::methodID()
@@ -71,9 +66,9 @@ void Response::GETMethod()
 	const char *path = _headerFields["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
-		throw ErrC(Not_Found);
+		throw ErrorResponse(Not_Found);
 	if (access(path, R_OK) == -1)
-		throw ErrC(Forbidden);
+		throw ErrorResponse(Forbidden);
 	if (stat(path, &s) == 0)
 	{
 		if (S_ISDIR(s.st_mode))
@@ -86,16 +81,16 @@ void Response::GETMethod()
 		else if (S_ISREG(s.st_mode))
 			status200(_headerFields["Path"]);
 		else
-			throw ErrC(Internal_Error);
+			throw ErrorResponse(Internal_Error);
 	}
 	else
-		throw ErrC(Internal_Error);
+		throw ErrorResponse(Internal_Error);
 }
 
 void Response::POSTMethod()
 {
 	if (_headerFields["Path"] != "/files/")
-		throw ErrC(Forbidden);
+		throw ErrorResponse(Forbidden);
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
 	if (outfile.good())
@@ -108,7 +103,7 @@ void Response::POSTMethod()
 	else
 	{
 		chdir("..");
-		throw ErrC(Internal_Error, "Internal Error when creating file");
+		throw ErrorResponse(Internal_Error, "Internal Error when creating file");
 	}
 }
 
@@ -117,7 +112,7 @@ void Response::DELETEMethod()
 	std::string path = _headerFields["Path"];
 
 	if (path.rfind("/files/", 0) == std::string::npos)
-		throw ErrC(Forbidden);
+		throw ErrorResponse(Forbidden);
 
 	int start = path.find_last_of('/');
 	_headerFields["Filename"] = path.substr(start + 1);
@@ -128,27 +123,27 @@ void Response::DELETEMethod()
 	if (access(filename, F_OK) == -1)
 	{
 		chdir("..");
-		throw ErrC(Not_Found);
+		throw ErrorResponse(Not_Found);
 	}
 
 	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
 	{
 		chdir("..");
-		throw ErrC(Conflict);
+		throw ErrorResponse(Conflict);
 	}
 	file.close();
 
 	int rem = std::remove(filename);
 	chdir("..");
 	if (rem != 0)
-		throw ErrC(Internal_Error);
+		throw ErrorResponse(Internal_Error);
 	else
 		status200("/error_pages/deleted.html");
 }
 
-void Response::buildError(const Error _err) {
-	switch (_err)
+void Response::buildError(const ErrorType _errorType) {
+	switch (_errorType)
 	{
 	case Bad_Request:
 		status400();
@@ -269,7 +264,7 @@ void Response::readHTML()
 		_response["Content-Length:"] = lenToStr(body);
 	}
 	else
-		throw ErrC(Internal_Error, "Internal Error in readHtml");
+		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
 	return ;
 }
 

@@ -13,7 +13,7 @@
 #include <dirent.h>
 #include "webserv.hpp"
 #include "colours.hpp"
-#include "error.h"
+#include "Error.class.hpp"
 
 class Response
 {
@@ -28,7 +28,7 @@ class Response
 		void	checkRequestErrors();
 		
 		void	buildResponse();
-		void	buildError(const Error);
+		void	buildError(const ErrorType);
 
 		void	GETMethod();
 		void	DELETEMethod();

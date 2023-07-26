@@ -1,8 +1,4 @@
 #include "../header/Request.class.hpp"
-#include <cstdio>
-#include <sstream>
-#include <string>
-#include <unistd.h>
 
 void Request::printMap()
 {
