@@ -34,10 +34,7 @@ void Request::parseBody(std::string body)
 	size_t	found, lpos;
 
 	if (_headerFields.count("Content-Type") == 0 || _headerFields.count("Content-Length") == 0 || _headerFields["Content-Length"] == "0")
-	{
-		_headerFields["Error"] = "400";
-		return ;
-	}
+		throw ErrorResponse(Bad_Request, "from request");
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
@@ -61,7 +58,7 @@ void Request::parseBody(std::string body)
 			getline(ss, _headerFields["Body-Text"], '\r');
 		}
 		else
-			_headerFields["Error"] = "415";
+			throw ErrorResponse(Unsupported_Media_Type, "from request");
 	}
 }
 
@@ -81,7 +78,7 @@ void Request::parseStartLine(std::string startLine)
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
 	size_t found = _headerFields["Version"].find("HTTP/1.1");
 	if (found == std::string::npos)
-		_headerFields["Error"] = "505";
+		throw ErrorResponse(HTTP_Version_Not_Supported, "from request");
 }
 
 void Request::parseHeaderFields(std::string headerSection)

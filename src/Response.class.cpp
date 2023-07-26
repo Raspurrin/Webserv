@@ -10,15 +10,17 @@ Response::Response(void) : _hasError(false)
 
 void Response::checkRequestErrors()
 {
-	if (_headerFields->count("Error") == 0)
-		return ;
+	if (_hasError)
+		throw _requestParsingError;
+	/* if (_headerFields->count("Error") == 0) */
+	/* 	return ; */
 
-	if ((*_headerFields)["Error"] == "400")
-		throw ErrorResponse(Bad_Request);
-	if ((*_headerFields)["Error"] == "415")
-		throw ErrorResponse(Unsupported_Media_Type);
-	if ((*_headerFields)["Error"] == "505")
-		throw ErrorResponse(HTTP_Version_Not_Supported);
+	/* if ((*_headerFields)["Error"] == "400") */
+	/* 	throw ErrorResponse(Bad_Request, "from request"); */
+	/* if ((*_headerFields)["Error"] == "415") */
+	/* 	throw ErrorResponse(Unsupported_Media_Type, "from request"); */
+	/* if ((*_headerFields)["Error"] == "505") */
+	/* 	throw ErrorResponse(HTTP_Version_Not_Supported, "from request"); */
 }
 
 void Response::methodID()
@@ -42,9 +44,9 @@ void Response::GETMethod()
 	const char *path = (*_headerFields)["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
-		throw ErrorResponse(Not_Found);
+		throw ErrorResponse(Not_Found, "in GETMethod, file doesnt exist");
 	if (access(path, R_OK) == -1)
-		throw ErrorResponse(Forbidden);
+		throw ErrorResponse(Forbidden, "No access rights, in GETMethod");
 	if (stat(path, &s) == 0)
 	{
 		if (S_ISDIR(s.st_mode))
@@ -57,7 +59,7 @@ void Response::GETMethod()
 		else if (S_ISREG(s.st_mode))
 			status200((*_headerFields)["Path"]);
 		else
-			throw ErrorResponse(Internal_Error);
+			throw ErrorResponse(Internal_Error, "in GETMethod()");
 	}
 	else
 		throw ErrorResponse(Internal_Error);
@@ -66,7 +68,7 @@ void Response::GETMethod()
 void Response::POSTMethod()
 {
 	if ((*_headerFields)["Path"] != "/files/")
-		throw ErrorResponse(Forbidden);
+		throw ErrorResponse(Forbidden, "Not matching Path with /files/ in POSTMethod()");
 	chdir("./files");
 	std::ofstream outfile((*_headerFields)["Filename"].c_str());
 	if (outfile.good())
@@ -79,7 +81,7 @@ void Response::POSTMethod()
 	else
 	{
 		chdir("..");
-		throw ErrorResponse(Internal_Error, "Internal Error when creating file");
+		throw ErrorResponse(Internal_Error, "Internal Error when creating file in POSTMethod");
 	}
 }
 
@@ -99,21 +101,21 @@ void Response::DELETEMethod()
 	if (access(filename, F_OK) == -1)
 	{
 		chdir("..");
-		throw ErrorResponse(Not_Found);
+		throw ErrorResponse(Not_Found, "File not found in DELETEMethod()");
 	}
 
 	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
 	{
 		chdir("..");
-		throw ErrorResponse(Conflict);
+		throw ErrorResponse(Conflict, "File in use, DELETEMethod");
 	}
 	file.close();
 
 	int rem = std::remove(filename);
 	chdir("..");
 	if (rem != 0)
-		throw ErrorResponse(Internal_Error);
+		throw ErrorResponse(Internal_Error, "Removing file didnt work, in DELETEMethod");
 	else
 		status200("/error_pages/deleted.html");
 }
@@ -189,13 +191,13 @@ void Response::processRequest()
 	catch (const std::exception &e)
 	{
 		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
+		std::cout << "Catched exception " << e.what() << std::endl;
 		if (_errorType != NULL)
 		{
 			buildError(_errorType->getError());
 		}
 		else
 		{
-			std::cout << "Catched exception " << e.what() << std::endl;
 			buildError(Internal_Error);
 		}
 	}
