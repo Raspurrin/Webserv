@@ -28,7 +28,7 @@ void Request::parseBody(std::string body)
 
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
-	std::stringstream	ss(body);
+	std::istringstream	ss(body);
 	getline(ss, line);
 	found = line.find(_headerFields["Boundary"]);
 	if (found != std::string::npos)
@@ -41,14 +41,12 @@ void Request::parseBody(std::string body)
 			lpos--;
 		_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
 		getline(ss, _headerFields["Body-Type"]);
-		found = _headerFields["Body-Type"].find("text/plain");
-		if (found != std::string::npos)
-		{
-			getline(ss, line);
-			getline(ss, _headerFields["Body-Text"], '\r');
-		}
-		else
-			_headerFields["Error"] = "415";
+		getline(ss, line);
+		std::stringstream remainder;
+		remainder << ss.rdbuf();
+		const std::string tmp = remainder.str();
+		size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
+		_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
 	}
 }
 
@@ -115,7 +113,6 @@ void Request::readIntoString(int &socket)
 	}
 
 	std::istringstream iss(read);
-
 	if (!_header_done)
 		parseHeaderFields(iss);
 
