@@ -44,3 +44,7 @@ Client& Client::operator=(Client const& rhs)
 	this->_request = rhs._request;
 	return (*this);
 }
+
+StringStringMap Client::getHeaderFields() {
+	return _request.getHeaderFields();
+}

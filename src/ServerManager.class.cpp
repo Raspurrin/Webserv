@@ -1,5 +1,6 @@
 	#include "../header/ServerManager.class.hpp"
 	#include "../header/ParsingConfig.hpp"
+	#include "../header/Cgi.class.hpp"
 
 IntVector	_indexesToRemove;
 

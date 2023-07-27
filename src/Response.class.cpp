@@ -1,6 +1,7 @@
 #include "../header/Response.class.hpp"
 #include <cstdio>
 #include <sstream>
+#include "../header/Cgi.class.hpp"
 #include "../header/utils.hpp"
 #include <sys/stat.h>
 #include <unistd.h>
@@ -337,7 +338,6 @@ std::string	Response::getResponse()
 {
 	return (_responseMessage);
 }
-
 
 // Response &	Response::operator=(Response &assign)
 // {

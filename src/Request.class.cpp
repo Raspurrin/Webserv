@@ -25,7 +25,7 @@ void Request::parseBody(std::string body)
 		_headerFields["Error"] = "400";
 		return ;
 	}
-
+  
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
 	std::istringstream	ss(body);

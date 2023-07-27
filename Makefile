@@ -17,6 +17,7 @@ SRCS =	main.cpp \
 		ServerManager.class.cpp \
 		Client.class.cpp \
 		ParsingConfig.class.cpp \
+		Cgi.class.cpp \
 		utils.cpp
 
 OBJ = $(SRCS:.cpp=.o)
