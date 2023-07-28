@@ -86,6 +86,10 @@ void Request::parseHeaderFields(std::istringstream &iss)
 		if (line[position] == ' ')
 			position++;
 		value = line.substr(position);
+		key[0] = toupper(key[0]);
+		size_t pos = key.find('-');
+		if (pos != std::string::npos)
+			key[pos + 1] = toupper(key[pos + 1]);
 		_headerFields[key] = value;
 	}
 }
