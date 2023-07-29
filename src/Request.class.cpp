@@ -78,6 +78,8 @@ void Request::parseHeaderFields(std::istringstream &iss)
 	{
 		if (line.size() == 1) {
 			_header_done = true;
+			if (_headerFields["Transfer-Encoding"] == "chunked")
+				_isChunked = true;
 			break ;
 		}
 		position = line.find(':');
@@ -124,9 +126,16 @@ void Request::readIntoString(int &socket)
 		_content_len = atoi(_headerFields["Content-Length"].c_str());
 	}
 
-	if (_readCount < _content_len) {
-		std::stringstream remainder;
-		remainder << iss.rdbuf();
+	std::stringstream remainder;
+	remainder << iss.rdbuf();
+
+	if (_header_done && _isChunked) {
+		const std::string &tmp = remainder.str();
+		std::stringstream ss;
+		ss << std::hex << tmp.substr(0, tmp.find("\r\n"));
+	}
+
+	if (_header_done && _readCount < _content_len) {
 		_bodyBuffer += remainder.str();
 		_readCount += remainder.str().length();
 	}
@@ -179,6 +188,7 @@ Request::Request(void) :
 	_readCount(0),
 	_first_line(false),
 	_header_done(false),
+	_isChunked(false),
 	_content_len(0)
 {
 }
