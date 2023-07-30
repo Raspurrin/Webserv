@@ -1,5 +1,7 @@
 #include "../header/Request.class.hpp"
 #include <cstdio>
+#include <cstring>
+#include <cstdlib>
 #include <sstream>
 #include <string>
 #include <unistd.h>
@@ -25,7 +27,7 @@ void Request::parseBody(std::string body)
 		_headerFields["Error"] = "400";
 		return ;
 	}
-  
+
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
 	std::istringstream	ss(body);
@@ -78,8 +80,9 @@ void Request::parseHeaderFields(std::istringstream &iss)
 	{
 		if (line.size() == 1) {
 			_header_done = true;
-			if (_headerFields["Transfer-Encoding"] == "chunked")
+			if (_headerFields["Transfer-Encoding"] == "chunked") {
 				_isChunked = true;
+			}
 			break ;
 		}
 		position = line.find(':');
@@ -87,7 +90,7 @@ void Request::parseHeaderFields(std::istringstream &iss)
 		position++;
 		if (line[position] == ' ')
 			position++;
-		value = line.substr(position);
+		value = line.substr(position, line.find('\r') - position);
 		key[0] = toupper(key[0]);
 		size_t pos = key.find('-');
 		if (pos != std::string::npos)
@@ -126,22 +129,53 @@ void Request::readIntoString(int &socket)
 		_content_len = atoi(_headerFields["Content-Length"].c_str());
 	}
 
-	std::stringstream remainder;
-	remainder << iss.rdbuf();
-
 	if (_header_done && _isChunked) {
-		const std::string &tmp = remainder.str();
-		std::stringstream ss;
-		ss << std::hex << tmp.substr(0, tmp.find("\r\n"));
-	}
-
-	if (_header_done && _readCount < _content_len) {
+		if (_readCount < _content_len) {
+			std::memset(readBuffer, 0, BUFLEN);
+			iss.read(readBuffer, _content_len - _readCount + 2);
+			size_t count = iss.gcount();
+			_readCount += count;
+			_bodyBuffer += std::string(readBuffer, count);
+			if (_readCount < _content_len) {
+				return;
+			}
+			_readCount = 0;
+		}
+		std::string tmp;
+		while (getline(iss, tmp)) {
+			std::stringstream ss;
+			ss << std::hex << tmp;
+			ss >> _content_len;
+			std::cout << "Content len: " << _content_len << std::endl;
+			if (_content_len == 0) {
+				_chunkedFinished = true;
+				break;
+			}
+			std::memset(readBuffer, 0, BUFLEN);
+			iss.read(readBuffer, _content_len + 2);
+			size_t count = iss.gcount();
+			_readCount += count;
+			if (_readCount == _content_len + 2) {
+				_bodyBuffer += std::string(readBuffer, count - 2);
+			} else {
+				_bodyBuffer += std::string(readBuffer, count);
+				return;
+			}
+			_readCount = 0;
+		}
+	} else if (_header_done && _readCount < _content_len) {
+		std::stringstream remainder;
+		remainder << iss.rdbuf();
 		_bodyBuffer += remainder.str();
 		_readCount += remainder.str().length();
 	}
 
-	if (_header_done && _readCount >= _content_len) {
-		if (_readCount > 0) {
+	if (_header_done && (_readCount >= _content_len || _chunkedFinished)) {
+		std::stringstream ss;
+		ss << _bodyBuffer.length();
+		_headerFields["Content-Length"] = ss.str();
+		if (_bodyBuffer.length() > 0 || _chunkedFinished) {
+			std::cout << _bodyBuffer << std::endl;
 			parseBody(_bodyBuffer);
 		}
 		_isRead = true;
@@ -152,7 +186,7 @@ void Request::readIntoString(int &socket)
 		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
 		std::cout << CYAN << "Read count:\n" << DEF << _readCount << std::endl;
 	}
-	_requestBuffer.append(readBuffer);
+	// _requestBuffer.append(readBuffer);
 }
 
 void	Request::getRequest(int	&socket)
@@ -189,6 +223,7 @@ Request::Request(void) :
 	_first_line(false),
 	_header_done(false),
 	_isChunked(false),
+	_chunkedFinished(false),
 	_content_len(0)
 {
 }

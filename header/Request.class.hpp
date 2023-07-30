@@ -18,6 +18,7 @@ class Request
 		bool			_first_line;
 		bool			_header_done;
 		bool			_isChunked;
+		bool			_chunkedFinished;
 		int				_content_len;
 		std::string		_bodyBuffer;
 		std::string		_requestBuffer;
