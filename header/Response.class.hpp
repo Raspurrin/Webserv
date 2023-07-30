@@ -26,7 +26,7 @@ class Response
 		bool	listDir();
 		void	methodID();
 		void	checkRequestErrors();
-		
+
 		void	buildResponse();
 		void	buildError(const Error);
 
@@ -50,7 +50,6 @@ class Response
 	public:
 
 		void		postResponse(int socket, int indexToRemove);
-		bool		listDir();
 		std::string	getResponse();
 
 	public:
