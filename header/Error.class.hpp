@@ -11,6 +11,12 @@ enum ErrorType {
 	Internal_Error,
 	Unsupported_Media_Type,
 	HTTP_Version_Not_Supported,
+	Length_Required,
+	Payload_Too_Large,
+	Method_Not_Allowed,
+	Request_Timeout,
+	Request_Header_Fields_Too_Large,
+	Too_Many_Requests,
 	None
 };
 
