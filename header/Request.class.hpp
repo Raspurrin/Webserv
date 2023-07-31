@@ -36,7 +36,6 @@ class Request
 		bool			isFlagOn();
 
 		Request(void);
-		Request(Request const &src);
 		Request&	operator=(Request const &assign);
 		std::string	operator[](std::string const &key);
 		~Request(void);

@@ -151,14 +151,9 @@ bool	Request::isFlagOn()
 
 Request::Request(void) :
 	_isRead(false),
-	_readCount(0)
+	_readCount(0),
+	_response(_headerFields)
 {
-	_response._headerFields = &_headerFields;
-}
-
-Request::Request(Request const &src)
-{
-	*this = src;
 }
 
 Request 		&Request::operator=(const Request &assign)

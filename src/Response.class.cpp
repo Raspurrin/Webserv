@@ -2,7 +2,7 @@
 #include "../header/Cgi.class.hpp"
 #include "../header/utils.hpp"
 
-Response::Response(void) : _hasError(false)
+Response::Response(StringStringMap& _headerFields) : _headerFields(_headerFields), _hasError(false)
 {
 	if (DEBUG)
 		std::cout << CYAN << "\nIn response constructor...\n\n" << DEF;
@@ -26,14 +26,14 @@ void Response::checkRequestErrors()
 void Response::methodID()
 {
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if ((*_headerFields)["Path"] == "/")
-		(*_headerFields)["Path"] = "/index.html";
+	if (_headerFields["Path"] == "/")
+		_headerFields["Path"] = "/index.html";
 
-	if ((*_headerFields)["Method"] == "GET")
+	if (_headerFields["Method"] == "GET")
 		GETMethod();
-	if ((*_headerFields)["Method"] == "POST")
+	if (_headerFields["Method"] == "POST")
 		POSTMethod();
-	if ((*_headerFields)["Method"] == "DELETE")
+	if (_headerFields["Method"] == "DELETE")
 		DELETEMethod();
 	return ;
 }
@@ -41,7 +41,7 @@ void Response::methodID()
 void Response::GETMethod()
 {
 	struct	stat s;
-	const char *path = (*_headerFields)["Path"].c_str() + 1;
+	const char *path = _headerFields["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(Not_Found, "in GETMethod, file doesnt exist");
@@ -57,7 +57,7 @@ void Response::GETMethod()
 				status200("/directory.html");
 		}
 		else if (S_ISREG(s.st_mode))
-			status200((*_headerFields)["Path"]);
+			status200(_headerFields["Path"]);
 		else
 			throw ErrorResponse(Internal_Error, "in GETMethod()");
 	}
@@ -67,13 +67,13 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	if ((*_headerFields)["Path"] != "/files/")
+	if (_headerFields["Path"] != "/files/")
 		throw ErrorResponse(Forbidden, "Not matching Path with /files/ in POSTMethod()");
 	chdir("./files");
-	std::ofstream outfile((*_headerFields)["Filename"].c_str());
+	std::ofstream outfile(_headerFields["Filename"].c_str());
 	if (outfile.good())
 	{
-		outfile << (*_headerFields)["Body-Text"] << std::endl;
+		outfile << _headerFields["Body-Text"] << std::endl;
 		outfile.close();
 		chdir("..");
 		status201();
@@ -87,14 +87,14 @@ void Response::POSTMethod()
 
 void Response::DELETEMethod()
 {
-	std::string path = (*_headerFields)["Path"];
+	std::string path = _headerFields["Path"];
 
 	if (path.rfind("/files/", 0) == std::string::npos)
 		throw ErrorResponse(Forbidden);
 
 	int start = path.find_last_of('/');
-	(*_headerFields)["Filename"] = path.substr(start + 1);
-	const char *filename = (*_headerFields)["Filename"].c_str();
+	_headerFields["Filename"] = path.substr(start + 1);
+	const char *filename = _headerFields["Filename"].c_str();
 
 	chdir("./files");
 
@@ -184,7 +184,7 @@ void Response::processRequest()
 {
 	try
 	{
-		_response["Version"] = (*_headerFields)["Version"];
+		_response["Version"] = _headerFields["Version"];
 		checkRequestErrors();
 		methodID();
 	}
@@ -216,7 +216,7 @@ bool Response::listDir()
 	DIR *dir;
 
 	if (getcwd(cwd, 256) != NULL)
-		dir = opendir((cwd + (*_headerFields)["Path"]).c_str());
+		dir = opendir((cwd + _headerFields["Path"]).c_str());
 	else
 		return false;
 
@@ -233,11 +233,11 @@ bool Response::listDir()
 
 		closedir(dir);
 
-		std::string body = "<h1>Content of " + (*_headerFields)["Path"] + "</h1>";
+		std::string body = "<h1>Content of " + _headerFields["Path"] + "</h1>";
 
-		const char *insert = (*_headerFields)["Path"][(*_headerFields)["Path"].size() - 1] == '/' ? "" : "/";
+		const char *insert = _headerFields["Path"][_headerFields["Path"].size() - 1] == '/' ? "" : "/";
 		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-			body += "<a href=\"" + (*_headerFields)["Path"] + insert + *it + "\">" + *it + "</a><br>";
+			body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
 
 		std::ofstream outfile("temp.html");
 		outfile << body << std::endl;
@@ -280,7 +280,7 @@ void Response::status201()
 {
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
-	_response["Location:"] = (*_headerFields)["Path"].append((*_headerFields)["Filename"]);
+	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
 }
 
 void Response::status400()
