@@ -26,7 +26,7 @@ class Response
 		bool	listDir();
 		void	methodID();
 		void	checkRequestErrors();
-		
+
 		void	buildResponse();
 		void	buildError(const Error);
 
