@@ -122,7 +122,7 @@ void Request::readIntoString(int &socket)
 
 	if (_header_done && _isChunked) {
 		if (_readCount < _content_len) {
-			std::memset(readBuffer, 0, BUFLEN);
+			memset(readBuffer, 0, BUFLEN);
 			iss.read(readBuffer, _content_len - _readCount + 2);
 			size_t count = iss.gcount();
 			_readCount += count;
@@ -144,7 +144,7 @@ void Request::readIntoString(int &socket)
 				_chunkedFinished = true;
 				break;
 			}
-			std::memset(readBuffer, 0, BUFLEN);
+			memset(readBuffer, 0, BUFLEN);
 			iss.read(readBuffer, _content_len + 2);
 			size_t count = iss.gcount();
 			_readCount += count;
@@ -188,7 +188,6 @@ void	Request::getRequest(int	&socket)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
 		readIntoString(socket);
-		parseHeaderSection();
 	} catch (const ErrorResponse& error) {
 		_response._hasError = true;
 		_response._requestParsingError = error;
@@ -211,9 +210,9 @@ bool	Request::isFlagOn()
 }
 
 Request::Request(void) :
+	_response(_headerFields),
 	_isRead(false),
 	_readCount(0),
-	_response(_headerFields),
 	_first_line(false),
 	_header_done(false),
 	_isChunked(false),
