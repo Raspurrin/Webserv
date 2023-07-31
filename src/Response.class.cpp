@@ -55,7 +55,6 @@ void Response::GETMethod()
 	}
 	else
 		throw ErrorResponse(Internal_Error);
-	/* _response["Content-Disposition:"] = "attachment; filename=/name.pdf"; */
 }
 
 void Response::POSTMethod()
@@ -237,36 +236,24 @@ bool Response::listDir()
 		return false;
 }
 
-void Response::readHTML()
+void Response::readFile()
 {
 	std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
+	std::string	content;
 
 	if (!fin)
 		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
 	fin.seekg(0, std::ios::end);
 	std::streampos fileSize = fin.tellg();
 	fin.seekg(0, std::ios::beg);
-	
-	std::string	content;
 	content.resize(fileSize);
 	fin.read(&content[0], fileSize);
+	fin.close();
 	if (!fin)
 		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
 	_response["Body"] = content;
 	_response["Content-Length:"] = lenToStr(content);
 	_response["Content-Type:"] = getMimeType(_response["Path"]);
-	fin.close();
-
-	/* std::string	line, body; */
-
-	/* _response["Content-Type:"] = getMimeType(_response["Path"]); */
-	/* while (fin.good()) */
-	/* { */
-	/* 	getline(fin, line); */
-	/* 	body.append(line); */
-	/* } */
-	/* _response["Body"] = body; */
-	/* _response["Content-Length:"] = lenToStr(body); */
 }
 
 std::string Response::getMimeType(const std::string& filename)
@@ -370,7 +357,7 @@ void Response::status505()
 std::string	Response::getResponse()
 {
 	processRequest();
-	readHTML();
+	readFile();
 	assembleResponse();
 	return (_responseMessage);
 }

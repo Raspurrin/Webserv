@@ -47,7 +47,7 @@ class Response
 		void	status501();
 		void	status505();
 
-		void	readHTML();
+		void	readFile();
 		Response();
 
 	public:
