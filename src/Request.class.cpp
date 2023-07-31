@@ -135,6 +135,8 @@ void Request::readIntoString(int &socket)
 			iss.read(readBuffer, _content_len - _readCount + 2);
 			size_t count = iss.gcount();
 			_readCount += count;
+			// We need to consider that there are possible conditions where the trailing \r\n gets send later
+			// TODO: talk to the team about it
 			_bodyBuffer += std::string(readBuffer, count);
 			if (_readCount < _content_len) {
 				return;
@@ -175,7 +177,7 @@ void Request::readIntoString(int &socket)
 		ss << _bodyBuffer.length();
 		_headerFields["Content-Length"] = ss.str();
 		if (_bodyBuffer.length() > 0 || _chunkedFinished) {
-			std::cout << _bodyBuffer << std::endl;
+			// std::cout << _bodyBuffer << std::endl;
 			parseBody(_bodyBuffer);
 		}
 		_isRead = true;
