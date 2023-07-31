@@ -11,23 +11,6 @@ void Request::printMap()
 	}
 }
 
-void Request::parseHeaderSection()
-{
-	size_t	position, lpos;
-
-	position = _requestBuffer.find("\r\n");
-	parseStartLine(_requestBuffer.substr(0, position));
-	position += 2;
-	lpos = position;
-	position = _requestBuffer.find("\r\n\r\n", lpos);
-	parseHeaderFields(_requestBuffer.substr(lpos, position - lpos));
-	position += 4;
-	if (_headerFields["Method"] == "POST")
-		parseBody(_requestBuffer.substr(position));
-	if (DEBUG)
-		printMap();
-}
-
 void Request::parseBody(std::string body)
 {
 	std::string line;
@@ -38,7 +21,7 @@ void Request::parseBody(std::string body)
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
-	std::stringstream	ss(body);
+	std::istringstream	ss(body);
 	getline(ss, line);
 	found = line.find(_headerFields["Boundary"]);
 	if (found != std::string::npos)
@@ -51,14 +34,12 @@ void Request::parseBody(std::string body)
 			lpos--;
 		_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
 		getline(ss, _headerFields["Body-Type"]);
-		found = _headerFields["Body-Type"].find("text/plain");
-		if (found != std::string::npos)
-		{
-			getline(ss, line);
-			getline(ss, _headerFields["Body-Text"], '\r');
-		}
-		else
-			throw ErrorResponse(Unsupported_Media_Type, "from request");
+		getline(ss, line);
+		std::stringstream remainder;
+		remainder << ss.rdbuf();
+		const std::string tmp = remainder.str();
+		size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
+		_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
 	}
 }
 
@@ -81,44 +62,124 @@ void Request::parseStartLine(std::string startLine)
 		throw ErrorResponse(HTTP_Version_Not_Supported, "from request");
 }
 
-void Request::parseHeaderFields(std::string headerSection)
+void Request::parseHeaderFields(std::istringstream &iss)
 {
-	std::istringstream	iss(headerSection);
 	std::string key, value, line;
 	int	position;
 
 	while (getline(iss, line))
 	{
-		if (line.size() == 1)
+		if (line.size() == 1) {
+			_header_done = true;
+			if (_headerFields["Transfer-Encoding"] == "chunked") {
+				_isChunked = true;
+			}
 			break ;
+		}
 		position = line.find(':');
 		key = line.substr(0, position);
 		position++;
 		if (line[position] == ' ')
 			position++;
-		value = line.substr(position);
+		value = line.substr(position, line.find('\r') - position);
+		key[0] = toupper(key[0]);
+		size_t pos = key.find('-');
+		if (pos != std::string::npos)
+			key[pos + 1] = toupper(key[pos + 1]);
 		_headerFields[key] = value;
 	}
 }
 
+// TODO: Maybe find a way to avoid so many if statements?
 void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
-	_readCount = recv(socket, readBuffer, BUFLEN - 1, 0);
-	if (_readCount <= 0)
+	int bytes_read = recv(socket, readBuffer, BUFLEN - 1, 0);
+	if (bytes_read <= 0)
 	{
 		close(socket);
-		_indexesToRemove.push_back(socket);		
+		_indexesToRemove.push_back(socket);
 	}
+
+	// We need the number of bytes read here since we cant be sure that we didnt read any zero bytes,
+	// which would lead to a truncation of the string.
+	std::string read(readBuffer, bytes_read);
+
+	if (!_first_line && read.find("\r\n") != std::string::npos) {
+		parseStartLine(read.substr(0, read.find("\r\n")));
+		read = read.substr(read.find("\r\n") + 2);
+		_first_line = true;
+	}
+
+	std::istringstream iss(read);
+	if (!_header_done)
+		parseHeaderFields(iss);
+
+	if (_content_len == 0 && _headerFields.find("Content-Length") != _headerFields.end()) {
+		_content_len = atoi(_headerFields["Content-Length"].c_str());
+	}
+
+	if (_header_done && _isChunked) {
+		if (_readCount < _content_len) {
+			std::memset(readBuffer, 0, BUFLEN);
+			iss.read(readBuffer, _content_len - _readCount + 2);
+			size_t count = iss.gcount();
+			_readCount += count;
+			// We need to consider that there are possible conditions where the trailing \r\n gets send later
+			// TODO: talk to the team about it
+			_bodyBuffer += std::string(readBuffer, count);
+			if (_readCount < _content_len) {
+				return;
+			}
+			_readCount = 0;
+		}
+		std::string tmp;
+		while (getline(iss, tmp)) {
+			std::stringstream ss;
+			ss << std::hex << tmp;
+			ss >> _content_len;
+			std::cout << "Content len: " << _content_len << std::endl;
+			if (_content_len == 0) {
+				_chunkedFinished = true;
+				break;
+			}
+			std::memset(readBuffer, 0, BUFLEN);
+			iss.read(readBuffer, _content_len + 2);
+			size_t count = iss.gcount();
+			_readCount += count;
+			if (_readCount == _content_len + 2) {
+				_bodyBuffer += std::string(readBuffer, count - 2);
+			} else {
+				_bodyBuffer += std::string(readBuffer, count);
+				return;
+			}
+			_readCount = 0;
+		}
+	} else if (_header_done && _readCount < _content_len) {
+		std::stringstream remainder;
+		remainder << iss.rdbuf();
+		_bodyBuffer += remainder.str();
+		_readCount += remainder.str().length();
+	}
+
+	if (_header_done && (_readCount >= _content_len || _chunkedFinished)) {
+		std::stringstream ss;
+		ss << _bodyBuffer.length();
+		_headerFields["Content-Length"] = ss.str();
+		if (_bodyBuffer.length() > 0 || _chunkedFinished) {
+			// std::cout << _bodyBuffer << std::endl;
+			parseBody(_bodyBuffer);
+		}
 		_isRead = true;
-	
+	}
+
 	if (DEBUG)
 	{
 		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
 		std::cout << CYAN << "Read count:\n" << DEF << _readCount << std::endl;
 	}
-	_requestBuffer.append(readBuffer);
+	// _requestBuffer.append(readBuffer);
 }
 
 void	Request::getRequest(int	&socket)
@@ -152,7 +213,12 @@ bool	Request::isFlagOn()
 Request::Request(void) :
 	_isRead(false),
 	_readCount(0),
-	_response(_headerFields)
+	_response(_headerFields),
+	_first_line(false),
+	_header_done(false),
+	_isChunked(false),
+	_chunkedFinished(false),
+	_content_len(0)
 {
 }
 
@@ -162,7 +228,7 @@ Request 		&Request::operator=(const Request &assign)
 	return (*this);
 }
 
-std::string 	Request::operator[](std::string const &key) 
+std::string 	Request::operator[](std::string const &key)
 {
 	return _headerFields[key];
 }

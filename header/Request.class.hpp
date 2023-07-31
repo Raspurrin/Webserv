@@ -16,6 +16,12 @@ class Request
 
 		bool			_isRead;
 		int				_readCount;
+		bool			_first_line;
+		bool			_header_done;
+		bool			_isChunked;
+		bool			_chunkedFinished;
+		int				_content_len;
+		std::string		_bodyBuffer;
 		std::string		_requestBuffer;
 		StringStringMap	_headerFields;
 		Response	_response;
@@ -24,7 +30,7 @@ class Request
 		std::string		readingRequest(int &socket);
 		void			parseHeaderSection();
 		void			parseStartLine(std::string startLine);
-		void			parseHeaderFields(std::string headerSection);
+		void			parseHeaderFields(std::istringstream &iss);
 		void			parseBody(std::string body);
 
 	public:
