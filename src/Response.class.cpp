@@ -278,7 +278,16 @@ std::string Response::getMimeType(const std::string& filename)
 	{".jpeg", "image/jpeg"},
 	{".gif", "image/gif"},
 	};
-
+	
+	size_t	dotPos = filename.find_last_of('.');
+	if (dotPos != std::string::npos)
+	{
+		std::string extension = filename.substr(dotPos);
+		auto it = mimeTypes.find(extension);
+		if (it != mimeTypes.end())
+			return (it->second);
+	}
+	return ("application/octet-stream");
 }
 
 void Response::status200(std::string path)
