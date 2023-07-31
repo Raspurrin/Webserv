@@ -12,15 +12,6 @@ void Response::checkRequestErrors()
 {
 	if (_hasError)
 		throw _requestParsingError;
-	/* if (_headerFields->count("Error") == 0) */
-	/* 	return ; */
-
-	/* if ((*_headerFields)["Error"] == "400") */
-	/* 	throw ErrorResponse(Bad_Request, "from request"); */
-	/* if ((*_headerFields)["Error"] == "415") */
-	/* 	throw ErrorResponse(Unsupported_Media_Type, "from request"); */
-	/* if ((*_headerFields)["Error"] == "505") */
-	/* 	throw ErrorResponse(HTTP_Version_Not_Supported, "from request"); */
 }
 
 void Response::methodID()
@@ -193,13 +184,9 @@ void Response::processRequest()
 		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
 		std::cout << "Catched exception " << e.what() << std::endl;
 		if (_errorType != NULL)
-		{
 			buildError(_errorType->getError());
-		}
 		else
-		{
 			buildError(Internal_Error);
-		}
 	}
 	return ;
 }
@@ -268,6 +255,30 @@ void Response::readHTML()
 	else
 		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
 	return ;
+}
+
+std::string Response::getMimeType(const std::string& filename)
+{
+	static std::unordered_map<std::string, std::string> mimeTypes = {
+	{".txt", "text/plain"},
+	{".html", "text/html"},
+	{".htm", "text/html"},
+	{".css", "text/css"},
+	{".js", "text/javascript"},
+	{".json", "application/json"},
+	{".xml", "application/xml"},
+	{".pdf", "application/pdf"},
+	{".zip", "application/zip"},
+	{".doc", "application/msword"},
+	{".ppt", "application/vnd.ms-powerpoint"},
+	{".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
+	{".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
+	{".png", "image/png"},
+	{".jpg", "image/jpeg"},
+	{".jpeg", "image/jpeg"},
+	{".gif", "image/gif"},
+	};
+
 }
 
 void Response::status200(std::string path)

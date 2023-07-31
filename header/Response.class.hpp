@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <dirent.h>
 #include <set>
@@ -25,6 +26,7 @@ class Response
 
 		bool	listDir();
 		void	methodID();
+		std::string	getMimeType(const std::string& filename);
 		void	checkRequestErrors();
 		
 		void	processRequest();
