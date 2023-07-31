@@ -243,7 +243,7 @@ void Response::readHTML()
 	{
 		std::string	line, body;
 
-		_response["Content-Type:"] = "text/html";
+		_response["Content-Type:"] = getMimeType(_response["Path"]);
 		while (fin.good())
 		{
 			getline(fin, line);
@@ -259,31 +259,34 @@ void Response::readHTML()
 
 std::string Response::getMimeType(const std::string& filename)
 {
-	static std::unordered_map<std::string, std::string> mimeTypes = {
-	{".txt", "text/plain"},
-	{".html", "text/html"},
-	{".htm", "text/html"},
-	{".css", "text/css"},
-	{".js", "text/javascript"},
-	{".json", "application/json"},
-	{".xml", "application/xml"},
-	{".pdf", "application/pdf"},
-	{".zip", "application/zip"},
-	{".doc", "application/msword"},
-	{".ppt", "application/vnd.ms-powerpoint"},
-	{".pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"},
-	{".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
-	{".png", "image/png"},
-	{".jpg", "image/jpeg"},
-	{".jpeg", "image/jpeg"},
-	{".gif", "image/gif"},
-	};
+	static StringStringMap mimeTypes;
+
+	if (mimeTypes.empty())
+	{
+		mimeTypes[".txt"] = "text/plain";
+		mimeTypes[".html"] = "text/html";
+		mimeTypes[".htm"] = "text/html";
+		mimeTypes[".css"] = "text/css";
+		mimeTypes[".js"]  ="text/javascript";
+		mimeTypes[".json"] = "application/json";
+		mimeTypes[".xml"] = "application/xml";
+		mimeTypes[".pdf"] = "application/pdf";
+		mimeTypes[".zip"] = "application/zip";
+		mimeTypes[".doc"] = "application/msword";
+		mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+		mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+		mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+		mimeTypes[".png"] = "image/png";
+		mimeTypes[".jpg"] = "image/jpeg";
+		mimeTypes[".jpeg"] = "image/jpeg";
+		mimeTypes[".gif"] = "image/gif";
+	}
 	
 	size_t	dotPos = filename.find_last_of('.');
 	if (dotPos != std::string::npos)
 	{
 		std::string extension = filename.substr(dotPos);
-		auto it = mimeTypes.find(extension);
+		std::map<std::string, std::string>::iterator it = mimeTypes.find(extension);
 		if (it != mimeTypes.end())
 			return (it->second);
 	}
