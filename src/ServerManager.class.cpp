@@ -110,7 +110,7 @@ IntVector	_indexesToRemove;
 	void	ServerManager::handleClientSocket(int i)
 	{
 		// std::cout << "we do a loop" << std::endl;
-		if (_sockets[i].revents & POLLIN)
+		if (_sockets[i].revents & POLLIN && !_clients[i - _numServerSockets].isRequestSent())
 		{
 			if (DEBUG)
 				std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;
