@@ -30,7 +30,10 @@ class Response
 		
 		void	processRequest();
 		void	assembleResponse();
-		void	buildError(const ErrorType);
+		void	buildError(const IntStringPair _errorType);
+		std::string	readTemplate();
+		std::string	generateHTML(IntStringPair pair);
+		void	createTemporaryFile(std::string name, std::string content);
 
 		void	GETMethod();
 		void	DELETEMethod();

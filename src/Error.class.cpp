@@ -37,7 +37,7 @@ ErrorResponse::ErrorResponse(int _errorCode, std::string _description): _errorCo
 
 ErrorResponse::ErrorResponse(ErrorType _errorType, std::string _description): _errorType(_errorType), _description(_description) {}
 
-std::pair<const int, std::string>& ErrorResponse::getError() const throw() {
+IntStringPair& ErrorResponse::getError() const throw() {
 	IntStringMap errorTypes = createErrorMap();
 	IntStringMap::iterator it = errorTypes.find(_errorCode);
 	if (it == errorTypes.end())

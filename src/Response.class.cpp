@@ -1,7 +1,10 @@
 #include "../header/Response.class.hpp"
 #include "../header/Cgi.class.hpp"
 #include "../header/utils.hpp"
+#include <fstream>
 #include <ios>
+#include <string>
+#include <utility>
 
 Response::Response(StringStringMap& _headerFields) : _headerFields(_headerFields), _hasError(false)
 {
@@ -36,7 +39,7 @@ void Response::GETMethod()
 	const char *path = _headerFields["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
-		throw ErrorResponse(Not_Found, "in GETMethod, file doesnt exist");
+		throw ErrorResponse(404, "in GETMethod, file doesnt exist");
 	if (access(path, R_OK) == -1)
 		throw ErrorResponse(Forbidden, "No access rights, in GETMethod");
 	if (stat(path, &s) == 0)
@@ -112,48 +115,74 @@ void Response::DELETEMethod()
 		status200("/error_pages/deleted.html");
 }
 
-void Response::buildError(const ErrorType _errorType) {
-	//use getErrorPage from config file
+std::string Response::readTemplate() {
+	std::ifstream	file("template.html");
+	if (!file)
+		error_handle("ifstream error");
+	std::string templateContent, line;
+	while (getline(file, line))
+		templateContent += line + "\n";
+	file.close();
+	return (templateContent);
+}
+
+std::string Response::generateHTML(IntStringPair pair)
+{
+	std::string htmlTemplate = readTemplate();
+	size_t pos = htmlTemplate.find("{{TITLE}}");
+	if (pos != std::string::npos) {
+		htmlTemplate.replace(pos, 9, std::to_string(pair.first));
+	}
+	pos = htmlTemplate.find("{{DESCRIPTION}}");
+	if (pos != std::string::npos) {
+		htmlTemplate.replace(pos, 15, pair.second);
+	}
+}
+
+void Response::buildError(const IntStringPair _errorType) {
+	//use getErrorPage from config file with pair first
 	//if default
 	//generate html and save it into path?
-	switch (_errorType)
-	{
-	case Bad_Request:
-		status400();
-		break;
+	std::cout << "pair first " << _errorType.first << std::endl;
+	std::cout << "pair second " << _errorType.second << std::endl;
+	/* switch (_errorType) */
+	/* { */
+	/* case Bad_Request: */
+	/* 	status400(); */
+	/* 	break; */
 
-	case Unsupported_Media_Type:
-		status415();
-		break;
+	/* case Unsupported_Media_Type: */
+	/* 	status415(); */
+	/* 	break; */
 
-	case Not_Implemented:
-		status501();
-		break;
+	/* case Not_Implemented: */
+	/* 	status501(); */
+	/* 	break; */
 
-	case HTTP_Version_Not_Supported:
-		status505();
-		break;
+	/* case HTTP_Version_Not_Supported: */
+	/* 	status505(); */
+	/* 	break; */
 
-	case Forbidden:
-		status403();
-		break;
+	/* case Forbidden: */
+	/* 	status403(); */
+	/* 	break; */
 
-	case Not_Found:
-		status404();
-		break;
+	/* case Not_Found: */
+	/* 	status404(); */
+	/* 	break; */
 
-	case Conflict:
-		status409();
-		break;
+	/* case Conflict: */
+	/* 	status409(); */
+	/* 	break; */
 
-	case Internal_Error:
-		status500();
-		break;
+	/* case Internal_Error: */
+	/* 	status500(); */
+	/* 	break; */
 
-	default:
-		break;
+	/* default: */
+	/* 	break; */
 
-	}
+	/* } */
 }
 
 void Response::assembleResponse()
@@ -189,8 +218,8 @@ void Response::processRequest()
 		std::cout << "Catched exception " << e.what() << std::endl;
 		if (_errorType != NULL)
 			buildError(_errorType->getError());
-		else
-			buildError(Internal_Error);
+	/* else */
+		/* 	buildError(Internal_Error); */
 	}
 	return ;
 }
@@ -255,7 +284,7 @@ void Response::readFile()
 	if (!fin)
 		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
 	_response["Body"] = content;
-	_response["Content-Length:"] = lenToStr(content);
+	_response["Content-Length:"] = lenToStr(_response["Body"]);
 	_response["Content-Type:"] = getMimeType(_response["Path"]);
 }
 

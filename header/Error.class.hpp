@@ -34,6 +34,6 @@ public:
 	ErrorResponse(ErrorType, std::string);
 	virtual ~ErrorResponse() throw() {};
 
-	std::pair<const int, std::string>& getError() const throw();
+	IntStringPair& getError() const throw();
 	virtual const char *what() const throw();
 };
