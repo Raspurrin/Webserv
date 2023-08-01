@@ -17,7 +17,7 @@ void Request::parseBody(std::string body)
 	size_t	found, lpos;
 
 	if (_headerFields.count("Content-Length") == 0)
-		throw ErrorResponse(Length_Required, "From request parseBody");
+		throw ErrorResponse(411, "From request parseBody");
 	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
 		throw ErrorResponse(Bad_Request, "From request parseBody");
 	

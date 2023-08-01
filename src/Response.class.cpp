@@ -46,9 +46,7 @@ void Response::GETMethod()
 	{
 		if (S_ISDIR(s.st_mode))
 		{
-			if (listDir())
-				status200("/temp.html");
-			else
+			if (!listDir())
 				status200("/directory.html");
 		}
 		else if (S_ISREG(s.st_mode))
@@ -144,55 +142,22 @@ void Response::generateHTML(IntStringPair pair)
 }
 
 void Response::buildError(const IntStringPair _errorType) {
+	std::stringstream ss;
+	ss << _errorType.first << " " << _errorType.second;
+	_response["Status code"] = ss.str();
 	//use getErrorPage from config file with pair first
 	//if default
-	//generate html and save it into path?
+	//generate html
 	generateHTML(_errorType);
-	/* std::cout << "pair first " << _errorType.first << std::endl; */
-	/* std::cout << "pair second " << _errorType.second << std::endl; */
-	/* switch (_errorType) */
-	/* { */
-	/* case Bad_Request: */
-	/* 	status400(); */
-	/* 	break; */
-
-	/* case Unsupported_Media_Type: */
-	/* 	status415(); */
-	/* 	break; */
-
-	/* case Not_Implemented: */
-	/* 	status501(); */
-	/* 	break; */
-
-	/* case HTTP_Version_Not_Supported: */
-	/* 	status505(); */
-	/* 	break; */
-
-	/* case Forbidden: */
-	/* 	status403(); */
-	/* 	break; */
-
-	/* case Not_Found: */
-	/* 	status404(); */
-	/* 	break; */
-
-	/* case Conflict: */
-	/* 	status409(); */
-	/* 	break; */
-
-	/* case Internal_Error: */
-	/* 	status500(); */
-	/* 	break; */
-
-	/* default: */
-	/* 	break; */
-
-	/* } */
+	//else
+	//save string into path
 }
 
 void Response::assembleResponse()
 {
 	_response["Content-Length:"] = lenToStr(_response["Body"]);
+	_response["Version"] = "HTTP/1.1";
+
 	_responseMessage += _response["Version"] + " "
 		+ _response["Status code"] + "\n";
 
@@ -214,7 +179,6 @@ void Response::processRequest()
 {
 	try
 	{
-		_response["Version"] = _headerFields["Version"];
 		checkRequestErrors();
 		methodID();
 	}
@@ -241,37 +205,33 @@ bool Response::listDir()
 	char cwd[256];
 	DIR *dir;
 
-	if (getcwd(cwd, 256) != NULL)
-		dir = opendir((cwd + _headerFields["Path"]).c_str());
-	else
+	if (getcwd(cwd, 256) == NULL)
 		return false;
+	dir = opendir((cwd + _headerFields["Path"]).c_str());
 
-	if (dir != NULL)
-	{
-		struct dirent *ent;
-
-		// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
-		std::set<std::string> files;
-
-		// Return value of readdir is statically allocated and must not be freed!
-		while ((ent = readdir(dir)) != NULL)
-			files.insert(std::string(ent->d_name));
-
-		closedir(dir);
-
-		std::string body = "<h1>Content of " + _headerFields["Path"] + "</h1>";
-
-		const char *insert = _headerFields["Path"][_headerFields["Path"].size() - 1] == '/' ? "" : "/";
-		for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-			body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
-
-		std::ofstream outfile("temp.html");
-		outfile << body << std::endl;
-		outfile.close();
-		return true;
-	}
-	else
+	if (dir == NULL)
 		return false;
+	struct dirent *ent;
+
+	// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
+	std::set<std::string> files;
+
+	// Return value of readdir is statically allocated and must not be freed!
+	while ((ent = readdir(dir)) != NULL)
+		files.insert(std::string(ent->d_name));
+
+	closedir(dir);
+
+	std::string body = "<h1>Content of " + _headerFields["Path"] + "</h1>";
+
+	const char *insert = _headerFields["Path"][_headerFields["Path"].size() - 1] == '/' ? "" : "/";
+	for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
+		body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
+
+	_response["Body"] = body;
+	_response["Content-Type:"] = "text/html";
+	_response["Status code"] = "200 OK";
+	return true;
 }
 
 void Response::readFile()
@@ -342,55 +302,6 @@ void Response::status201()
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
 	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
-}
-
-void Response::status400()
-{
-	_response["Status code"] = "400 Bad Request";
-	_response["Path"] = "/error_pages/400.html";
-}
-
-void Response::status403()
-{
-	_response["Status code"] = "403 Forbidden";
-	_response["Path"] = "/error_pages/403.html";
-}
-
-void Response::status404()
-{
-	_response["Status code"] = "404 Not Found";
-	_response["Path"] = "/error_pages/404.html";
-}
-
-void Response::status409()
-{
-	_response["Status code"] = "409 Conflict";
-	_response["Path"] = "/error_pages/409.html";
-}
-
-void Response::status415()
-{
-	_response["Status code"] = "415 Unsupported Media Type";
-	_response["Path"] = "/error_pages/415.html";
-}
-
-void Response::status500()
-{
-	_response["Status code"] = "500 Internal Server Error";
-	_response["Path"] = "/error_pages/500.html";
-}
-
-void Response::status501()
-{
-	_response["Status code"] = "501 Not Implemented";
-	_response["Path"] = "/error_pages/501.html";
-}
-
-void Response::status505()
-{
-	_response["Status code"] = "505 HTTP Version Not Supported";
-	_response["Version"] = "HTTP/1.1";
-	_response["Path"] = "/error_pages/505.html";
 }
 
 std::string	Response::getResponse()
