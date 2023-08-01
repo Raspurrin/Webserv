@@ -33,5 +33,6 @@ typedef std::vector<int>			IntVector;
 extern IntVector			_indexesToRemove;
 
 void	error_handle(std::string type);
+IntStringMap	createErrorMap();
 
 #endif
