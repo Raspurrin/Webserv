@@ -42,12 +42,12 @@ class ServerConfig
 		std::string			getName() const;
 		int					getClientBodySize() const;
 		std::string			getErrorPage(std::string errorCode) const;
-		std::string			getMostOverlappingPath(const std::string &path) const;
+		bool				isRouteValid(const std::string &path) const;
 		int					getRouteMethods(const std::string &path) const;
 		bool				isRouteMethodAllowed(const std::string &path, const int methodToCheck) const;
 		bool				isRouteDirListingEnabled(const std::string &path) const;
 		const std::string	getRouteRoot(const std::string &path) const;
-		const std::string	getRouteIndex(const std::string &path) const;
+		const std::string 	getRouteIndex(const std::string &path) const;
 		t_sockaddr_in&		getAddress();
 		void				printErrorPages() const;
 		void				printServerConfig() const;
