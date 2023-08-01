@@ -113,6 +113,9 @@ void Response::DELETEMethod()
 }
 
 void Response::buildError(const ErrorType _errorType) {
+	//use getErrorPage from config file
+	//if default
+	//generate html and save it into path?
 	switch (_errorType)
 	{
 	case Bad_Request:

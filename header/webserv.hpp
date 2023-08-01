@@ -27,6 +27,7 @@
 #endif
 
 typedef std::map<std::string, std::string>	StringStringMap;
+typedef std::map<int, std::string>	IntStringMap;
 typedef std::vector<int>			IntVector;
 
 extern IntVector			_indexesToRemove;
