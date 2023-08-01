@@ -62,8 +62,23 @@ void Request::parseStartLine(std::string startLine)
 		throw ErrorResponse(HTTP_Version_Not_Supported, "from request");
 }
 
-void Request::URLDecode(std::string encoded)
+void Request::URLDecode(const std::string& encoded)
 {
+	std::string	decoded;
+	char		ch;
+	int			len = encoded.length();
+
+	for (int i = 0; i < len; ++i)
+	{
+		if (encoded[i] == '%')
+		{
+			int hexValue;
+			sscanf(encoded.substr(i + 1, 2).c_str(), "%x", &hexValue);
+			ch = static_cast<char>(hexValue);
+			decoded += ch;
+			i +=2;
+		}
+	}
 }
 
 void Request::parseHeaderFields(std::istringstream &iss)
