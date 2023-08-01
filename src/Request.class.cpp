@@ -18,7 +18,7 @@ void Request::parseBody(std::string body)
 
 	if (_headerFields.count("Content-Type") == 0 || _headerFields.count("Content-Length") == 0 || _headerFields["Content-Length"] == "0")
 		throw ErrorResponse(Bad_Request, "from request");
-	
+
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
 	std::istringstream	ss(body);
@@ -117,7 +117,9 @@ void Request::readIntoString(int &socket)
 		parseHeaderFields(iss);
 
 	if (_content_len == 0 && _headerFields.find("Content-Length") != _headerFields.end()) {
-		_content_len = atoi(_headerFields["Content-Length"].c_str());
+		std::stringstream tmp;
+		tmp << _headerFields["Content-Length"];
+		tmp >> _content_len;
 	}
 
 	if (_header_done && _isChunked) {

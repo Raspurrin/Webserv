@@ -17,12 +17,12 @@ class Request
 		StringStringMap	_headerFields;
 		Response	_response;
 		bool			_isRead;
-		int				_readCount;
+		uint64_t		_readCount;
 		bool			_first_line;
 		bool			_header_done;
 		bool			_isChunked;
 		bool			_chunkedFinished;
-		int				_content_len;
+		uint64_t		_content_len;
 		std::string		_bodyBuffer;
 		std::string		_requestBuffer;
 
