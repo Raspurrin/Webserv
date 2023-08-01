@@ -83,10 +83,13 @@ ServerConfig::route ServerConfigParser::addRoute(std::string firstLine, ServerCo
 		initializeRoute(line, newRoute);
 	
 	oneServerConfig._routes[routeName] = newRoute;
+	std::cout << "newRoute method: " << newRoute._methods << std::endl;
+	std::cout << RED << "in addRoute: " << std::endl;
+	oneServerConfig.printServerConfig();
 	return (newRoute);
 }
 
-void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route newRoute)
+void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &newRoute)
 {
 	std::string		key; 
 	std::string		value;

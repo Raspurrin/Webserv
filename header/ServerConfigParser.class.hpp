@@ -22,7 +22,7 @@ class ServerConfigParser
 		void					addErrorPage(ServerConfig &oneServerConfig, std::string line);
 		ServerConfig			parsingOneServerConfig();
 		void					initializeConfiguration(ServerConfig &oneServerConfig, std::string line);
-		void					initializeRoute(std::string line, ServerConfig::route newRoute);
+		void					initializeRoute(std::string line, ServerConfig::route &newRoute);
 		ServerConfig::route		addRoute(std::string firstLine, ServerConfig &oneServerConfig);
 		t_sockaddr_in   		setAddress(uint16_t port);
 		void					addToVector(ServerConfig &oneServerConfig);
