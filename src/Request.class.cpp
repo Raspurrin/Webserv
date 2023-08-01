@@ -26,23 +26,22 @@ void Request::parseBody(std::string body)
 	std::istringstream	ss(body);
 	getline(ss, line);
 	found = line.find(_headerFields["Boundary"]);
-	if (found != std::string::npos)
-	{
-		getline(ss, _headerFields["Body-Disposition"]);
-		found = _headerFields["Body-Disposition"].find_last_of('"');
-		found -= 1;
-		lpos = found;
-		while (_headerFields["Body-Disposition"][lpos] != '"')
-			lpos--;
-		_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
-		getline(ss, _headerFields["Body-Type"]);
-		getline(ss, line);
-		std::stringstream remainder;
-		remainder << ss.rdbuf();
-		const std::string tmp = remainder.str();
-		size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
-		_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
-	}
+	if (found == std::string::npos)
+		throw ErrorResponse(400, "From request parseBody");
+	getline(ss, _headerFields["Body-Disposition"]);
+	found = _headerFields["Body-Disposition"].find_last_of('"');
+	found -= 1;
+	lpos = found;
+	while (_headerFields["Body-Disposition"][lpos] != '"')
+		lpos--;
+	_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
+	getline(ss, _headerFields["Body-Type"]);
+	getline(ss, line);
+	std::stringstream remainder;
+	remainder << ss.rdbuf();
+	const std::string tmp = remainder.str();
+	size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
+	_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
 }
 
 void Request::parseStartLine(std::string startLine)
