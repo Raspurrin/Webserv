@@ -5,6 +5,10 @@ ServerConfig::ServerConfig() :
 	_name(""),
 	_clientBodySize(0)
 {
+	_errorPages.insert(std::make_pair("408", "default"));
+    _errorPages.insert(std::make_pair("413", "default"));
+    _errorPages.insert(std::make_pair("414", "default"));
+    _errorPages.insert(std::make_pair("431", "default"));
 }
 
 int		ServerConfig::getPort() const
@@ -26,6 +30,8 @@ std::string	ServerConfig::getErrorPage(std::string errorCode) const
 {
 	if (_errorPages.find(errorCode) != _errorPages.end())
 		error_handle("the error code does not exist");
+	if (_errorPages.at(errorCode) == "default")
+		return ("default");
 	return (_errorPages.at(errorCode));
 }
 
