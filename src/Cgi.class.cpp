@@ -45,7 +45,7 @@ static StringStringMap parse_output(const std::string &output) {
 	std::string line;
 
 	if (header_end == std::string::npos) {
-		throw ErrC(Internal_Error, "Cgi: has no header end.");
+		throw ErrorResponse(Internal_Error, "Cgi: has no header end.");
 	}
 
 	std::istringstream in(output.substr(0, header_end));
@@ -55,7 +55,7 @@ static StringStringMap parse_output(const std::string &output) {
 
 		size_t separator = line.find(':');
 		if (separator == std::string::npos || line[separator + 1] != ' ') {
-			throw ErrC(Internal_Error, "Cgi: Key has no value");
+			throw ErrorResponse(Internal_Error, "Cgi: Key has no value");
 		}
 		std::string key = line.substr(0, separator) + ":";
 		std::string value = line.substr(separator + 2);
@@ -69,14 +69,14 @@ static StringStringMap parse_output(const std::string &output) {
 
 static void check_output(StringStringMap &output) {
 	if (output.find("Content-Type:") == output.end()) {
-		throw ErrC(Internal_Error, "Cgi: Content-Type is missing.");
+		throw ErrorResponse(Internal_Error, "Cgi: Content-Type is missing.");
 	}
 
 	if (output.find("Content-Length:") == output.end()) {
 		output["Content-Length:"] = lenToStr(output["Body"]);
 	} else if (output["Content-Length:"] != lenToStr(output["Body"])) {
 		// enforce correct content lengthg
-		throw ErrC(Internal_Error, "Content-Length provided by cgi does not match size of returned body");
+		throw ErrorResponse(Internal_Error, "Content-Length provided by cgi does not match size of returned body");
 	}
 
 	if (output.find("Status:") != output.end()) {
@@ -91,18 +91,18 @@ static std::string get_child_output(std::string &file, int pid) {int status = 0;
 	do {
 		int ret = waitpid(pid, &status, WNOHANG);
 		if (ret == -1) {
-			throw ErrC(Internal_Error, "waitpid failed");
+			throw ErrorResponse(Internal_Error, "waitpid failed");
 		} else if (ret != 0) {
 			break;
 		}
 	} while (time(NULL) - start < CGI_TIMEOUT_S);
 	if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS) {
-		throw ErrC(Internal_Error, "Child process failed");
+		throw ErrorResponse(Internal_Error, "Child process failed");
 	}
 
 	std::ifstream output_file(file.c_str());
 	if (output_file.bad()) {
-		throw ErrC(Internal_Error, "Fd is bad.");
+		throw ErrorResponse(Internal_Error, "Fd is bad.");
 	}
 
 	std::ostringstream output;
