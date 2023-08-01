@@ -1,10 +1,4 @@
 #include "../header/Request.class.hpp"
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <sstream>
-#include <string>
-#include <unistd.h>
 
 void Request::printMap()
 {
@@ -23,11 +17,8 @@ void Request::parseBody(std::string body)
 	size_t	found, lpos;
 
 	if (_headerFields.count("Content-Type") == 0 || _headerFields.count("Content-Length") == 0 || _headerFields["Content-Length"] == "0")
-	{
-		_headerFields["Error"] = "400";
-		return ;
-	}
-
+		throw ErrorResponse(Bad_Request, "from request");
+	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
 	std::istringstream	ss(body);
@@ -68,7 +59,7 @@ void Request::parseStartLine(std::string startLine)
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
 	size_t found = _headerFields["Version"].find("HTTP/1.1");
 	if (found == std::string::npos)
-		_headerFields["Error"] = "505";
+		throw ErrorResponse(HTTP_Version_Not_Supported, "from request");
 }
 
 void Request::parseHeaderFields(std::istringstream &iss)
@@ -131,7 +122,7 @@ void Request::readIntoString(int &socket)
 
 	if (_header_done && _isChunked) {
 		if (_readCount < _content_len) {
-			std::memset(readBuffer, 0, BUFLEN);
+			memset(readBuffer, 0, BUFLEN);
 			iss.read(readBuffer, _content_len - _readCount + 2);
 			size_t count = iss.gcount();
 			_readCount += count;
@@ -153,7 +144,7 @@ void Request::readIntoString(int &socket)
 				_chunkedFinished = true;
 				break;
 			}
-			std::memset(readBuffer, 0, BUFLEN);
+			memset(readBuffer, 0, BUFLEN);
 			iss.read(readBuffer, _content_len + 2);
 			size_t count = iss.gcount();
 			_readCount += count;
@@ -197,16 +188,15 @@ void	Request::getRequest(int	&socket)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
 		readIntoString(socket);
-	} catch (const std::exception &e) {
-//		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
-		std::cout << "Catched exception " << e.what() << std::endl;
+	} catch (const ErrorResponse& error) {
+		_response._hasError = true;
+		_response._requestParsingError = error;
 	}
 }
 
 std::string	Request::getResponse()
 {
-	Response response(_headerFields);
-	return (response.getResponse());
+	return (_response.getResponse());
 }
 
 StringStringMap	Request::getHeaderFields()
@@ -220,6 +210,7 @@ bool	Request::isFlagOn()
 }
 
 Request::Request(void) :
+	_response(_headerFields),
 	_isRead(false),
 	_readCount(0),
 	_first_line(false),
@@ -228,11 +219,6 @@ Request::Request(void) :
 	_chunkedFinished(false),
 	_content_len(0)
 {
-}
-
-Request::Request(Request const &src)
-{
-	*this = src;
 }
 
 Request 		&Request::operator=(const Request &assign)

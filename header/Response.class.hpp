@@ -13,22 +13,24 @@
 #include <dirent.h>
 #include "webserv.hpp"
 #include "colours.hpp"
-#include "error.h"
+#include "Error.class.hpp"
 
 class Response
 {
 	private:
 
 		StringStringMap	_response;
-		StringStringMap	_headerFields;
+		StringStringMap&	_headerFields;
 		std::string		_responseMessage;
 
 		bool	listDir();
 		void	methodID();
+		std::string	getMimeType(const std::string& filename);
 		void	checkRequestErrors();
-
-		void	buildResponse();
-		void	buildError(const Error);
+		
+		void	processRequest();
+		void	assembleResponse();
+		void	buildError(const ErrorType);
 
 		void	GETMethod();
 		void	DELETEMethod();
@@ -45,16 +47,18 @@ class Response
 		void	status501();
 		void	status505();
 
-		void	readHTML();
+		void	readFile();
+		Response();
 
 	public:
 
+		bool	_hasError;
+		ErrorResponse	_requestParsingError;
 		void		postResponse(int socket, int indexToRemove);
 		std::string	getResponse();
 
 	public:
-		Response();
-		Response(StringStringMap _headerFields);
+		Response(StringStringMap& _headerFields);
 		//Response&	operator=(Response &assign);
 		~Response(void);
 };

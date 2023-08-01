@@ -1,52 +1,18 @@
 #include "../header/Response.class.hpp"
-#include <cstdio>
-#include <sstream>
 #include "../header/Cgi.class.hpp"
 #include "../header/utils.hpp"
-#include <sys/stat.h>
-#include <unistd.h>
+#include <ios>
 
-Response::Response(StringStringMap _headerFields) :
-	_headerFields(_headerFields)
+Response::Response(StringStringMap& _headerFields) : _headerFields(_headerFields), _hasError(false)
 {
 	if (DEBUG)
 		std::cout << CYAN << "\nIn response constructor...\n\n" << DEF;
-	try
-	{
-		_response["Version"] = _headerFields["Version"];
-		checkRequestErrors();
-		methodID();
-		readHTML();
-	}
-	catch (const std::exception &e)
-	{
-		const ErrC *_err = dynamic_cast<const ErrC *>(&e);
-		if (_err != NULL)
-		{
-			buildError(_err->getError());
-		}
-		else
-		{
-			std::cout << "Catched exception " << e.what() << std::endl;
-			buildError(Internal_Error);
-		}
-		readHTML();
-	}
-	buildResponse();
-	return ;
 }
 
 void Response::checkRequestErrors()
 {
-	if (_headerFields.count("Error") == 0)
-		return ;
-
-	if (_headerFields["Error"] == "400")
-		throw ErrC(Bad_Request);
-	if (_headerFields["Error"] == "415")
-		throw ErrC(Unsupported_Media_Type);
-	if (_headerFields["Error"] == "505")
-		throw ErrC(HTTP_Version_Not_Supported);
+	if (_hasError)
+		throw _requestParsingError;
 }
 
 void Response::methodID()
@@ -57,9 +23,9 @@ void Response::methodID()
 
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
-	else if (_headerFields["Method"] == "POST")
+	if (_headerFields["Method"] == "POST")
 		POSTMethod();
-	else if (_headerFields["Method"] == "DELETE")
+	if (_headerFields["Method"] == "DELETE")
 		DELETEMethod();
 	return ;
 }
@@ -70,9 +36,9 @@ void Response::GETMethod()
 	const char *path = _headerFields["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
-		throw ErrC(Not_Found);
+		throw ErrorResponse(Not_Found, "in GETMethod, file doesnt exist");
 	if (access(path, R_OK) == -1)
-		throw ErrC(Forbidden);
+		throw ErrorResponse(Forbidden, "No access rights, in GETMethod");
 	if (stat(path, &s) == 0)
 	{
 		if (S_ISDIR(s.st_mode))
@@ -85,16 +51,16 @@ void Response::GETMethod()
 		else if (S_ISREG(s.st_mode))
 			status200(_headerFields["Path"]);
 		else
-			throw ErrC(Internal_Error);
+			throw ErrorResponse(Internal_Error, "in GETMethod()");
 	}
 	else
-		throw ErrC(Internal_Error);
+		throw ErrorResponse(Internal_Error);
 }
 
 void Response::POSTMethod()
 {
 	if (_headerFields["Path"] != "/files/")
-		throw ErrC(Forbidden);
+		throw ErrorResponse(Forbidden, "Not matching Path with /files/ in POSTMethod()");
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
 	if (outfile.good())
@@ -107,7 +73,7 @@ void Response::POSTMethod()
 	else
 	{
 		chdir("..");
-		throw ErrC(Internal_Error, "Internal Error when creating file");
+		throw ErrorResponse(Internal_Error, "Internal Error when creating file in POSTMethod");
 	}
 }
 
@@ -116,7 +82,7 @@ void Response::DELETEMethod()
 	std::string path = _headerFields["Path"];
 
 	if (path.rfind("/files/", 0) == std::string::npos)
-		throw ErrC(Forbidden);
+		throw ErrorResponse(Forbidden);
 
 	int start = path.find_last_of('/');
 	_headerFields["Filename"] = path.substr(start + 1);
@@ -127,27 +93,27 @@ void Response::DELETEMethod()
 	if (access(filename, F_OK) == -1)
 	{
 		chdir("..");
-		throw ErrC(Not_Found);
+		throw ErrorResponse(Not_Found, "File not found in DELETEMethod()");
 	}
 
 	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
 	{
 		chdir("..");
-		throw ErrC(Conflict);
+		throw ErrorResponse(Conflict, "File in use, DELETEMethod");
 	}
 	file.close();
 
 	int rem = std::remove(filename);
 	chdir("..");
 	if (rem != 0)
-		throw ErrC(Internal_Error);
+		throw ErrorResponse(Internal_Error, "Removing file didnt work, in DELETEMethod");
 	else
 		status200("/error_pages/deleted.html");
 }
 
-void Response::buildError(const Error _err) {
-	switch (_err)
+void Response::buildError(const ErrorType _errorType) {
+	switch (_errorType)
 	{
 	case Bad_Request:
 		status400();
@@ -187,7 +153,7 @@ void Response::buildError(const Error _err) {
 	}
 }
 
-void Response::buildResponse()
+void Response::assembleResponse()
 {
 	_responseMessage += _response["Version"] + " "
 		+ _response["Status code"] + "\n";
@@ -204,6 +170,26 @@ void Response::buildResponse()
 
 	if (DEBUG)
 		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
+}
+
+void Response::processRequest()
+{
+	try
+	{
+		_response["Version"] = _headerFields["Version"];
+		checkRequestErrors();
+		methodID();
+	}
+	catch (const std::exception &e)
+	{
+		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
+		std::cout << "Catched exception " << e.what() << std::endl;
+		if (_errorType != NULL)
+			buildError(_errorType->getError());
+		else
+			buildError(Internal_Error);
+	}
+	return ;
 }
 
 /**
@@ -250,26 +236,60 @@ bool Response::listDir()
 		return false;
 }
 
-void Response::readHTML()
+void Response::readFile()
 {
-	std::ifstream	fin(_response["Path"].c_str() + 1);
+	std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
+	std::string	content;
 
-	if (fin.is_open())
+	if (!fin)
+		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
+	fin.seekg(0, std::ios::end);
+	std::streampos fileSize = fin.tellg();
+	fin.seekg(0, std::ios::beg);
+	content.resize(fileSize);
+	fin.read(&content[0], fileSize);
+	fin.close();
+	if (!fin)
+		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
+	_response["Body"] = content;
+	_response["Content-Length:"] = lenToStr(content);
+	_response["Content-Type:"] = getMimeType(_response["Path"]);
+}
+
+std::string Response::getMimeType(const std::string& filename)
+{
+	static StringStringMap mimeTypes;
+
+	if (mimeTypes.empty())
 	{
-		std::string	line, body;
-
-		_response["Content-Type:"] = "text/html";
-		while (fin.good())
-		{
-			getline(fin, line);
-			body.append(line);
-		}
-		_response["Body"] = body;
-		_response["Content-Length:"] = lenToStr(body);
+		mimeTypes[".txt"] = "text/plain";
+		mimeTypes[".html"] = "text/html";
+		mimeTypes[".htm"] = "text/html";
+		mimeTypes[".css"] = "text/css";
+		mimeTypes[".js"]  ="text/javascript";
+		mimeTypes[".json"] = "application/json";
+		mimeTypes[".xml"] = "application/xml";
+		mimeTypes[".pdf"] = "application/pdf";
+		mimeTypes[".zip"] = "application/zip";
+		mimeTypes[".doc"] = "application/msword";
+		mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+		mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+		mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+		mimeTypes[".png"] = "image/png";
+		mimeTypes[".jpg"] = "image/jpeg";
+		mimeTypes[".jpeg"] = "image/jpeg";
+		mimeTypes[".gif"] = "image/gif";
 	}
-	else
-		throw ErrC(Internal_Error, "Internal Error in readHtml");
-	return ;
+	
+	size_t	dotPos = filename.find_last_of('.');
+	if (dotPos != std::string::npos)
+	{
+		std::string extension = filename.substr(dotPos);
+		StringStringMap::iterator it = mimeTypes.find(extension);
+		if (it != mimeTypes.end())
+			return (it->second);
+	}
+	return ("application/octet-stream");
 }
 
 void Response::status200(std::string path)
@@ -336,6 +356,9 @@ void Response::status505()
 
 std::string	Response::getResponse()
 {
+	processRequest();
+	readFile();
+	assembleResponse();
 	return (_responseMessage);
 }
 
@@ -345,9 +368,6 @@ std::string	Response::getResponse()
 // 	return (*this);
 // }
 
-Response::Response(void)
-{
-}
 
 Response::~Response(void)
 {
