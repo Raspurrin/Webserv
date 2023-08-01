@@ -33,10 +33,16 @@ ErrorResponse::ErrorResponse(): _errorType(None), _description("No description p
 
 ErrorResponse::ErrorResponse(ErrorType _errorType): _errorType(_errorType), _description("No description provided") {}
 
+ErrorResponse::ErrorResponse(int _errorCode, std::string _description): _errorCode(_errorCode), _description(_description) {}
+
 ErrorResponse::ErrorResponse(ErrorType _errorType, std::string _description): _errorType(_errorType), _description(_description) {}
 
-ErrorType ErrorResponse::getError() const throw() {
-	return _errorType;
+std::pair<const int, std::string>& ErrorResponse::getError() const throw() {
+	IntStringMap errorTypes = createErrorMap();
+	IntStringMap::iterator it = errorTypes.find(_errorCode);
+	if (it == errorTypes.end())
+		it = errorTypes.find(500);
+	return (*it);
 }
 
 const char *ErrorResponse::what() const throw() {

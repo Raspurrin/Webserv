@@ -30,10 +30,10 @@ public:
 
 	ErrorResponse();
 	ErrorResponse(ErrorType);
-	ErrorResponse(int, std::string);
+	ErrorResponse(const int, std::string);
 	ErrorResponse(ErrorType, std::string);
 	virtual ~ErrorResponse() throw() {};
 
-	ErrorType getError() const throw();
+	std::pair<const int, std::string>& getError() const throw();
 	virtual const char *what() const throw();
 };
