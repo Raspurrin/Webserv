@@ -52,7 +52,7 @@ void Request::parseStartLine(std::string startLine)
 	position++;
 	lpos = position;
 	position = startLine.find(' ', lpos);
-	_headerFields["Path"] = startLine.substr(lpos, position - lpos);
+	URLDecode(startLine.substr(lpos, position - lpos));
 	position++;
 	lpos = position;
 	position = startLine.find(' ', lpos);
@@ -60,6 +60,10 @@ void Request::parseStartLine(std::string startLine)
 	size_t found = _headerFields["Version"].find("HTTP/1.1");
 	if (found == std::string::npos)
 		throw ErrorResponse(HTTP_Version_Not_Supported, "from request");
+}
+
+void Request::URLDecode(std::string encoded)
+{
 }
 
 void Request::parseHeaderFields(std::istringstream &iss)

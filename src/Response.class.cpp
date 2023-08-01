@@ -34,6 +34,7 @@ void Response::GETMethod()
 {
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
+	std::cout << "searching file... " << _headerFields["Path"] << std::endl;
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(Not_Found, "in GETMethod, file doesnt exist");
