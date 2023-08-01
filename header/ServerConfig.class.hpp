@@ -14,13 +14,14 @@ class ServerConfig
 	private:
 		friend class ServerConfigParser;
 		
-		typedef struct
+		typedef struct myRoute
 		{
 			int				_methods;
 			bool			_directoryListing;
 			std::string		_HTTPRedirect;
 			std::string		_root;
 			std::string		_index;
+			myRoute() : _methods(0), _directoryListing(false), _HTTPRedirect(""), _root(""), _index("") {};
 		} route;
 
 		typedef struct pollfd						t_pollfd;

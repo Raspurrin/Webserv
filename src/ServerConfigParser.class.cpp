@@ -123,6 +123,7 @@ void	ServerConfigParser::addAllowedMethod(std::string method, int &allowedMethod
 		allowedMethod |= POST;
 	else if (method == "DELETE")
 		allowedMethod |= DELETE;
+	std::cout << "Allowed method: " << allowedMethod << std::endl;
 }
 
 void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, std::string line)
@@ -162,7 +163,7 @@ void    ServerConfigParser::addToVector(ServerConfig &oneServerConfig)
 	_serverConfigs.push_back(oneServerConfig);
 }
 
-t_sockaddr_in   ServerConfigParser::setAddress(int port)
+t_sockaddr_in   ServerConfigParser::setAddress(uint16_t port)
 {
 	t_sockaddr_in   address;
 
