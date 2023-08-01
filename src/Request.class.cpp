@@ -19,7 +19,7 @@ void Request::parseBody(std::string body)
 	if (_headerFields.count("Content-Length") == 0)
 		throw ErrorResponse(411, "From request parseBody");
 	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
-		throw ErrorResponse(Bad_Request, "From request parseBody");
+		throw ErrorResponse(400, "From request parseBody");
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
@@ -61,7 +61,7 @@ void Request::parseStartLine(std::string startLine)
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
 	size_t found = _headerFields["Version"].find("HTTP/1.1");
 	if (found == std::string::npos)
-		throw ErrorResponse(HTTP_Version_Not_Supported, "from request");
+		throw ErrorResponse(505, "From request");
 }
 
 void Request::URLDecode(const std::string& encoded)

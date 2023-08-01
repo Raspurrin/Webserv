@@ -41,41 +41,32 @@ void Response::GETMethod()
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "in GETMethod, file doesnt exist");
 	if (access(path, R_OK) == -1)
-		throw ErrorResponse(Forbidden, "No access rights, in GETMethod");
-	if (stat(path, &s) == 0)
+		throw ErrorResponse(403, "No access rights, in GETMethod");
+	if (stat(path, &s) != 0)
+		throw ErrorResponse(500, "in GET");
+	if (S_ISDIR(s.st_mode))
 	{
-		if (S_ISDIR(s.st_mode))
-		{
-			if (!listDir())
-				status200("/directory.html");
-		}
-		else if (S_ISREG(s.st_mode))
-			status200(_headerFields["Path"]);
-		else
-			throw ErrorResponse(Internal_Error, "in GETMethod()");
+		if (!listDir())
+			status200("/directory.html");
 	}
+	else if (S_ISREG(s.st_mode))
+		status200(_headerFields["Path"]);
 	else
-		throw ErrorResponse(Internal_Error);
+		throw ErrorResponse(500, "in GETMethod()");
 }
 
 void Response::POSTMethod()
 {
 	if (_headerFields["Path"] != "/files/")
-		throw ErrorResponse(Forbidden, "Not matching Path with /files/ in POSTMethod()");
+		throw ErrorResponse(403, "Not matching Path with /files/ in POSTMethod()");
 	chdir("./files");
 	std::ofstream outfile(_headerFields["Filename"].c_str());
-	if (outfile.good())
-	{
-		outfile << _headerFields["Body-Text"] << std::endl;
-		outfile.close();
-		chdir("..");
-		status201();
-	}
-	else
-	{
-		chdir("..");
-		throw ErrorResponse(Internal_Error, "Internal Error when creating file in POSTMethod");
-	}
+	chdir("..");
+	if (!outfile.is_open() || !outfile.good())
+		throw ErrorResponse(500, "Internal Error when creating file in POSTMethod");
+	outfile << _headerFields["Body-Text"] << std::endl;
+	outfile.close();
+	status201();
 }
 
 void Response::DELETEMethod()
@@ -83,7 +74,7 @@ void Response::DELETEMethod()
 	std::string path = _headerFields["Path"];
 
 	if (path.rfind("/files/", 0) == std::string::npos)
-		throw ErrorResponse(Forbidden);
+		throw ErrorResponse(403, "in delete method");
 
 	int start = path.find_last_of('/');
 	_headerFields["Filename"] = path.substr(start + 1);
@@ -94,23 +85,22 @@ void Response::DELETEMethod()
 	if (access(filename, F_OK) == -1)
 	{
 		chdir("..");
-		throw ErrorResponse(Not_Found, "File not found in DELETEMethod()");
+		throw ErrorResponse(404, "File not found in DELETEMethod()");
 	}
 
 	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
 	{
 		chdir("..");
-		throw ErrorResponse(Conflict, "File in use, DELETEMethod");
+		throw ErrorResponse(409, "File in use, DELETEMethod");
 	}
 	file.close();
 
 	int rem = std::remove(filename);
 	chdir("..");
 	if (rem != 0)
-		throw ErrorResponse(Internal_Error, "Removing file didnt work, in DELETEMethod");
-	else
-		status200("/error_pages/deleted.html");
+		throw ErrorResponse(500, "Delete file unsuccesful, in DELETEMethod");
+	status200("/error_pages/deleted.html");
 }
 
 std::string Response::readTemplate() {
@@ -164,9 +154,7 @@ void Response::assembleResponse()
 	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
 	{
 		if ((*it).first.find(':') != std::string::npos)
-		{
 			_responseMessage += (*it).first + " " + (*it).second + "\n";
-		}
 	}
 	_responseMessage += "Connection: close\r\n\r\n"
 		+ _response["Body"];
@@ -242,7 +230,7 @@ void Response::readFile()
 	std::string	content;
 
 	if (!fin)
-		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
+		throw ErrorResponse(500, "Internal Error in readHtml");
 	fin.seekg(0, std::ios::end);
 	std::streampos fileSize = fin.tellg();
 	fin.seekg(0, std::ios::beg);
@@ -250,7 +238,7 @@ void Response::readFile()
 	fin.read(&content[0], fileSize);
 	fin.close();
 	if (!fin)
-		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
+		throw ErrorResponse(500, "Internal Error in readHtml");
 	_response["Body"] = content;
 	_response["Content-Type:"] = getMimeType(_response["Path"]);
 }
@@ -317,7 +305,6 @@ std::string	Response::getResponse()
 // 	this->_responseMessage = assign.getResponse(_headerFields);
 // 	return (*this);
 // }
-
 
 Response::~Response(void)
 {
