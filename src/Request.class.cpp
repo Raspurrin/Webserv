@@ -16,8 +16,10 @@ void Request::parseBody(std::string body)
 	std::string line;
 	size_t	found, lpos;
 
-	if (_headerFields.count("Content-Type") == 0 || _headerFields.count("Content-Length") == 0 || _headerFields["Content-Length"] == "0")
-		throw ErrorResponse(Bad_Request, "from request");
+	if (_headerFields.count("Content-Length") == 0)
+		throw ErrorResponse(Length_Required, "From request parseBody");
+	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
+		throw ErrorResponse(Bad_Request, "From request parseBody");
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
@@ -78,7 +80,12 @@ void Request::URLDecode(const std::string& encoded)
 			decoded += ch;
 			i +=2;
 		}
+		else if (encoded[i] == '+')
+			decoded += ' ';
+		else
+			decoded += encoded[i];
 	}
+	_headerFields["Path"] = decoded;
 }
 
 void Request::parseHeaderFields(std::istringstream &iss)
