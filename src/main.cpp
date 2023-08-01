@@ -22,7 +22,7 @@ int main(void)
 	ServerConfigParser parser("configuration.conf");
 	ServerConfigVector serverConfigs = parser.getServerConfigs();
 	std::cout << RED << "\nOutside Parser:" << DEF << std::endl;
-	for (const auto &it : serverConfigs)
-		it.printServerConfig();
+	for (serverConfigVector::const_iterator it = serverConfigs.begin(); it != serverConfigs.end(); it++)
+		it->printServerConfig();
 	return (0);
 }

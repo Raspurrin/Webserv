@@ -16,11 +16,11 @@ class ServerConfig
 		
 		typedef struct
 		{
-			int			_methods;
-			bool		_directoryListing;
-			std::string	_HTTPRedirect;
-			std::string	_root;
-			std::string	_index;
+			int				_methods;
+			bool			_directoryListing;
+			std::string		_HTTPRedirect;
+			std::string		_root;
+			std::string		_index;
 		} route;
 
 		typedef struct pollfd						t_pollfd;

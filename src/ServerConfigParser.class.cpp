@@ -1,7 +1,7 @@
 #include "../header/ServerConfigParser.class.hpp"
 #include "colours.hpp"
 
-ServerConfigParser::ServerConfigParser(std::string fileName)
+ServerConfigParser::ServerConfigParser(const char *fileName)
 {
 	_fileToBeParsed.open(fileName);
 
@@ -138,11 +138,11 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 	extractKeyValue(line, key, value);
 	std::cout << "key: " << key << " value: " << value << DEF << std::endl;
 	if (key == "port")
-		oneServerConfig._port = std::stoi(value);
+		oneServerConfig._port = std::atoi(value.c_str());
 	else if (key == "serverName")
 		oneServerConfig._name = value;
 	else if (key == "clientBodySize")
-		oneServerConfig._clientBodySize = std::stoi(value);
+		oneServerConfig._clientBodySize = std::atoi(value.c_str());
 }
 
 void	ServerConfigParser::addErrorPage(ServerConfig &oneServerConfig, std::string line)

@@ -38,7 +38,7 @@ class ServerConfigParser
 		serverConfigVector		getServerConfigs();
 	
 	public:
-		ServerConfigParser(std::string fileName);
+		ServerConfigParser(const char *fileName);
 		~ServerConfigParser(void);
 };
 

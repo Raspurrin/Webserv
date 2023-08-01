@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <netinet/in.h>
-#include <string.h>
+#include <string>
 #include <iostream>
 #include <istream>
 #include <sstream>

@@ -31,8 +31,8 @@ std::string	ServerConfig::getErrorPage(std::string errorCode) const
 
 void	ServerConfig::printErrorPages() const
 {
-	for (const auto &it : _errorPages)
-		std::cout << it.first << ": " << it.second << std::endl;
+	for (StringStringMap::const_iterator it = _errorPages.begin(); it != _errorPages.end(); it++)
+		std::cout << it->first << ": " << it->second << std::endl;
 }
 size_t	ServerConfig::calculateStringOverlap(const std::string &str1, const std::string &str2) const
 
@@ -122,17 +122,17 @@ void	ServerConfig::printServerConfig() const
 	std::cout << "  name: " << _name << std::endl;
 	std::cout << "  clientBodySize: " << _clientBodySize << std::endl;
 	std::cout << "  errorPages:" << std::endl;
-	for (const auto &it : _errorPages)
-		std::cout << "    " << it.first << ": " << it.second << std::endl;
+	for (StringStringMap::const_iterator it = _errorPages.begin(); it != _errorPages.end(); it++)
+		std::cout << "    " << it->first << ": " << it->second << std::endl;
 	std::cout << "  routes:" << std::endl;
-	for (const auto &it : _routes)
+	for (StringRouteMap::const_iterator it = _routes.begin(); it != _routes.end(); it++)
 	{
-		std::cout << "    " << it.first << ":" << std::endl;
-		std::cout << "      methods: " << it.second._methods << std::endl;
-		std::cout << "      directoryListing: " << it.second._directoryListing << std::endl;
-		std::cout << "      HTTPRedirect: " << it.second._HTTPRedirect << std::endl;
-		std::cout << "      root: " << it.second._root << std::endl;
-		std::cout << "      index: " << it.second._index << std::endl;
+		std::cout << "    " << it->first << ":" << std::endl;
+		std::cout << "      methods: " << it->second._methods << std::endl;
+		std::cout << "      directoryListing: " << it->second._directoryListing << std::endl;
+		std::cout << "      HTTPRedirect: " << it->second._HTTPRedirect << std::endl;
+		std::cout << "      root: " << it->second._root << std::endl;
+		std::cout << "      index: " << it->second._index << std::endl;
 	}
 }
 
