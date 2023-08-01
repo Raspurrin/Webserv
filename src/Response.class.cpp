@@ -126,25 +126,30 @@ std::string Response::readTemplate() {
 	return (templateContent);
 }
 
-std::string Response::generateHTML(IntStringPair pair)
+void Response::generateHTML(IntStringPair pair)
 {
 	std::string htmlTemplate = readTemplate();
 	size_t pos = htmlTemplate.find("{{TITLE}}");
 	if (pos != std::string::npos) {
-		htmlTemplate.replace(pos, 9, std::to_string(pair.first));
+		std::stringstream ss;
+		ss << pair.first;
+		htmlTemplate.replace(pos, 9, ss.str());
 	}
 	pos = htmlTemplate.find("{{DESCRIPTION}}");
 	if (pos != std::string::npos) {
 		htmlTemplate.replace(pos, 15, pair.second);
 	}
+	_response["Body"] = htmlTemplate;
+	_response["Content-Type:"] = "text/html";
 }
 
 void Response::buildError(const IntStringPair _errorType) {
 	//use getErrorPage from config file with pair first
 	//if default
 	//generate html and save it into path?
-	std::cout << "pair first " << _errorType.first << std::endl;
-	std::cout << "pair second " << _errorType.second << std::endl;
+	generateHTML(_errorType);
+	/* std::cout << "pair first " << _errorType.first << std::endl; */
+	/* std::cout << "pair second " << _errorType.second << std::endl; */
 	/* switch (_errorType) */
 	/* { */
 	/* case Bad_Request: */
@@ -187,6 +192,7 @@ void Response::buildError(const IntStringPair _errorType) {
 
 void Response::assembleResponse()
 {
+	_response["Content-Length:"] = lenToStr(_response["Body"]);
 	_responseMessage += _response["Version"] + " "
 		+ _response["Status code"] + "\n";
 
@@ -270,6 +276,8 @@ bool Response::listDir()
 
 void Response::readFile()
 {
+	if (_response.count("Body") > 0)
+		return ;
 	std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
 	std::string	content;
 
@@ -284,7 +292,6 @@ void Response::readFile()
 	if (!fin)
 		throw ErrorResponse(Internal_Error, "Internal Error in readHtml");
 	_response["Body"] = content;
-	_response["Content-Length:"] = lenToStr(_response["Body"]);
 	_response["Content-Type:"] = getMimeType(_response["Path"]);
 }
 

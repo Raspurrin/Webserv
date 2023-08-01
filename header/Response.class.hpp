@@ -32,8 +32,7 @@ class Response
 		void	assembleResponse();
 		void	buildError(const IntStringPair _errorType);
 		std::string	readTemplate();
-		std::string	generateHTML(IntStringPair pair);
-		void	createTemporaryFile(std::string name, std::string content);
+		void	generateHTML(IntStringPair pair);
 
 		void	GETMethod();
 		void	DELETEMethod();
