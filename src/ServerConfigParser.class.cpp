@@ -5,16 +5,24 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 {
 	_fileToBeParsed.open(fileName);
 
-	if (!_fileToBeParsed.is_open())
-		throw std::invalid_argument("File not found");
-	while (!_fileToBeParsed.eof())
+	try
 	{
-		if (!checkForServerDeclaration())
-			break;
-		ServerConfig oneServerConfig = parsingOneServerConfig();
-		std::cout << RED << "\nInside Parser:" << DEF << std::endl;
-		oneServerConfig.printServerConfig();
-		addToVector(oneServerConfig);
+		if (!_fileToBeParsed.is_open())
+			throw std::invalid_argument("File not found");
+		while (!_fileToBeParsed.eof())
+		{
+			if (!checkForServerDeclaration())
+				break;
+			ServerConfig oneServerConfig = parsingOneServerConfig();
+			std::cout << RED << "\nInside Parser:" << DEF << std::endl;
+			oneServerConfig.printServerConfig();
+			addToVector(oneServerConfig);
+		}
+	}
+	catch (std::exception &e)
+	{
+		std::cerr << "configuration failed" << std::endl;
+		exit(0);
 	}
 }
 
@@ -52,12 +60,16 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 	while (getline(_fileToBeParsed, line) && trim(line) != "}")
 	{
 		removeCommentFrom(line);
+		std::cout << "in parsingOneServerConfig: " << line << std::endl;
 		if (line.empty())
 			continue ;
 		if (trim(line)[0] == '<')
 			addRoute(line, oneServerConfig);
 		else
+		{
+			std::cout << "about to initialize configuration" << std::endl;
 			initializeConfiguration(oneServerConfig, line);
+		}
 	}
 	return (oneServerConfig);
 }
@@ -133,6 +145,7 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 {
 	std::string		key; 
 	std::string		value;
+	int				valueInt;
 	std::string		firstWord;
 
 	std::cout << YELLOW << "Initializing configuration - ";
@@ -140,13 +153,21 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 	if (firstWord == "errorPage")
 		addErrorPage(oneServerConfig, line);
 	extractKeyValue(line, key, value);
-	std::cout << "key: " << key << " value: " << value << DEF << std::endl;
+	if (key == "port" || key == "clientBodySize")
+	{
+		valueInt = std::atoi(value.c_str());
+		if (valueInt == 0)
+			throw std::invalid_argument("Cannot use a value of 0");
+		std::cout << "key: " << key << " value: " << valueInt << DEF << std::endl;
+	}
+	else
+		std::cout << "key: " << key << " value: " << value << DEF << std::endl;
 	if (key == "port")
-		oneServerConfig._port = std::atoi(value.c_str());
+		oneServerConfig._port = valueInt;
 	else if (key == "serverName")
 		oneServerConfig._name = value;
 	else if (key == "clientBodySize")
-		oneServerConfig._clientBodySize = std::atoi(value.c_str());
+		oneServerConfig._clientBodySize = valueInt;
 }
 
 void	ServerConfigParser::addErrorPage(ServerConfig &oneServerConfig, std::string line)
@@ -193,7 +214,7 @@ std::string	ServerConfigParser::validateTrim(std::string str, int (*checkFunc)(i
 {
 	for (int i = 0; i < (int)str.length(); i++)
 		if (!checkFunc(str[i]))
-			error_handle("Invalid character in configuration file");
+			throw std::invalid_argument("Invalid character in configuration file");
 	return (trim(str));
 }
 
@@ -202,11 +223,11 @@ void	ServerConfigParser::extractKeyValue(std::string line, std::string &key, std
 	int	equalSign = line.find('=');
 
 	if (equalSign == -1)
-		error_handle("Configuration key and value should be separated by an equal sign");
+		throw std::invalid_argument("Configuration key and value should be separated by an equal sign");
 	else if (equalSign + 1 >= (int)line.length())
-		error_handle("Configuration value should not be empty");
+		throw std::invalid_argument("Configuration value should not be empty");
 	else if (equalSign == 0)
-		error_handle("Configuration key should not be empty");
+		throw std::invalid_argument("Configuration key should not be empty");
 	key = line.substr(0, equalSign - 1);
 	value = line.substr(equalSign + 1);
 	key = trim(key);
