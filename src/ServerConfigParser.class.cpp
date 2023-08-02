@@ -21,7 +21,7 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 	}
 	catch (std::exception &e)
 	{
-		std::cerr << "configuration failed" << std::endl;
+		std::cerr << "configuration failed: " << e.what() << std::endl;
 		exit(0);
 	}
 }
@@ -47,7 +47,6 @@ void ServerConfigParser::removeCommentFrom(std::string &line)
 {
 	std::cout << "Removing comments from line: " << line << std::endl;
 	size_t  hashTagPosition = line.find('#');
-
 	line = line.substr(0, hashTagPosition);
 }
 
@@ -59,9 +58,10 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 	std::cout << CYAN << "Parsing one server config" << DEF << std::endl;
 	while (getline(_fileToBeParsed, line) && trim(line) != "}")
 	{
+		std::cout << "before removeCommentFrom: " << line << std::endl;
 		removeCommentFrom(line);
 		std::cout << "in parsingOneServerConfig: " << line << std::endl;
-		if (line.empty())
+		if (trim(line) == "")
 			continue ;
 		if (trim(line)[0] == '<')
 			addRoute(line, oneServerConfig);
@@ -113,9 +113,27 @@ void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &
 	else if (key == "directoryListing")
 		newRoute._directoryListing = checkBooleanString(value);
 	else if (key == "root")
-		newRoute._root = value;
+		setRouteRoot(value, newRoute);
 	else if (key == "index")
-		newRoute._index = value;
+		setRouteIndex(value, newRoute);
+}
+
+void	ServerConfigParser::setRouteRoot(std::string &root, ServerConfig::route &newRoute)
+{
+	if (root.empty())
+		throw std::invalid_argument("Root cannot be empty");
+	if (!newRoute._root.empty())
+		throw std::invalid_argument("Root already set");
+	newRoute._root = root;
+}
+
+void	ServerConfigParser::setRouteIndex(std::string &index, ServerConfig::route &newRoute)
+{
+	if (index.empty())
+		throw std::invalid_argument("Index cannot be empty");
+	if (!newRoute._index.empty())
+		throw std::invalid_argument("Index already set");
+	newRoute._index = index;
 }
 
 bool	ServerConfigParser::checkBooleanString(std::string boolString)
@@ -150,24 +168,44 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 
 	std::cout << YELLOW << "Initializing configuration - ";
 	firstWord = trim(line);
+	extractKeyValue(line, key, value);
+	std::cout << "key: " << key << " value: " << value << DEF << std::endl;
 	if (firstWord == "errorPage")
 		addErrorPage(oneServerConfig, line);
-	extractKeyValue(line, key, value);
-	if (key == "port" || key == "clientBodySize")
-	{
-		valueInt = std::atoi(value.c_str());
-		if (valueInt == 0)
-			throw std::invalid_argument("Cannot use a value of 0");
-		std::cout << "key: " << key << " value: " << valueInt << DEF << std::endl;
-	}
-	else
-		std::cout << "key: " << key << " value: " << value << DEF << std::endl;
-	if (key == "port")
-		oneServerConfig._port = valueInt;
+	else if (key == "port")
+		setPort(valueInt, oneServerConfig);
 	else if (key == "serverName")
-		oneServerConfig._name = value;
+		setServerName(value, oneServerConfig);
 	else if (key == "clientBodySize")
-		oneServerConfig._clientBodySize = valueInt;
+		setClientBodySize(valueInt, oneServerConfig);
+}
+
+void	ServerConfigParser::setPort(int &port, ServerConfig &oneServerConfig)
+{
+	if (oneServerConfig._port != 0)
+		throw std::invalid_argument("Port already set");
+	if (port < 0 || port > 65535)
+		throw std::invalid_argument("Invalid port number");
+	oneServerConfig._port = port;
+}
+
+void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &oneServerConfig)
+{
+	if (serverName.empty())
+		throw std::invalid_argument("Server name cannot be empty");
+	if (!oneServerConfig._name.empty())
+		throw std::invalid_argument("Server name already set");
+	oneServerConfig._name = serverName;
+}
+
+void 	ServerConfigParser::setClientBodySize(int &clientBodySize, ServerConfig &oneServerConfig)
+{
+	if (clientBodySize < 0)
+		throw std::invalid_argument("Client body size cannot be negative");
+	if (oneServerConfig._clientBodySize != 0)
+		throw std::invalid_argument("Client body size already set");
+	else
+		oneServerConfig._clientBodySize = clientBodySize;
 }
 
 void	ServerConfigParser::addErrorPage(ServerConfig &oneServerConfig, std::string line)
@@ -202,11 +240,10 @@ t_sockaddr_in   ServerConfigParser::setAddress(uint16_t port)
 
 std::string	ServerConfigParser::trim(std::string str)
 {
-	if (str.empty())
-		return ("");
 	int	first = str.find_first_not_of(" \t\n\r\v\f");
 	int	last = str.find_last_not_of(" \t\n\r\v\f");
-
+	if (first == -1 || last == -1)
+		return ("");
 	return (str.substr(first, last + 1));
 }
 

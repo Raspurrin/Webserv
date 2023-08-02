@@ -38,6 +38,9 @@ class ServerConfig
 		size_t				calculateStringOverlap(const std::string &str1, const std::string &str2) const;
 
 	public:
+		// bool				setClientBodySize(int &clientBodySize);
+		bool 				setServerName(std::string &serverName);
+		bool 				setPort(int &port);
 		int					getPort() const;
 		std::string			getName() const;
 		int					getClientBodySize() const;

@@ -11,7 +11,7 @@ ServerConfig::ServerConfig() :
     _errorPages.insert(std::make_pair("431", "default"));
 }
 
-int		ServerConfig::getPort() const
+int	ServerConfig::getPort() const
 {
 	return (_port);
 }
