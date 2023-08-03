@@ -168,6 +168,8 @@ void	ServerConfigParser::addAllowedMethod(std::string method, int &allowedMethod
 		allowedMethod |= POST;
 	else if (method == "DELETE")
 		allowedMethod |= DELETE;
+	else
+		throw std::invalid_argument("Invalid argument for allowed method");
 	std::cout << "Allowed method: " << allowedMethod << std::endl;
 }
 
@@ -199,6 +201,8 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 
 void	ServerConfigParser::setPort(std::string &value, ServerConfig &oneServerConfig)
 {
+	if (!validate(value, isdigit))
+		throw std::invalid_argument("Port should be a number");
 	int port = std::atoi(value.c_str());
 	std::cout << BLACK << "Setting port: " << port << DEF << std::endl;
 	if (oneServerConfig._port != 0)
@@ -210,6 +214,8 @@ void	ServerConfigParser::setPort(std::string &value, ServerConfig &oneServerConf
 
 void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &oneServerConfig)
 {
+	if (!validate(serverName, isalnum))
+		throw std::invalid_argument("Server name should be alphanumeric");
 	std::cout << BLACK << "Setting server name: " << serverName << DEF << std::endl;
 	if (serverName.empty())
 		throw std::invalid_argument("Server name cannot be empty");
@@ -220,6 +226,8 @@ void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &on
 
 void 	ServerConfigParser::setClientBodySize(std::string &value, ServerConfig &oneServerConfig)
 {
+	if (!validate(value, isdigit))
+		throw std::invalid_argument("Client body size should be a number");
 	int clientBodySize = std::atoi(value.c_str());
 	std::cout << BLACK << "Setting client body size: " << clientBodySize << DEF << std::endl;
 	if (clientBodySize < 0)
@@ -232,13 +240,18 @@ void 	ServerConfigParser::setClientBodySize(std::string &value, ServerConfig &on
 
 void	ServerConfigParser::addErrorPage(ServerConfig &oneServerConfig, std::string line)
 {
-	std::string		key; 
+	std::string		key;
+	int				keyInt;
 	std::string		value;
 
 	std::cout << "Adding error page" << std::endl;
 	line = line.substr(10, line.length());
 	extractKeyValue(line, key, value);
+	
+	keyInt = std::atoi(key.c_str());
 	std::cout << "key: " << key << " value: " << value << std::endl;
+	if (keyInt < 100 || keyInt > 599)
+		throw std::invalid_argument("Invalid error code for error page");
 	if (oneServerConfig._errorPages.find(key) != oneServerConfig._errorPages.end() && oneServerConfig._errorPages[key] != "default")
 		throw std::invalid_argument("error page already set");
 	if (value == "default")
@@ -283,11 +296,18 @@ std::string	ServerConfigParser::trim(std::string str)
 	return (str.substr(first, last + 1));
 }
 
-std::string	ServerConfigParser::validateTrim(std::string str, int (*checkFunc)(int))
+bool		ServerConfigParser::validate(std::string str, int (*checkFunc)(int))
 {
 	for (int i = 0; i < (int)str.length(); i++)
 		if (!checkFunc(str[i]))
-			throw std::invalid_argument("Invalid character in configuration file");
+			return (false);
+	return (true);
+}
+
+std::string	ServerConfigParser::validateTrim(std::string str, int (*checkFunc)(int))
+{
+	if (!validate(str, checkFunc))
+		throw std::invalid_argument("Invalid argument");
 	return (trim(str));
 }
 

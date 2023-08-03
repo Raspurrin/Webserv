@@ -15,6 +15,7 @@ class ServerConfigParser
 		StringBoolMap			_availableOptions;
 
 	private:
+		bool 					validate(std::string str, int (*checkFunc)(int));
 		void 					setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute);
 		std::string				findFirstWord(std::string line);
 		void 					setRouteRoot(std::string &root, ServerConfig::route &newRoute);
