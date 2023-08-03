@@ -11,6 +11,13 @@ ServerConfig::ServerConfig() :
     _errorPages.insert(std::make_pair("431", "default"));
 }
 
+std::string ServerConfig::getHTTPRedirect(const std::string &path) const
+{
+	if (_routes.find(path) != _routes.end())
+		error_handle("the route path does not exist");
+	return (_routes.at(path)._HTTPRedirect);
+}
+
 int	ServerConfig::getPort() const
 {
 	return (_port);

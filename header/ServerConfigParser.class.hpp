@@ -15,7 +15,8 @@ class ServerConfigParser
 		StringBoolMap			_availableOptions;
 
 	private:
-	std::string					findFirstWord(std::string line);
+		void 					setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute);
+		std::string				findFirstWord(std::string line);
 		void 					setRouteRoot(std::string &root, ServerConfig::route &newRoute);
 		void 					setRouteIndex(std::string &index, ServerConfig::route &newRoute);
 		void					setPort(std::string &value, ServerConfig &oneServerConfig);

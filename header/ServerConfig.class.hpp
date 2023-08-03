@@ -39,6 +39,7 @@ class ServerConfig
 
 	public:
 		// bool				setClientBodySize(int &clientBodySize);
+		std::string			getHTTPRedirect(const std::string &path) const;
 		bool 				setServerName(std::string &serverName);
 		bool 				setPort(int &port);
 		int					getPort() const;

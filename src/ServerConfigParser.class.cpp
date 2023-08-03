@@ -116,6 +116,18 @@ void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &
 		setRouteRoot(value, newRoute);
 	else if (key == "index")
 		setRouteIndex(value, newRoute);
+	else if (key == "HTTPRedirect")
+		setRouteHTTPRedirect(value, newRoute);
+}
+
+void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute)
+{
+	std::cout << "Setting route HTTP redirect" << std::endl;
+	if (value.empty())
+		throw std::invalid_argument("HTTP redirect cannot be empty");
+	if (!newRoute._HTTPRedirect.empty())
+		throw std::invalid_argument("HTTP redirect already set");
+	newRoute._HTTPRedirect = value;
 }
 
 void	ServerConfigParser::setRouteRoot(std::string &root, ServerConfig::route &newRoute)
