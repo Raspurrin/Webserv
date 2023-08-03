@@ -15,11 +15,12 @@ class ServerConfigParser
 		StringBoolMap			_availableOptions;
 
 	private:
+	std::string					findFirstWord(std::string line);
 		void 					setRouteRoot(std::string &root, ServerConfig::route &newRoute);
 		void 					setRouteIndex(std::string &index, ServerConfig::route &newRoute);
-		void					setPort(int &port, ServerConfig &oneServerConfig);
+		void					setPort(std::string &value, ServerConfig &oneServerConfig);
 		void					setServerName(std::string &serverName, ServerConfig &oneServerConfig);
-		void					setClientBodySize(int &clientBodySize, ServerConfig &oneServerConfig);
+		void					setClientBodySize(std::string &value, ServerConfig &oneServerConfig);
 		bool					checkForServerDeclaration();
 		std::string				getRouteName(std::string &firstLine);
 		bool					checkBooleanString(std::string value);

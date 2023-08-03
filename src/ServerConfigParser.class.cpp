@@ -13,6 +13,7 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 		{
 			if (!checkForServerDeclaration())
 				break;
+			std::cout << RED << "\nServer declaration found" << DEF << std::endl;
 			ServerConfig oneServerConfig = parsingOneServerConfig();
 			std::cout << RED << "\nInside Parser:" << DEF << std::endl;
 			oneServerConfig.printServerConfig();
@@ -97,7 +98,6 @@ ServerConfig::route ServerConfigParser::addRoute(std::string firstLine, ServerCo
 	oneServerConfig._routes[routeName] = newRoute;
 	std::cout << "newRoute method: " << newRoute._methods << std::endl;
 	std::cout << RED << "in addRoute: " << std::endl;
-	oneServerConfig.printServerConfig();
 	return (newRoute);
 }
 
@@ -163,25 +163,32 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 {
 	std::string		key; 
 	std::string		value;
-	int				valueInt;
 	std::string		firstWord;
 
 	std::cout << YELLOW << "Initializing configuration - ";
-	firstWord = trim(line);
+	firstWord = findFirstWord(line);
+	std::cout << YELLOW << "firstWord: " << "!" << firstWord << "!" DEF << std::endl;
 	extractKeyValue(line, key, value);
-	std::cout << "key: " << key << " value: " << value << DEF << std::endl;
+	std::cout << YELLOW << "key: " << key << " value: " << value << DEF << std::endl;
 	if (firstWord == "errorPage")
+	{
+		std::cout << "errorPage found" << std::endl;
 		addErrorPage(oneServerConfig, line);
+	}
 	else if (key == "port")
-		setPort(valueInt, oneServerConfig);
+		setPort(value, oneServerConfig);
 	else if (key == "serverName")
 		setServerName(value, oneServerConfig);
 	else if (key == "clientBodySize")
-		setClientBodySize(valueInt, oneServerConfig);
+		setClientBodySize(value, oneServerConfig);
+	else
+		std::cout << "Invalid configuration key" << std::endl;
 }
 
-void	ServerConfigParser::setPort(int &port, ServerConfig &oneServerConfig)
+void	ServerConfigParser::setPort(std::string &value, ServerConfig &oneServerConfig)
 {
+	int port = std::atoi(value.c_str());
+	std::cout << BLACK << "Setting port: " << port << DEF << std::endl;
 	if (oneServerConfig._port != 0)
 		throw std::invalid_argument("Port already set");
 	if (port < 0 || port > 65535)
@@ -191,6 +198,7 @@ void	ServerConfigParser::setPort(int &port, ServerConfig &oneServerConfig)
 
 void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &oneServerConfig)
 {
+	std::cout << BLACK << "Setting server name: " << serverName << DEF << std::endl;
 	if (serverName.empty())
 		throw std::invalid_argument("Server name cannot be empty");
 	if (!oneServerConfig._name.empty())
@@ -198,8 +206,10 @@ void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &on
 	oneServerConfig._name = serverName;
 }
 
-void 	ServerConfigParser::setClientBodySize(int &clientBodySize, ServerConfig &oneServerConfig)
+void 	ServerConfigParser::setClientBodySize(std::string &value, ServerConfig &oneServerConfig)
 {
+	int clientBodySize = std::atoi(value.c_str());
+	std::cout << BLACK << "Setting client body size: " << clientBodySize << DEF << std::endl;
 	if (clientBodySize < 0)
 		throw std::invalid_argument("Client body size cannot be negative");
 	if (oneServerConfig._clientBodySize != 0)
@@ -214,8 +224,13 @@ void	ServerConfigParser::addErrorPage(ServerConfig &oneServerConfig, std::string
 	std::string		value;
 
 	std::cout << "Adding error page" << std::endl;
-	line = line.substr(9, line.length());
+	line = line.substr(10, line.length());
 	extractKeyValue(line, key, value);
+	std::cout << "key: " << key << " value: " << value << std::endl;
+	if (oneServerConfig._errorPages.find(key) != oneServerConfig._errorPages.end() && oneServerConfig._errorPages[key] != "default")
+		throw std::invalid_argument("error page already set");
+	if (value == "default")
+		throw std::invalid_argument("cannot set error page to default");
 	oneServerConfig._errorPages[key] = value;
 }
 
@@ -237,6 +252,15 @@ t_sockaddr_in   ServerConfigParser::setAddress(uint16_t port)
 }
 
 // =========================================================================================
+
+std::string	ServerConfigParser::findFirstWord(std::string line)
+{
+	int	first = line.find_first_not_of(" \t\n\r\v\f");
+	int	last = line.find_first_of(" \t\n\r\v\f", first + 1);
+	if (first == -1 || last == -1)
+		return ("");
+	return (line.substr(first, last - 1));
+}
 
 std::string	ServerConfigParser::trim(std::string str)
 {
