@@ -15,6 +15,7 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 				break;
 			std::cout << RED << "\nServer declaration found" << DEF << std::endl;
 			ServerConfig oneServerConfig = parsingOneServerConfig();
+			checkMinimumConfiguration(oneServerConfig);
 			std::cout << RED << "\nInside Parser:" << DEF << std::endl;
 			oneServerConfig.printServerConfig();
 			addToVector(oneServerConfig);
@@ -25,6 +26,19 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 		std::cerr << "configuration failed: " << e.what() << std::endl;
 		exit(0);
 	}
+}
+
+void	ServerConfigParser::checkMinimumConfiguration(ServerConfig &oneServerConfig)
+{
+	std::cout << "Checking minimum configuration" << std::endl;
+	if (oneServerConfig._port == 0)
+		throw std::invalid_argument("Port not set");
+	if (oneServerConfig._name.empty())
+		throw std::invalid_argument("Server name not set");
+	if (oneServerConfig._clientBodySize == 0)
+		throw std::invalid_argument("Client body size not set");
+	if (oneServerConfig._routes.empty())
+		throw std::invalid_argument("Routes not set");
 }
 
 bool	ServerConfigParser::checkForServerDeclaration()
@@ -72,6 +86,7 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 			initializeConfiguration(oneServerConfig, line);
 		}
 	}
+
 	return (oneServerConfig);
 }
 
