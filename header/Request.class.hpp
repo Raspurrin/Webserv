@@ -34,6 +34,9 @@ class Request
 		void			parseHeaderFields(std::istringstream &iss);
 		void			parseBody(std::string body);
 		void			URLDecode(const std::string& encoded);
+		void			getBoundary();
+		void			doesKeyExist(int, const std::string&, const std::string&);
+		void			checkRequiredFields();
 
 	public:
 

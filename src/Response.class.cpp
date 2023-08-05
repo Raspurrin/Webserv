@@ -174,8 +174,8 @@ void Response::assembleResponse()
 	_responseMessage += "Connection: close\r\n\r\n"
 		+ _response["Body"];
 
-	if (DEBUG)
-		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
+	/* if (DEBUG) */
+	/* 	std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n"; */
 }
 
 void Response::processRequest()

@@ -11,13 +11,28 @@ void Request::printMap()
 	}
 }
 
+void Request::doesKeyExist(int error, const std::string& key, const std::string& message)
+{
+	if (_headerFields.count(key) == 0)
+		throw ErrorResponse(error, message);
+}
+
+void Request::getBoundary()
+{
+	doesKeyExist(400, "Content-Type", "Couldn't find content type");
+	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
+
+}
+
 void Request::parseBody(std::string body)
 {
 	std::string line;
 	size_t	found, lpos;
 
-	if (_headerFields.count("Content-Length") == 0)
-		throw ErrorResponse(411, "While parsing request.");
+	std::cout << "contentttt" << _headerFields["Content-Length"] << std::endl;
+	doesKeyExist(411, "Content-Length", "Missing content length when parsing request");
+	/* if (_headerFields.count("Content-Length") == 0) */
+	/* 	throw ErrorResponse(411, "While parsing request."); */
 	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
 		throw ErrorResponse(400, "In header fields");
 	
@@ -87,6 +102,15 @@ void Request::URLDecode(const std::string& encoded)
 	_headerFields["Path"] = decoded;
 }
 
+void Request::checkRequiredFields()
+{
+	doesKeyExist(400, "Method", "Missing method");
+	std::string method = _headerFields["Method"];
+	if (method != "POST" || method != "GET" || method != "DELETE")
+		throw ErrorResponse(501, method);
+		
+}
+
 void Request::parseHeaderFields(std::istringstream &iss)
 {
 	std::string key, value, line;
@@ -113,6 +137,7 @@ void Request::parseHeaderFields(std::istringstream &iss)
 			key[pos + 1] = toupper(key[pos + 1]);
 		_headerFields[key] = value;
 	}
+	checkRequiredFields();
 }
 
 // TODO: Maybe find a way to avoid so many if statements?
@@ -147,6 +172,7 @@ void Request::readIntoString(int &socket)
 		tmp << _headerFields["Content-Length"];
 		tmp >> _content_len;
 	}
+
 
 	if (_header_done && _isChunked) {
 		if (_readCount < _content_len) {
@@ -195,6 +221,7 @@ void Request::readIntoString(int &socket)
 		std::stringstream ss;
 		ss << _bodyBuffer.length();
 		_headerFields["Content-Length"] = ss.str();
+	std::cout << "contentttt" << _headerFields["Content-Length"] << std::endl;
 		if (_bodyBuffer.length() > 0 || _chunkedFinished) {
 			// std::cout << _bodyBuffer << std::endl;
 			parseBody(_bodyBuffer);
@@ -217,6 +244,7 @@ void	Request::getRequest(int	&socket)
 	try {
 		readIntoString(socket);
 	} catch (const ErrorResponse& error) {
+		_isRead = true;
 		_response._hasError = true;
 		_response._requestParsingError = error;
 	}
