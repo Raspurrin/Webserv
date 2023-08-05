@@ -5,6 +5,7 @@
 #include "Response.class.hpp"
 #include "Error.class.hpp"
 #include "webserv.hpp"
+#include <sstream>
 
 #define BUFLEN 120000
 #define REACHED_HEADER_END 1
@@ -34,7 +35,8 @@ class Request
 		void			parseHeaderFields(std::istringstream &iss);
 		void			parseBody(std::string body);
 		void			URLDecode(const std::string& encoded);
-		void			getBoundary();
+		void			checkBoundary(const std::string&);
+		void			extractingFilename();
 		void			doesKeyExist(int, const std::string&, const std::string&);
 		void			checkHeaderFields();
 		void			checkStartLine();

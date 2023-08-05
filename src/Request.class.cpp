@@ -1,4 +1,5 @@
 #include "../header/Request.class.hpp"
+#include <sstream>
 
 void Request::printMap()
 {
@@ -17,33 +18,39 @@ void Request::doesKeyExist(int error, const std::string& key, const std::string&
 		throw ErrorResponse(error, message);
 }
 
-void Request::getBoundary()
+void Request::checkBoundary(const std::string& line)
 {
-	doesKeyExist(400, "Content-Type", "Couldn't find content type");
-	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
+	size_t	found;
 
+	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
+	found = line.find(_headerFields["Boundary"]);
+	if (found == std::string::npos)
+		throw ErrorResponse(400, "No boundary found in payload.");
+}
+
+void Request::extractingFilename()
+{
+	size_t	found, lpos;
+	std::string body_disposition = _headerFields["Body-Disposition"];
+
+	found = body_disposition.find_last_of('"');
+	found -= 1;
+	lpos = found;
+	while (body_disposition[lpos] != '"')
+		lpos--;
+	_headerFields["Filename"] = body_disposition.substr(lpos + 1, found - lpos);
 }
 
 void Request::parseBody(std::string body)
 {
 	std::string line;
 	size_t	found, lpos;
-
-	
-	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
-
 	std::istringstream	ss(body);
+
 	getline(ss, line);
-	found = line.find(_headerFields["Boundary"]);
-	if (found == std::string::npos)
-		throw ErrorResponse(400, "No boundary found.");
+	checkBoundary(line);
 	getline(ss, _headerFields["Body-Disposition"]);
-	found = _headerFields["Body-Disposition"].find_last_of('"');
-	found -= 1;
-	lpos = found;
-	while (_headerFields["Body-Disposition"][lpos] != '"')
-		lpos--;
-	_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
+	extractingFilename();
 	getline(ss, _headerFields["Body-Type"]);
 	getline(ss, line);
 	std::stringstream remainder;
