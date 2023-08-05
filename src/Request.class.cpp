@@ -29,7 +29,7 @@ void Request::parseBody(std::string body)
 	std::string line;
 	size_t	found, lpos;
 
-	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
+	if (_headerFields["Content-Length"] == "0")
 		throw ErrorResponse(400, "In header fields");
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
@@ -109,6 +109,7 @@ void Request::checkRequiredFields()
 		doesKeyExist(411, "Content-Length", "Missing header field.");
 		if (_headerFields["Content-Length"].length() > 10)
 			throw ErrorResponse(413, "Try a smaller file");
+		doesKeyExist(400, "Content-Type", "Missing header field.");
 	}
 		
 }
