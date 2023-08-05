@@ -40,6 +40,8 @@ void Request::parseBody(std::string body)
 		const std::string tmp = remainder.str();
 		size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
 		_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
+	} else {
+		throw ErrorResponse(Unsupported_Media_Type);
 	}
 }
 
@@ -95,6 +97,7 @@ void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
+	_last_activity = time(NULL);
 	int bytes_read = recv(socket, readBuffer, BUFLEN - 1, 0);
 	if (bytes_read <= 0)
 	{
@@ -211,6 +214,16 @@ bool	Request::isFlagOn()
 	return (_isRead);
 }
 
+void Request::setError(const ErrorResponse &error) {
+	_response._hasError = true;
+	_isRead = true;
+	_response._requestParsingError = error;
+}
+
+time_t Request::getLastActivity() {
+	return _last_activity;
+}
+
 Request::Request(void) :
 	_response(_headerFields),
 	_isRead(false),
@@ -219,7 +232,8 @@ Request::Request(void) :
 	_header_done(false),
 	_isChunked(false),
 	_chunkedFinished(false),
-	_content_len(0)
+	_content_len(0),
+	_last_activity(time(NULL))
 {
 }
 

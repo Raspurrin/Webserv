@@ -27,7 +27,7 @@ class Response
 		void	methodID();
 		std::string	getMimeType(const std::string& filename);
 		void	checkRequestErrors();
-		
+
 		void	processRequest();
 		void	assembleResponse();
 		void	buildError(const ErrorType);
@@ -41,6 +41,7 @@ class Response
 		void	status400();
 		void	status403();
 		void	status404();
+		void	status408();
 		void	status409();
 		void	status415();
 		void	status500();

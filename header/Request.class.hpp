@@ -15,7 +15,7 @@ class Request
 	private:
 
 		StringStringMap	_headerFields;
-		Response	_response;
+		Response		_response;
 		bool			_isRead;
 		uint64_t		_readCount;
 		bool			_first_line;
@@ -23,6 +23,7 @@ class Request
 		bool			_isChunked;
 		bool			_chunkedFinished;
 		uint64_t		_content_len;
+		time_t			_last_activity;
 		std::string		_bodyBuffer;
 		std::string		_requestBuffer;
 
@@ -40,6 +41,8 @@ class Request
 		std::string		getResponse();
 		StringStringMap	getHeaderFields();
 		bool			isFlagOn();
+		void			setError(const ErrorResponse &error);
+		time_t			getLastActivity();
 
 		Request(void);
 		Request&	operator=(Request const &assign);

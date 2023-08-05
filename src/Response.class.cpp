@@ -139,6 +139,10 @@ void Response::buildError(const ErrorType _errorType) {
 		status404();
 		break;
 
+	case Request_Timeout:
+		status408();
+		break;
+
 	case Conflict:
 		status409();
 		break;
@@ -280,7 +284,7 @@ std::string Response::getMimeType(const std::string& filename)
 		mimeTypes[".jpeg"] = "image/jpeg";
 		mimeTypes[".gif"] = "image/gif";
 	}
-	
+
 	size_t	dotPos = filename.find_last_of('.');
 	if (dotPos != std::string::npos)
 	{
@@ -321,6 +325,11 @@ void Response::status404()
 {
 	_response["Status code"] = "404 Not Found";
 	_response["Path"] = "/error_pages/404.html";
+}
+
+void Response::status408() {
+	_response["Status code"] = "408 Request Timeout";
+	_response["Path"] = "/error_pages/408.html";
 }
 
 void Response::status409()

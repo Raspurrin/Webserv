@@ -110,7 +110,9 @@ IntVector	_indexesToRemove;
 
 	void	ServerManager::handleClientSocket(int i)
 	{
-		// std::cout << "we do a loop" << std::endl;
+		if (time(NULL) - _clients[i - _numServerSockets].getLastActivity() > REQUEST_TIMEOUT) {
+			_clients[i - _numServerSockets].setRequestError(ErrorResponse(Request_Timeout, "from ServerManager"));
+		}
 		if (_sockets[i].revents & POLLIN && !_clients[i - _numServerSockets].isRequestSent())
 		{
 			if (DEBUG)
