@@ -1,5 +1,6 @@
 #include "../header/webserv.hpp"
 #include "../header/Error.class.hpp"
+#include <utility>
 
 void	error_handle(std::string type)
 {
@@ -29,22 +30,29 @@ IntStringMap	createErrorMap()
 	return errorTypes;
 }
 
-ErrorResponse::ErrorResponse(): _errorType(None), _description("No description provided") {}
+ErrorResponse::ErrorResponse()
+{
+	_status._code = 0;
+	_status._description = "none";
+	_status._message = "none";
+}
 
-ErrorResponse::ErrorResponse(ErrorType _errorType): _errorType(_errorType), _description("No description provided") {}
-
-ErrorResponse::ErrorResponse(int _errorCode, std::string _description): _errorCode(_errorCode), _description(_description) {}
-
-ErrorResponse::ErrorResponse(ErrorType _errorType, std::string _description): _errorType(_errorType), _description(_description) {}
-
-IntStringPair& ErrorResponse::getError() const throw() {
+ErrorResponse::ErrorResponse(int _errorCode, const std::string& _description)
+{
 	IntStringMap errorTypes = createErrorMap();
+
 	IntStringMap::iterator it = errorTypes.find(_errorCode);
 	if (it == errorTypes.end())
 		it = errorTypes.find(500);
-	return (*it);
+	_status._code = it->first;
+	_status._description = it->second;
+	_status._message = _description;
+}
+
+const t_status& ErrorResponse::getError() const throw() {
+	return (_status);
 }
 
 const char *ErrorResponse::what() const throw() {
-	return _description.c_str();
+	return _status._message.c_str();
 }

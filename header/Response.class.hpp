@@ -30,9 +30,9 @@ class Response
 
 		void	processRequest();
 		void	assembleResponse();
-		void	buildError(const IntStringPair _errorType);
+		void	buildError(const t_status& _status);
 		std::string	readTemplate();
-		void	generateHTML(IntStringPair pair);
+		void	generateHTML(const t_status& status);
 
 		void	GETMethod();
 		void	DELETEMethod();

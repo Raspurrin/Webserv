@@ -114,31 +114,35 @@ std::string Response::readTemplate() {
 	return (templateContent);
 }
 
-void Response::generateHTML(IntStringPair pair)
+void Response::generateHTML(const t_status& _status)
 {
 	std::string htmlTemplate = readTemplate();
 	size_t pos = htmlTemplate.find("{{TITLE}}");
 	if (pos != std::string::npos) {
 		std::stringstream ss;
-		ss << pair.first;
+		ss << _status._code;
 		htmlTemplate.replace(pos, 9, ss.str());
 	}
 	pos = htmlTemplate.find("{{DESCRIPTION}}");
 	if (pos != std::string::npos) {
-		htmlTemplate.replace(pos, 15, pair.second);
+		htmlTemplate.replace(pos, 15, _status._description);
+	}
+	pos = htmlTemplate.find("{{MESSAGE}}");
+	if (pos != std::string::npos) {
+		htmlTemplate.replace(pos, 11, _status._message);
 	}
 	_response["Body"] = htmlTemplate;
 	_response["Content-Type:"] = "text/html";
 }
 
-void Response::buildError(const IntStringPair _errorType) {
+void Response::buildError(const t_status& _status) {
 	std::stringstream ss;
-	ss << _errorType.first << " " << _errorType.second;
+	ss << _status._code << " " << _status._description;
 	_response["Status code"] = ss.str();
 	//use getErrorPage from config file with pair first
 	//if default
 	//generate html
-	generateHTML(_errorType);
+	generateHTML(_status);
 	//else
 	//save string into path
 }

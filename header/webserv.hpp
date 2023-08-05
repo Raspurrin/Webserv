@@ -30,8 +30,12 @@
 
 typedef std::map<std::string, std::string>	StringStringMap;
 typedef std::map<int, std::string>	IntStringMap;
-typedef std::pair<const int, std::string>	IntStringPair;
 typedef std::vector<int>			IntVector;
+typedef struct statusResponse {
+	int _code;
+	std::string _description;
+	std::string _message;
+} t_status;
 
 extern IntVector			_indexesToRemove;
 
