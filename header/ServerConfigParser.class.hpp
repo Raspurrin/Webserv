@@ -35,7 +35,7 @@ class ServerConfigParser
 		void					initializeConfiguration(ServerConfig &oneServerConfig, std::string line);
 		void					initializeRoute(std::string line, ServerConfig::route &newRoute);
 		ServerConfig::route		addRoute(std::string firstLine, ServerConfig &oneServerConfig);
-		t_sockaddr_in   		setAddress(uint16_t port);
+		void			   		setAddress(ServerConfig &oneServerConfig);
 		void					addToVector(ServerConfig &oneServerConfig);
 		void					removeCommentFrom(std::string &line);
 		std::string				trim(std::string str);

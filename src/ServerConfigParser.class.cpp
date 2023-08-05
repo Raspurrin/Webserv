@@ -16,6 +16,7 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 			std::cout << RED << "\nServer declaration found" << DEF << std::endl;
 			ServerConfig oneServerConfig = parsingOneServerConfig();
 			checkMinimumConfiguration(oneServerConfig);
+			setAddress(oneServerConfig);
 			std::cout << RED << "\nInside Parser:" << DEF << std::endl;
 			oneServerConfig.printServerConfig();
 			addToVector(oneServerConfig);
@@ -317,15 +318,12 @@ void    ServerConfigParser::addToVector(ServerConfig &oneServerConfig)
 	_serverConfigs.push_back(oneServerConfig);
 }
 
-t_sockaddr_in   ServerConfigParser::setAddress(uint16_t port)
+void   ServerConfigParser::setAddress(ServerConfig &oneServerConfig)
 {
-	t_sockaddr_in   address;
-
 	std::cout << "Setting address" << std::endl;
-	address.sin_family = AF_INET;
-   	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(port);
-	return (address);
+	oneServerConfig._address.sin_family = AF_INET;
+   	oneServerConfig._address.sin_addr.s_addr = oneServerConfig._host;
+	oneServerConfig._address.sin_port = htons(oneServerConfig._port);
 }
 
 // =========================================================================================
