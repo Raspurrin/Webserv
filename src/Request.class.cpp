@@ -17,9 +17,9 @@ void Request::parseBody(std::string body)
 	size_t	found, lpos;
 
 	if (_headerFields.count("Content-Length") == 0)
-		throw ErrorResponse(411, "From request parseBody");
+		throw ErrorResponse(411, "While parsing request.");
 	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
-		throw ErrorResponse(400, "From request parseBody");
+		throw ErrorResponse(400, "In header fields");
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
@@ -27,7 +27,7 @@ void Request::parseBody(std::string body)
 	getline(ss, line);
 	found = line.find(_headerFields["Boundary"]);
 	if (found == std::string::npos)
-		throw ErrorResponse(400, "From request parseBody");
+		throw ErrorResponse(400, "No boundary found.");
 	getline(ss, _headerFields["Body-Disposition"]);
 	found = _headerFields["Body-Disposition"].find_last_of('"');
 	found -= 1;
@@ -60,7 +60,7 @@ void Request::parseStartLine(std::string startLine)
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
 	size_t found = _headerFields["Version"].find("HTTP/1.1");
 	if (found == std::string::npos)
-		throw ErrorResponse(505, "From request");
+		throw ErrorResponse(505, "In parseStartLine");
 }
 
 void Request::URLDecode(const std::string& encoded)

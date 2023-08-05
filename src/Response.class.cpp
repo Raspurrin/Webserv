@@ -39,11 +39,11 @@ void Response::GETMethod()
 	const char *path = _headerFields["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
-		throw ErrorResponse(404, "in GETMethod, file doesnt exist");
+		throw ErrorResponse(404, "GET: File doesn't exist.");
 	if (access(path, R_OK) == -1)
-		throw ErrorResponse(403, "No access rights, in GETMethod");
+		throw ErrorResponse(403, "GET: No access rights.");
 	if (stat(path, &s) != 0)
-		throw ErrorResponse(500, "in GET");
+		throw ErrorResponse(500, "GET: Error fetching file status.");
 	if (S_ISDIR(s.st_mode))
 	{
 		if (!listDir())
@@ -52,18 +52,25 @@ void Response::GETMethod()
 	else if (S_ISREG(s.st_mode))
 		status200(_headerFields["Path"]);
 	else
-		throw ErrorResponse(500, "in GETMethod()");
+		throw ErrorResponse(400, "GET, Not regular file.");
 }
 
 void Response::POSTMethod()
 {
+	const char *filename = _headerFields["Filename"].c_str();
+
 	if (_headerFields["Path"] != "/files/")
-		throw ErrorResponse(403, "Not matching Path with /files/ in POSTMethod()");
+		throw ErrorResponse(403, "POST: Not matching Path with /files/");
 	chdir("./files");
-	std::ofstream outfile(_headerFields["Filename"].c_str());
+	if (access(filename, F_OK) == 0)
+	{
+		chdir("..");
+		throw ErrorResponse(409, "POST: Filename already exists.");
+	}
+	std::ofstream outfile(filename);
 	chdir("..");
 	if (!outfile.is_open() || !outfile.good())
-		throw ErrorResponse(500, "Internal Error when creating file in POSTMethod");
+		throw ErrorResponse(500, "POST: When creating file.");
 	outfile << _headerFields["Body-Text"] << std::endl;
 	outfile.close();
 	status201();
@@ -74,7 +81,7 @@ void Response::DELETEMethod()
 	std::string path = _headerFields["Path"];
 
 	if (path.rfind("/files/", 0) == std::string::npos)
-		throw ErrorResponse(403, "in delete method");
+		throw ErrorResponse(403, "DELETE: No rights to delete from other directories");
 
 	int start = path.find_last_of('/');
 	_headerFields["Filename"] = path.substr(start + 1);
@@ -85,28 +92,28 @@ void Response::DELETEMethod()
 	if (access(filename, F_OK) == -1)
 	{
 		chdir("..");
-		throw ErrorResponse(404, "File not found in DELETEMethod()");
+		throw ErrorResponse(404, "DELETE: File not found.");
 	}
 
 	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
 	{
 		chdir("..");
-		throw ErrorResponse(409, "File in use, DELETEMethod");
+		throw ErrorResponse(409, "DELETE: File in use.");
 	}
 	file.close();
 
 	int rem = std::remove(filename);
 	chdir("..");
 	if (rem != 0)
-		throw ErrorResponse(500, "Delete file unsuccesful, in DELETEMethod");
+		throw ErrorResponse(500, "DELETE: Delete file unsuccesful.");
 	status200("/error_pages/deleted.html");
 }
 
 std::string Response::readTemplate() {
 	std::ifstream	file("template.html");
 	if (!file)
-		error_handle("ifstream error");
+		return ("ifstream error");
 	std::string templateContent, line;
 	while (getline(file, line))
 		templateContent += line + "\n";
@@ -234,7 +241,7 @@ void Response::readFile()
 	std::string	content;
 
 	if (!fin)
-		throw ErrorResponse(500, "Internal Error in readHtml");
+		throw ErrorResponse(500, "When reading file");
 	fin.seekg(0, std::ios::end);
 	std::streampos fileSize = fin.tellg();
 	fin.seekg(0, std::ios::beg);
@@ -242,7 +249,7 @@ void Response::readFile()
 	fin.read(&content[0], fileSize);
 	fin.close();
 	if (!fin)
-		throw ErrorResponse(500, "Internal Error in readHtml");
+		throw ErrorResponse(500, "After reading file.");
 	_response["Body"] = content;
 	_response["Content-Type:"] = getMimeType(_response["Path"]);
 }
