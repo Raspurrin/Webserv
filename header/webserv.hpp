@@ -26,6 +26,8 @@
 # define DEBUG 0
 #endif
 
+#define REQUEST_TIMEOUT 2
+
 typedef std::map<std::string, std::string>	StringStringMap;
 typedef std::vector<int>			IntVector;
 
