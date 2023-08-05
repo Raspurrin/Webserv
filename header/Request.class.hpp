@@ -42,6 +42,7 @@ class Request
 		void			checkStartLine();
 		void			checkValueSize(const std::string&, const std::string&);
 		void			whenDoneParsingHeader();
+		void			whenReadSmallerThanLen(std::istringstream&, char*);
 
 	public:
 

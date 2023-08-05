@@ -183,6 +183,17 @@ void Request::parseHeaderFields(std::istringstream &iss)
 	}
 }
 
+void Request::whenReadSmallerThanLen(std::istringstream& iss, char* readBuffer)
+{
+	memset(readBuffer, 0, BUFLEN);
+	iss.read(readBuffer, _content_len - _readCount + 2);
+	size_t count = iss.gcount();
+	_readCount += count;
+	// We need to consider that there are possible conditions where the trailing \r\n gets send later
+	// TODO: talk to the team about it
+	_bodyBuffer += std::string(readBuffer, count);
+}
+
 // TODO: Maybe find a way to avoid so many if statements?
 void Request::readIntoString(int &socket)
 {
@@ -219,13 +230,7 @@ void Request::readIntoString(int &socket)
 
 	if (_header_done && _isChunked) {
 		if (_readCount < _content_len) {
-			memset(readBuffer, 0, BUFLEN);
-			iss.read(readBuffer, _content_len - _readCount + 2);
-			size_t count = iss.gcount();
-			_readCount += count;
-			// We need to consider that there are possible conditions where the trailing \r\n gets send later
-			// TODO: talk to the team about it
-			_bodyBuffer += std::string(readBuffer, count);
+			whenReadSmallerThanLen(iss, readBuffer);
 			if (_readCount < _content_len) {
 				return;
 			}
@@ -236,7 +241,6 @@ void Request::readIntoString(int &socket)
 			std::stringstream ss;
 			ss << std::hex << tmp;
 			ss >> _content_len;
-			std::cout << "Content len: " << _content_len << std::endl;
 			if (_content_len == 0) {
 				_chunkedFinished = true;
 				break;
