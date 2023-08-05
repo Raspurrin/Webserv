@@ -29,8 +29,6 @@ void Request::parseBody(std::string body)
 	std::string line;
 	size_t	found, lpos;
 
-	if (_headerFields["Content-Length"] == "0")
-		throw ErrorResponse(400, "Content length is 0");
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
@@ -69,6 +67,7 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
+	checkStartLine();
 }
 
 void Request::URLDecode(const std::string& encoded)
@@ -114,7 +113,7 @@ void Request::checkStartLine()
 		throw ErrorResponse(505, version);
 }
 
-void Request::checkRequiredFields()
+void Request::checkHeaderFields()
 {
 	std::string method = _headerFields["Method"];
 
@@ -123,6 +122,8 @@ void Request::checkRequiredFields()
 		doesKeyExist(411, "Content-Length", "Missing header field.");
 		if (_headerFields["Content-Length"].length() > 10)
 			throw ErrorResponse(413, "Try a smaller file");
+		else if (_headerFields["Content-Length"] == "0")
+			throw ErrorResponse(400, "Lack of required content.");
 		doesKeyExist(400, "Content-Type", "Missing header field.");
 	}
 		
@@ -137,6 +138,7 @@ void Request::parseHeaderFields(std::istringstream &iss)
 	{
 		if (line.size() == 1) {
 			_header_done = true;
+			checkHeaderFields();
 			if (_headerFields["Transfer-Encoding"] == "chunked") {
 				_isChunked = true;
 			}
@@ -154,7 +156,6 @@ void Request::parseHeaderFields(std::istringstream &iss)
 			key[pos + 1] = toupper(key[pos + 1]);
 		_headerFields[key] = value;
 	}
-	checkRequiredFields();
 }
 
 // TODO: Maybe find a way to avoid so many if statements?

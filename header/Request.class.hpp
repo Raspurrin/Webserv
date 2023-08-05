@@ -36,7 +36,7 @@ class Request
 		void			URLDecode(const std::string& encoded);
 		void			getBoundary();
 		void			doesKeyExist(int, const std::string&, const std::string&);
-		void			checkRequiredFields();
+		void			checkHeaderFields();
 		void			checkStartLine();
 
 	public:
