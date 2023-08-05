@@ -125,8 +125,17 @@ void Request::checkHeaderFields()
 		else if (_headerFields["Content-Length"] == "0")
 			throw ErrorResponse(400, "Lack of required content.");
 		doesKeyExist(400, "Content-Type", "Missing header field.");
+		std::string content_type = _headerFields["Content-Type"];
+		size_t found = content_type.find("multipart/form-data");
+		if (found == std::string::npos)
+			throw ErrorResponse(415, content_type);
 	}
-		
+}
+
+void Request::checkValueSize(const std::string& key, const std::string& value)
+{
+	if (value.length() > 9000)
+		throw ErrorResponse(431, key);
 }
 
 void Request::parseHeaderFields(std::istringstream &iss)
@@ -154,6 +163,7 @@ void Request::parseHeaderFields(std::istringstream &iss)
 		size_t pos = key.find('-');
 		if (pos != std::string::npos)
 			key[pos + 1] = toupper(key[pos + 1]);
+		checkValueSize(key, value);
 		_headerFields[key] = value;
 	}
 }
@@ -239,7 +249,6 @@ void Request::readIntoString(int &socket)
 		std::stringstream ss;
 		ss << _bodyBuffer.length();
 		_headerFields["Content-Length"] = ss.str();
-	std::cout << "contentttt" << _headerFields["Content-Length"] << std::endl;
 		if (_bodyBuffer.length() > 0 || _chunkedFinished) {
 			// std::cout << _bodyBuffer << std::endl;
 			parseBody(_bodyBuffer);

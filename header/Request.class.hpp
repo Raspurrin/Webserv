@@ -38,6 +38,7 @@ class Request
 		void			doesKeyExist(int, const std::string&, const std::string&);
 		void			checkHeaderFields();
 		void			checkStartLine();
+		void			checkValueSize(const std::string&, const std::string&);
 
 	public:
 
