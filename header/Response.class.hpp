@@ -38,6 +38,7 @@ class Response
 		void	DELETEMethod();
 		void	POSTMethod();
 		void	tryChdir(const char* path);
+		void	directoryUpAndThrow(int error, std::string description);
 
 		void	status200(std::string path);
 		void	status201();

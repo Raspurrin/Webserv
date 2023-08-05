@@ -70,10 +70,7 @@ void Response::POSTMethod()
 		throw ErrorResponse(403, "POST: Not matching Path with /files/");
 	tryChdir("./files");
 	if (access(filename, F_OK) == 0)
-	{
-		tryChdir("..");
-		throw ErrorResponse(409, "POST: Filename already exists.");
-	}
+		directoryUpAndThrow(409, "POST: Filename already exists.");
 	std::ofstream outfile(filename);
 	tryChdir("..");
 	if (!outfile.is_open() || !outfile.good())
@@ -81,6 +78,12 @@ void Response::POSTMethod()
 	outfile << _headerFields["Body-Text"] << std::endl;
 	outfile.close();
 	status201();
+}
+
+void Response::directoryUpAndThrow(int error, std::string description)
+{
+	tryChdir("..");
+	throw ErrorResponse(error, description);
 }
 
 void Response::DELETEMethod()
@@ -97,17 +100,11 @@ void Response::DELETEMethod()
 	tryChdir("./files");
 
 	if (access(filename, F_OK) == -1)
-	{
-		tryChdir("..");
-		throw ErrorResponse(404, "DELETE: File not found.");
-	}
+		directoryUpAndThrow(404, "DELETE: File not found.");
 
 	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
-	{
-		tryChdir("..");
-		throw ErrorResponse(409, "DELETE: File in use.");
-	}
+		directoryUpAndThrow(409, "DELETE: File in use.");
 	file.close();
 
 	int rem = std::remove(filename);
