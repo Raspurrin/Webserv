@@ -27,7 +27,7 @@ class Response
 		void	methodID();
 		std::string	getMimeType(const std::string& filename);
 		void	checkRequestErrors();
-		
+
 		void	processRequest();
 		void	assembleResponse();
 		void	buildError(const IntStringPair _errorType);

@@ -48,3 +48,11 @@ Client& Client::operator=(Client const& rhs)
 StringStringMap Client::getHeaderFields() {
 	return _request.getHeaderFields();
 }
+
+time_t Client::getLastActivity() {
+	return _request.getLastActivity();
+}
+
+void Client::setRequestError(const ErrorResponse &error) {
+	_request.setError(error);
+}

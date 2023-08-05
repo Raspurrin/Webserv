@@ -267,7 +267,7 @@ std::string Response::getMimeType(const std::string& filename)
 		mimeTypes[".jpeg"] = "image/jpeg";
 		mimeTypes[".gif"] = "image/gif";
 	}
-	
+
 	size_t	dotPos = filename.find_last_of('.');
 	if (dotPos != std::string::npos)
 	{

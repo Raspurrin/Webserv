@@ -83,6 +83,7 @@ IntVector	_indexesToRemove;
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &_opt, sizeof(_opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
+		newPfd.revents = 0;
 		_sockets.push_back(newPfd);
 		Client	newClient(newPfd, serverConfig);
 		_clients.push_back(newClient);
@@ -109,8 +110,10 @@ IntVector	_indexesToRemove;
 
 	void	ServerManager::handleClientSocket(int i)
 	{
-		// std::cout << "we do a loop" << std::endl;
-		if (_sockets[i].revents & POLLIN)
+		if (time(NULL) - _clients[i - _numServerSockets].getLastActivity() > REQUEST_TIMEOUT) {
+			_clients[i - _numServerSockets].setRequestError(ErrorResponse(408, "from ServerManager"));
+		}
+		if (_sockets[i].revents & POLLIN && !_clients[i - _numServerSockets].isRequestSent())
 		{
 			if (DEBUG)
 				std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;

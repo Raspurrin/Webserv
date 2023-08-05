@@ -120,6 +120,7 @@ void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
+	_last_activity = time(NULL);
 	int bytes_read = recv(socket, readBuffer, BUFLEN - 1, 0);
 	if (bytes_read <= 0)
 	{
@@ -142,7 +143,9 @@ void Request::readIntoString(int &socket)
 		parseHeaderFields(iss);
 
 	if (_content_len == 0 && _headerFields.find("Content-Length") != _headerFields.end()) {
-		_content_len = atoi(_headerFields["Content-Length"].c_str());
+		std::stringstream tmp;
+		tmp << _headerFields["Content-Length"];
+		tmp >> _content_len;
 	}
 
 	if (_header_done && _isChunked) {
@@ -234,6 +237,16 @@ bool	Request::isFlagOn()
 	return (_isRead);
 }
 
+void Request::setError(const ErrorResponse &error) {
+	_response._hasError = true;
+	_isRead = true;
+	_response._requestParsingError = error;
+}
+
+time_t Request::getLastActivity() {
+	return _last_activity;
+}
+
 Request::Request(void) :
 	_response(_headerFields),
 	_isRead(false),
@@ -242,7 +255,8 @@ Request::Request(void) :
 	_header_done(false),
 	_isChunked(false),
 	_chunkedFinished(false),
-	_content_len(0)
+	_content_len(0),
+	_last_activity(time(NULL))
 {
 }
 
