@@ -20,6 +20,8 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 			oneServerConfig.printServerConfig();
 			addToVector(oneServerConfig);
 		}
+		if (_serverConfigs.empty())
+			throw std::invalid_argument("No server declaration found");
 	}
 	catch (std::exception &e)
 	{
@@ -37,8 +39,6 @@ void	ServerConfigParser::checkMinimumConfiguration(ServerConfig &oneServerConfig
 		throw std::invalid_argument("Server name not set");
 	if (oneServerConfig._clientBodySize == 0)
 		throw std::invalid_argument("Client body size not set");
-	if (oneServerConfig._routes.empty())
-		throw std::invalid_argument("Routes not set");
 }
 
 bool	ServerConfigParser::checkForServerDeclaration()
@@ -52,8 +52,10 @@ bool	ServerConfigParser::checkForServerDeclaration()
 		removeCommentFrom(line);
 		if (trim(line) == "server")
 			serverCheck = true;
-		if (trim(line) == "{" && serverCheck == true)
+		else if (trim(line) == "{" && serverCheck == true)
 			return (true);
+		else if (trim(line) != "")
+			throw std::invalid_argument("garbage detected in between server declarations");
 	}
 	return (false);
 }
@@ -133,6 +135,8 @@ void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &
 		setRouteIndex(value, newRoute);
 	else if (key == "HTTPRedirect")
 		setRouteHTTPRedirect(value, newRoute);
+	else 
+		throw std::invalid_argument("Invalid configuration key");
 }
 
 void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute)
@@ -204,6 +208,8 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 		std::cout << "errorPage found" << std::endl;
 		addErrorPage(oneServerConfig, line);
 	}
+	else if (key == "host")
+		setHost(value, oneServerConfig);
 	else if (key == "port")
 		setPort(value, oneServerConfig);
 	else if (key == "serverName")
@@ -212,6 +218,28 @@ void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, 
 		setClientBodySize(value, oneServerConfig);
 	else
 		std::cout << "Invalid configuration key" << std::endl;
+}
+
+void 	ServerConfigParser::setHost(std::string &value, ServerConfig &oneServerConfig)
+{
+	std::stringstream ss(value);
+	std::string nbr;
+	size_t iteration;
+	if (oneServerConfig._host != 0)
+		throw std::invalid_argument("Host already set");
+    for (iteration =  0; getline (ss, nbr, '.'); iteration++)
+	{
+		if (!validate(nbr, isdigit))
+			throw std::invalid_argument("Host should be a number");
+		int nbrInt = std::atoi(nbr.c_str());
+		if (nbrInt < 0 || nbrInt > 255)
+			throw std::invalid_argument("Invalid host number");
+		oneServerConfig._host = (oneServerConfig._host << 8) | nbrInt;
+	}
+	if (iteration != 4)
+		throw std::invalid_argument("Invalid host");
+
+	std::cout << BLACK << "Setting host: " << oneServerConfig._host << DEF << std::endl;
 }
 
 void	ServerConfigParser::setPort(std::string &value, ServerConfig &oneServerConfig)
@@ -236,7 +264,16 @@ void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &on
 		throw std::invalid_argument("Server name cannot be empty");
 	if (!oneServerConfig._name.empty())
 		throw std::invalid_argument("Server name already set");
+	checkForServerNameDuplicate(serverName);
 	oneServerConfig._name = serverName;
+}
+
+void	ServerConfigParser::checkForServerNameDuplicate(const std::string &serverName) const
+{
+	std::cout << "Checking for server name duplicate" << std::endl;
+	for (serverConfigVector::const_iterator it = _serverConfigs.begin(); it != _serverConfigs.end(); ++it)
+		if (it->_name == serverName)
+			throw std::invalid_argument("Server name already exists");
 }
 
 void 	ServerConfigParser::setClientBodySize(std::string &value, ServerConfig &oneServerConfig)

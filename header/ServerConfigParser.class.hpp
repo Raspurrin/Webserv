@@ -15,6 +15,8 @@ class ServerConfigParser
 		StringBoolMap			_availableOptions;
 
 	private:
+		void 					setHost(std::string &value, ServerConfig &oneServerConfig);
+		void 					checkForServerNameDuplicate(const std::string &serverName) const;
 		void 					checkMinimumConfiguration(ServerConfig &oneServerConfig);
 		bool 					validate(std::string str, int (*checkFunc)(int));
 		void 					setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute);

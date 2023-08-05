@@ -1,6 +1,7 @@
 #include "../header/ServerConfig.class.hpp"
 
 ServerConfig::ServerConfig() :
+	_host(0),
 	_port(0),
 	_name(""),
 	_clientBodySize(0)
@@ -111,6 +112,7 @@ ServerConfig::~ServerConfig(void)
 void	ServerConfig::printServerConfig() const
 {
 	std::cout << "ServerConfig:" << std::endl;
+	std::cout << "  host: " << (_host >> 24) << "." << ((_host >> 16) & 255) << "." << ((_host >> 8) & 255) << "." << (_host & 255) << std::endl;
 	std::cout << "  port: " << _port << std::endl;
 	std::cout << "  name: " << _name << std::endl;
 	std::cout << "  clientBodySize: " << _clientBodySize << std::endl;

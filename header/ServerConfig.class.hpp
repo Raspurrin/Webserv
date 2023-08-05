@@ -27,6 +27,7 @@ class ServerConfig
 		typedef struct pollfd						t_pollfd;
 		typedef std::map<std::string, route> 		StringRouteMap;
 
+		int					_host;
 		int					_port;
 		std::string			_name;
 		int					_clientBodySize;
