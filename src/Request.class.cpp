@@ -3,7 +3,7 @@
 void Request::printMap()
 {
 	std::cout << CYAN << "\nPrinting map of header fields...\n" << DEF << std::endl;
-	std::map<std::string, std::string>::iterator it = _headerFields.begin();
+	StringStringMap::iterator it = _headerFields.begin();
 	while (it != _headerFields.end())
 	{
 		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
