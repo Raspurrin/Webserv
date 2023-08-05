@@ -113,7 +113,10 @@ IntVector	_indexesToRemove;
 		if (time(NULL) - _clients[i - _numServerSockets].getLastActivity() > REQUEST_TIMEOUT) {
 			_clients[i - _numServerSockets].setRequestError(ErrorResponse(Request_Timeout, "from ServerManager"));
 		}
-		if (_sockets[i].revents & POLLIN && !_clients[i - _numServerSockets].isRequestSent())
+		if (_sockets[i].revents & POLLERR || _sockets[i].revents & POLLHUP || _sockets[i].revents & POLLPRI || _sockets[i].revents & POLLNVAL) {
+			_indexesToRemove.push_back(i);
+		}
+		else if (_sockets[i].revents & POLLIN && !_clients[i - _numServerSockets].isRequestSent())
 		{
 			if (DEBUG)
 				std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;
@@ -123,9 +126,6 @@ IntVector	_indexesToRemove;
 			sendResponse(_clients[i - _numServerSockets]);
 			_indexesToRemove.push_back(i);
 		}
-		// FIXME: Handle errors and closed sockets properly without exiting or crashing.
-		else if (_sockets[i].revents & POLLERR)
-			error_handle("Error occurred with a connection");
 	}
 
 	void	ServerManager::removeIndexes()
