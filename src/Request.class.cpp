@@ -102,7 +102,7 @@ void Request::readIntoString(int &socket)
 	if (bytes_read <= 0)
 	{
 		close(socket);
-		_indexesToRemove.push_back(socket);
+		return;
 	}
 
 	// We need the number of bytes read here since we cant be sure that we didnt read any zero bytes,
