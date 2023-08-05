@@ -3,7 +3,7 @@
 void Request::printMap()
 {
 	std::cout << CYAN << "\nPrinting map of header fields...\n" << DEF << std::endl;
-	std::map<std::string, std::string>::iterator it = _headerFields.begin();
+	StringStringMap::iterator it = _headerFields.begin();
 	while (it != _headerFields.end())
 	{
 		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
@@ -16,33 +16,32 @@ void Request::parseBody(std::string body)
 	std::string line;
 	size_t	found, lpos;
 
-	if (_headerFields.count("Content-Type") == 0 || _headerFields.count("Content-Length") == 0 || _headerFields["Content-Length"] == "0")
-		throw ErrorResponse(Bad_Request, "from request");
-
+	if (_headerFields.count("Content-Length") == 0)
+		throw ErrorResponse(411, "From request parseBody");
+	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
+		throw ErrorResponse(400, "From request parseBody");
+	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
 	std::istringstream	ss(body);
 	getline(ss, line);
 	found = line.find(_headerFields["Boundary"]);
-	if (found != std::string::npos)
-	{
-		getline(ss, _headerFields["Body-Disposition"]);
-		found = _headerFields["Body-Disposition"].find_last_of('"');
-		found -= 1;
-		lpos = found;
-		while (_headerFields["Body-Disposition"][lpos] != '"')
-			lpos--;
-		_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
-		getline(ss, _headerFields["Body-Type"]);
-		getline(ss, line);
-		std::stringstream remainder;
-		remainder << ss.rdbuf();
-		const std::string tmp = remainder.str();
-		size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
-		_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
-	} else {
-		throw ErrorResponse(Unsupported_Media_Type);
-	}
+	if (found == std::string::npos)
+		throw ErrorResponse(400, "From request parseBody");
+	getline(ss, _headerFields["Body-Disposition"]);
+	found = _headerFields["Body-Disposition"].find_last_of('"');
+	found -= 1;
+	lpos = found;
+	while (_headerFields["Body-Disposition"][lpos] != '"')
+		lpos--;
+	_headerFields["Filename"] = _headerFields["Body-Disposition"].substr(lpos + 1, found - lpos);
+	getline(ss, _headerFields["Body-Type"]);
+	getline(ss, line);
+	std::stringstream remainder;
+	remainder << ss.rdbuf();
+	const std::string tmp = remainder.str();
+	size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
+	_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
 }
 
 void Request::parseStartLine(std::string startLine)
@@ -54,14 +53,38 @@ void Request::parseStartLine(std::string startLine)
 	position++;
 	lpos = position;
 	position = startLine.find(' ', lpos);
-	_headerFields["Path"] = startLine.substr(lpos, position - lpos);
+	URLDecode(startLine.substr(lpos, position - lpos));
 	position++;
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
 	size_t found = _headerFields["Version"].find("HTTP/1.1");
 	if (found == std::string::npos)
-		throw ErrorResponse(HTTP_Version_Not_Supported, "from request");
+		throw ErrorResponse(505, "From request");
+}
+
+void Request::URLDecode(const std::string& encoded)
+{
+	std::string	decoded;
+	char		ch;
+	int			len = encoded.length();
+
+	for (int i = 0; i < len; ++i)
+	{
+		if (encoded[i] == '%')
+		{
+			int hexValue;
+			sscanf(encoded.substr(i + 1, 2).c_str(), "%x", &hexValue);
+			ch = static_cast<char>(hexValue);
+			decoded += ch;
+			i +=2;
+		}
+		else if (encoded[i] == '+')
+			decoded += ' ';
+		else
+			decoded += encoded[i];
+	}
+	_headerFields["Path"] = decoded;
 }
 
 void Request::parseHeaderFields(std::istringstream &iss)

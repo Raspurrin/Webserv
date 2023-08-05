@@ -23,15 +23,17 @@ enum ErrorType {
 class ErrorResponse: public std::exception {
 private:
 	ErrorType _errorType;
+	int	_errorCode;
 	std::string _description;
 
 public:
 
 	ErrorResponse();
 	ErrorResponse(ErrorType);
+	ErrorResponse(const int, std::string);
 	ErrorResponse(ErrorType, std::string);
 	virtual ~ErrorResponse() throw() {};
 
-	ErrorType getError() const throw();
+	IntStringPair& getError() const throw();
 	virtual const char *what() const throw();
 };

@@ -7,14 +7,42 @@ void	error_handle(std::string type)
 	exit(0);
 }
 
+IntStringMap	createErrorMap()
+{
+	IntStringMap	errorTypes;
+
+	errorTypes[400] = "Bad Request";
+	errorTypes[403] = "Forbidden";
+	errorTypes[404] = "Not Found";
+	errorTypes[405] = "Method Not Allowed";
+	errorTypes[408] = "Request Timeout";
+	errorTypes[409] = "Conflict";
+	errorTypes[411] = "Length Required";
+	errorTypes[413] = "Content Too Large";
+	errorTypes[414] = "URI Too Long";
+	errorTypes[431] = "Request Header Fields Too Large";
+	errorTypes[415] = "Unsupported Media Type";
+	errorTypes[500] = "Internal Server Error";
+	errorTypes[501] = "Not Implemented";
+	errorTypes[505] = "HTTP Version Not Supported";
+
+	return errorTypes;
+}
+
 ErrorResponse::ErrorResponse(): _errorType(None), _description("No description provided") {}
 
 ErrorResponse::ErrorResponse(ErrorType _errorType): _errorType(_errorType), _description("No description provided") {}
 
+ErrorResponse::ErrorResponse(int _errorCode, std::string _description): _errorCode(_errorCode), _description(_description) {}
+
 ErrorResponse::ErrorResponse(ErrorType _errorType, std::string _description): _errorType(_errorType), _description(_description) {}
 
-ErrorType ErrorResponse::getError() const throw() {
-	return _errorType;
+IntStringPair& ErrorResponse::getError() const throw() {
+	IntStringMap errorTypes = createErrorMap();
+	IntStringMap::iterator it = errorTypes.find(_errorCode);
+	if (it == errorTypes.end())
+		it = errorTypes.find(500);
+	return (*it);
 }
 
 const char *ErrorResponse::what() const throw() {

@@ -33,6 +33,7 @@ class Request
 		void			parseStartLine(std::string startLine);
 		void			parseHeaderFields(std::istringstream &iss);
 		void			parseBody(std::string body);
+		void			URLDecode(const std::string& encoded);
 
 	public:
 

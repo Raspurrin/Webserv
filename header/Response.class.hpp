@@ -30,7 +30,9 @@ class Response
 
 		void	processRequest();
 		void	assembleResponse();
-		void	buildError(const ErrorType);
+		void	buildError(const IntStringPair _errorType);
+		std::string	readTemplate();
+		void	generateHTML(IntStringPair pair);
 
 		void	GETMethod();
 		void	DELETEMethod();
@@ -38,15 +40,6 @@ class Response
 
 		void	status200(std::string path);
 		void	status201();
-		void	status400();
-		void	status403();
-		void	status404();
-		void	status408();
-		void	status409();
-		void	status415();
-		void	status500();
-		void	status501();
-		void	status505();
 
 		void	readFile();
 		Response();
