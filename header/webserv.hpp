@@ -26,12 +26,17 @@
 # define DEBUG 0
 #endif
 
+#define REQUEST_TIMEOUT 2
+
 typedef std::map<std::string, std::string>	StringStringMap;
 typedef std::map<std::string, bool>         StringBoolMap;
+typedef std::map<int, std::string>	IntStringMap;
+typedef std::pair<const int, std::string>	IntStringPair;
 typedef std::vector<int>			IntVector;
 
 extern IntVector			_indexesToRemove;
 
 void	error_handle(std::string type);
+IntStringMap	createErrorMap();
 
 #endif

@@ -20,6 +20,8 @@ class Client
 		bool					isRequestSent();
 		StringStringMap			getHeaderFields();
 		bool					_getIsCgi();
+		time_t					getLastActivity();
+		void					setRequestError(const ErrorResponse &error);
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);

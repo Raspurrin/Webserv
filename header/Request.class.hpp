@@ -3,6 +3,7 @@
 
 #include "colours.hpp"
 #include "Response.class.hpp"
+#include "Error.class.hpp"
 #include "webserv.hpp"
 
 #define BUFLEN 120000
@@ -13,18 +14,26 @@ class Request
 {
 	private:
 
+		StringStringMap	_headerFields;
+		Response		_response;
 		bool			_isRead;
-		int				_readCount;
+		uint64_t		_readCount;
+		bool			_first_line;
+		bool			_header_done;
+		bool			_isChunked;
+		bool			_chunkedFinished;
+		uint64_t		_content_len;
+		time_t			_last_activity;
+		std::string		_bodyBuffer;
 		std::string		_requestBuffer;
-		std::map<std::string, std::string>	_headerFields;
 
-		std::string		buildResponse();
 		void			readIntoString(int &socket);
 		std::string		readingRequest(int &socket);
 		void			parseHeaderSection();
 		void			parseStartLine(std::string startLine);
-		void			parseHeaderFields(std::string headerSection);
+		void			parseHeaderFields(std::istringstream &iss);
 		void			parseBody(std::string body);
+		void			URLDecode(const std::string& encoded);
 
 	public:
 
@@ -33,9 +42,10 @@ class Request
 		std::string		getResponse();
 		StringStringMap	getHeaderFields();
 		bool			isFlagOn();
+		void			setError(const ErrorResponse &error);
+		time_t			getLastActivity();
 
 		Request(void);
-		Request(Request const &src);
 		Request&	operator=(Request const &assign);
 		std::string	operator[](std::string const &key);
 		~Request(void);

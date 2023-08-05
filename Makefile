@@ -11,7 +11,7 @@ LIBS = -lm
 
 SRCS =	main.cpp \
 		Request.class.cpp \
-		error.cpp \
+		Error.class.cpp \
 		Response.class.cpp \
 		ServerConfig.class.cpp \
 		ServerManager.class.cpp \
@@ -19,6 +19,7 @@ SRCS =	main.cpp \
 		ServerConfigParser.class.cpp \
 		Cgi.class.cpp \
 		utils.cpp
+#		Cgi.class.cpp \
 
 OBJ = $(SRCS:.cpp=.o)
 OBJ_PREF := $(addprefix $(OBJ_DIR), $(OBJ))
