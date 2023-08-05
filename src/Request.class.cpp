@@ -1,197 +1,30 @@
 #include "../header/Request.class.hpp"
 #include <sstream>
 
-void Request::printMap()
+Request::Request(void) :
+	_response(_headerFields),
+	_isRead(false),
+	_readCount(0),
+	_first_line(false),
+	_header_done(false),
+	_isChunked(false),
+	_chunkedFinished(false),
+	_content_len(0),
+	_last_activity(time(NULL))
 {
-	std::cout << CYAN << "\nPrinting map of header fields...\n" << DEF << std::endl;
-	StringStringMap::iterator it = _headerFields.begin();
-	while (it != _headerFields.end())
-	{
-		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
-		++it;
+}
+
+void	Request::getRequest(int	&socket)
+{
+	if (DEBUG)
+		std::cout << CYAN << "\nGetting request...\n" << DEF;
+	try {
+		readIntoString(socket);
+	} catch (const ErrorResponse& error) {
+		_isRead = true;
+		_response._hasError = true;
+		_response._requestParsingError = error;
 	}
-}
-
-void Request::doesKeyExist(int error, const std::string& key, const std::string& message)
-{
-	if (_headerFields.count(key) == 0)
-		throw ErrorResponse(error, message);
-}
-
-void Request::checkBoundary(const std::string& line)
-{
-	size_t	found;
-
-	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
-	found = line.find(_headerFields["Boundary"]);
-	if (found == std::string::npos)
-		throw ErrorResponse(400, "No boundary found in payload.");
-}
-
-void Request::extractingFilename()
-{
-	size_t	found, lpos;
-	std::string body_disposition = _headerFields["Body-Disposition"];
-
-	found = body_disposition.find_last_of('"');
-	found -= 1;
-	lpos = found;
-	while (body_disposition[lpos] != '"')
-		lpos--;
-	_headerFields["Filename"] = body_disposition.substr(lpos + 1, found - lpos);
-}
-
-void Request::parseBody(std::string body)
-{
-	std::string line;
-	size_t	found, lpos;
-	std::istringstream	ss(body);
-
-	getline(ss, line);
-	checkBoundary(line);
-	getline(ss, _headerFields["Body-Disposition"]);
-	extractingFilename();
-	getline(ss, _headerFields["Body-Type"]);
-	getline(ss, line);
-	std::stringstream remainder;
-	remainder << ss.rdbuf();
-	const std::string tmp = remainder.str();
-	size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
-	_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
-}
-
-void Request::parseStartLine(std::string startLine)
-{
-	int	position, lpos;
-
-	position = startLine.find(' ');
-	_headerFields["Method"] = startLine.substr(0, position);
-	position++;
-	lpos = position;
-	position = startLine.find(' ', lpos);
-	URLDecode(startLine.substr(lpos, position - lpos));
-	position++;
-	lpos = position;
-	position = startLine.find(' ', lpos);
-	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
-	checkStartLine();
-}
-
-void Request::URLDecode(const std::string& encoded)
-{
-	std::string	decoded;
-	char		ch;
-	int			len = encoded.length();
-
-	for (int i = 0; i < len; ++i)
-	{
-		if (encoded[i] == '%')
-		{
-			int hexValue;
-			sscanf(encoded.substr(i + 1, 2).c_str(), "%x", &hexValue);
-			ch = static_cast<char>(hexValue);
-			decoded += ch;
-			i +=2;
-		}
-		else if (encoded[i] == '+')
-			decoded += ' ';
-		else
-			decoded += encoded[i];
-	}
-	_headerFields["Path"] = decoded;
-}
-
-void Request::checkStartLine()
-{
-	doesKeyExist(400, "Method", "Missing method.");
-	std::string method = _headerFields["Method"];
-	if (method != "POST" && method != "GET" && method != "DELETE")
-		throw ErrorResponse(501, method);
-
-	doesKeyExist(400, "Path", "Missing path.");
-	std::string path = _headerFields["Path"];
-	if (path.length() > 255)
-		throw ErrorResponse(414, "Too long URI");
-
-	doesKeyExist(400, "Version", "Missing version.");
-	std::string version = _headerFields["Version"];
-	size_t found = version.find("HTTP/1.1");
-	if (found == std::string::npos)
-		throw ErrorResponse(505, version);
-}
-
-void Request::checkHeaderFields()
-{
-	std::string method = _headerFields["Method"];
-
-	if (method == "POST")
-	{
-		doesKeyExist(411, "Content-Length", "Missing header field.");
-		if (_headerFields["Content-Length"].length() > 10)
-			throw ErrorResponse(413, "Try a smaller file");
-		else if (_headerFields["Content-Length"] == "0")
-			throw ErrorResponse(400, "Lack of required content.");
-		doesKeyExist(400, "Content-Type", "Missing content type field.");
-		std::string content_type = _headerFields["Content-Type"];
-		size_t found = content_type.find("multipart/form-data");
-		if (found == std::string::npos)
-			throw ErrorResponse(415, content_type);
-	}
-}
-
-void Request::checkValueSize(const std::string& key, const std::string& value)
-{
-	if (value.length() > 9000)
-		throw ErrorResponse(431, key);
-}
-
-void Request::whenDoneParsingHeader()
-{
-	_header_done = true;
-	checkHeaderFields();
-	if (_headerFields.count("Transfer-Encoding") > 0)
-	{
-		if (_headerFields["Transfer-Encoding"] == "chunked") {
-			_isChunked = true;
-		}
-	}
-}
-
-void Request::parseHeaderFields(std::istringstream &iss)
-{
-	std::string key, value, line;
-	int	position;
-
-	while (getline(iss, line))
-	{
-		if (line.size() == 1) {
-			whenDoneParsingHeader();
-			break ;
-		}
-		position = line.find(':');
-		key = line.substr(0, position);
-		position++;
-		if (line[position] == ' ')
-			position++;
-		value = line.substr(position, line.find('\r') - position);
-		key[0] = toupper(key[0]);
-		size_t pos = key.find('-');
-		if (pos != std::string::npos)
-			key[pos + 1] = toupper(key[pos + 1]);
-		checkValueSize(key, value);
-		_headerFields[key] = value;
-	}
-}
-
-void Request::whenReadSmallerThanLen(std::istringstream& iss, char* readBuffer)
-{
-	memset(readBuffer, 0, BUFLEN);
-	iss.read(readBuffer, _content_len - _readCount + 2);
-	size_t count = iss.gcount();
-	_readCount += count;
-	// We need to consider that there are possible conditions where the trailing \r\n gets send later
-	// TODO: talk to the team about it
-	_bodyBuffer += std::string(readBuffer, count);
 }
 
 // TODO: Maybe find a way to avoid so many if statements?
@@ -214,19 +47,16 @@ void Request::readIntoString(int &socket)
 	if (!_first_line && read.find("\r\n") != std::string::npos) {
 		parseStartLine(read.substr(0, read.find("\r\n")));
 		read = read.substr(read.find("\r\n") + 2);
-		_first_line = true;
 	}
 
 	std::istringstream iss(read);
-	if (!_header_done)
-		parseHeaderFields(iss);
+	parseHeaderFields(iss);
 
 	if (_content_len == 0 && _headerFields.find("Content-Length") != _headerFields.end()) {
 		std::stringstream tmp;
 		tmp << _headerFields["Content-Length"];
 		tmp >> _content_len;
 	}
-
 
 	if (_header_done && _isChunked) {
 		if (_readCount < _content_len) {
@@ -283,17 +113,189 @@ void Request::readIntoString(int &socket)
 	// _requestBuffer.append(readBuffer);
 }
 
-void	Request::getRequest(int	&socket)
+void Request::parseStartLine(std::string startLine)
 {
-	if (DEBUG)
-		std::cout << CYAN << "\nGetting request...\n" << DEF;
-	try {
-		readIntoString(socket);
-	} catch (const ErrorResponse& error) {
-		_isRead = true;
-		_response._hasError = true;
-		_response._requestParsingError = error;
+	int	position, lpos;
+
+	position = startLine.find(' ');
+	_headerFields["Method"] = startLine.substr(0, position);
+	position++;
+	lpos = position;
+	position = startLine.find(' ', lpos);
+	URLDecode(startLine.substr(lpos, position - lpos));
+	position++;
+	lpos = position;
+	position = startLine.find(' ', lpos);
+	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
+	_first_line = true;
+	checkStartLine();
+}
+
+void Request::URLDecode(const std::string& encoded)
+{
+	std::string	decoded;
+	char		ch;
+	int			len = encoded.length();
+
+	for (int i = 0; i < len; ++i)
+	{
+		if (encoded[i] == '%')
+		{
+			int hexValue;
+			sscanf(encoded.substr(i + 1, 2).c_str(), "%x", &hexValue);
+			ch = static_cast<char>(hexValue);
+			decoded += ch;
+			i +=2;
+		}
+		else if (encoded[i] == '+')
+			decoded += ' ';
+		else
+			decoded += encoded[i];
 	}
+	_headerFields["Path"] = decoded;
+}
+
+void Request::checkStartLine()
+{
+	doesKeyExist(400, "Method", "Missing method.");
+	std::string method = _headerFields["Method"];
+	if (method != "POST" && method != "GET" && method != "DELETE")
+		throw ErrorResponse(501, method);
+
+	doesKeyExist(400, "Path", "Missing path.");
+	std::string path = _headerFields["Path"];
+	if (path.length() > 255)
+		throw ErrorResponse(414, "Too long URI");
+
+	doesKeyExist(400, "Version", "Missing version.");
+	std::string version = _headerFields["Version"];
+	size_t found = version.find("HTTP/1.1");
+	if (found == std::string::npos)
+		throw ErrorResponse(505, version);
+}
+
+void Request::parseHeaderFields(std::istringstream &iss)
+{
+	if (_header_done)
+		return ;
+	std::string key, value, line;
+	int	position;
+
+	while (getline(iss, line))
+	{
+		if (line.size() == 1) {
+			whenDoneParsingHeader();
+			break ;
+		}
+		position = line.find(':');
+		key = line.substr(0, position);
+		position++;
+		if (line[position] == ' ')
+			position++;
+		value = line.substr(position, line.find('\r') - position);
+		key[0] = toupper(key[0]);
+		size_t pos = key.find('-');
+		if (pos != std::string::npos)
+			key[pos + 1] = toupper(key[pos + 1]);
+		checkValueSize(key, value);
+		_headerFields[key] = value;
+	}
+}
+
+void Request::checkHeaderFields()
+{
+	std::string method = _headerFields["Method"];
+
+	if (method == "POST")
+	{
+		doesKeyExist(411, "Content-Length", "Missing header field.");
+		if (_headerFields["Content-Length"].length() > 10)
+			throw ErrorResponse(413, "Try a smaller file");
+		else if (_headerFields["Content-Length"] == "0")
+			throw ErrorResponse(400, "Lack of required content.");
+		doesKeyExist(400, "Content-Type", "Missing content type field.");
+		std::string content_type = _headerFields["Content-Type"];
+		size_t found = content_type.find("multipart/form-data");
+		if (found == std::string::npos)
+			throw ErrorResponse(415, content_type);
+	}
+}
+
+void Request::parseBody(std::string body)
+{
+	std::string line;
+	size_t	found, lpos;
+	std::istringstream	ss(body);
+
+	getline(ss, line);
+	checkBoundary(line);
+	getline(ss, _headerFields["Body-Disposition"]);
+	extractingFilename();
+	getline(ss, _headerFields["Body-Type"]);
+	getline(ss, line);
+	std::stringstream remainder;
+	remainder << ss.rdbuf();
+	const std::string tmp = remainder.str();
+	size_t idx = tmp.find_last_of(_headerFields["Boundary"]);
+	_headerFields["Body-Text"] = tmp.substr(0, idx - _headerFields["Boundary"].length() - 4);
+}
+
+void Request::whenReadSmallerThanLen(std::istringstream& iss, char* readBuffer)
+{
+	memset(readBuffer, 0, BUFLEN);
+	iss.read(readBuffer, _content_len - _readCount + 2);
+	size_t count = iss.gcount();
+	_readCount += count;
+	// We need to consider that there are possible conditions where the trailing \r\n gets send later
+	// TODO: talk to the team about it
+	_bodyBuffer += std::string(readBuffer, count);
+}
+
+void Request::checkValueSize(const std::string& key, const std::string& value)
+{
+	if (value.length() > 9000)
+		throw ErrorResponse(431, key);
+}
+
+void Request::whenDoneParsingHeader()
+{
+	_header_done = true;
+	checkHeaderFields();
+	if (_headerFields.count("Transfer-Encoding") > 0)
+	{
+		if (_headerFields["Transfer-Encoding"] == "chunked") {
+			_isChunked = true;
+		}
+	}
+}
+
+void Request::doesKeyExist(int error, const std::string& key, const std::string& message)
+{
+	if (_headerFields.count(key) == 0)
+		throw ErrorResponse(error, message);
+}
+
+void Request::checkBoundary(const std::string& line)
+{
+	size_t	found;
+
+	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
+	found = line.find(_headerFields["Boundary"]);
+	if (found == std::string::npos)
+		throw ErrorResponse(400, "No boundary found in payload.");
+}
+
+void Request::extractingFilename()
+{
+	size_t	found, lpos;
+	std::string body_disposition = _headerFields["Body-Disposition"];
+
+	found = body_disposition.find_last_of('"');
+	found -= 1;
+	lpos = found;
+	while (body_disposition[lpos] != '"')
+		lpos--;
+	_headerFields["Filename"] = body_disposition.substr(lpos + 1, found - lpos);
 }
 
 std::string	Request::getResponse()
@@ -321,17 +323,15 @@ time_t Request::getLastActivity() {
 	return _last_activity;
 }
 
-Request::Request(void) :
-	_response(_headerFields),
-	_isRead(false),
-	_readCount(0),
-	_first_line(false),
-	_header_done(false),
-	_isChunked(false),
-	_chunkedFinished(false),
-	_content_len(0),
-	_last_activity(time(NULL))
+void Request::printMap()
 {
+	std::cout << CYAN << "\nPrinting map of header fields...\n" << DEF << std::endl;
+	StringStringMap::iterator it = _headerFields.begin();
+	while (it != _headerFields.end())
+	{
+		std::cout << YELLOW << it->first << " " << DEF << it->second << std::endl;
+		++it;
+	}
 }
 
 Request 		&Request::operator=(const Request &assign)
