@@ -83,6 +83,7 @@ IntVector	_indexesToRemove;
 		configureSocket(newPfd.fd);
 		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &_opt, sizeof(_opt));
 		newPfd.events = POLLIN | POLLOUT | POLLERR;
+		newPfd.revents = 0;
 		_sockets.push_back(newPfd);
 		Client	newClient(newPfd, serverConfig);
 		_clients.push_back(newClient);
