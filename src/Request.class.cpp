@@ -30,7 +30,7 @@ void Request::parseBody(std::string body)
 	size_t	found, lpos;
 
 	if (_headerFields["Content-Length"] == "0")
-		throw ErrorResponse(400, "In header fields");
+		throw ErrorResponse(400, "Content length is 0");
 	
 	_headerFields["Boundary"] = _headerFields["Content-Type"].substr(_headerFields["Content-Type"].find('=') + 1);
 
@@ -69,9 +69,6 @@ void Request::parseStartLine(std::string startLine)
 	lpos = position;
 	position = startLine.find(' ', lpos);
 	_headerFields["Version"] = startLine.substr(lpos, position - lpos);
-	size_t found = _headerFields["Version"].find("HTTP/1.1");
-	if (found == std::string::npos)
-		throw ErrorResponse(505, "In parseStartLine");
 }
 
 void Request::URLDecode(const std::string& encoded)
@@ -98,12 +95,29 @@ void Request::URLDecode(const std::string& encoded)
 	_headerFields["Path"] = decoded;
 }
 
-void Request::checkRequiredFields()
+void Request::checkStartLine()
 {
-	doesKeyExist(400, "Method", "Missing method");
+	doesKeyExist(400, "Method", "Missing method.");
 	std::string method = _headerFields["Method"];
 	if (method != "POST" && method != "GET" && method != "DELETE")
 		throw ErrorResponse(501, method);
+
+	doesKeyExist(400, "Path", "Missing path.");
+	std::string path = _headerFields["Path"];
+	if (path.length() > 255)
+		throw ErrorResponse(414, "Too long URI");
+
+	doesKeyExist(400, "Version", "Missing version.");
+	std::string version = _headerFields["Version"];
+	size_t found = version.find("HTTP/1.1");
+	if (found == std::string::npos)
+		throw ErrorResponse(505, version);
+}
+
+void Request::checkRequiredFields()
+{
+	std::string method = _headerFields["Method"];
+
 	if (method == "POST")
 	{
 		doesKeyExist(411, "Content-Length", "Missing header field.");

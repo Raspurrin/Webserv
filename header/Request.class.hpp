@@ -37,6 +37,7 @@ class Request
 		void			getBoundary();
 		void			doesKeyExist(int, const std::string&, const std::string&);
 		void			checkRequiredFields();
+		void			checkStartLine();
 
 	public:
 
