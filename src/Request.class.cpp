@@ -104,15 +104,8 @@ void Request::checkRequiredFields()
 {
 	doesKeyExist(400, "Method", "Missing method");
 	std::string method = _headerFields["Method"];
-	std::cout << "method" << method << "end" << std::endl;
-	if (method == "GET")
-		std::cout << "aaaa" << method << "end" << std::endl;
 	if (method != "POST" && method != "GET" && method != "DELETE")
-	{
-		std::cout << "throwing here" << std::endl;
 		throw ErrorResponse(501, method);
-
-	}
 	if (method == "POST")
 		doesKeyExist(411, "Content-Length", "Missing header field.");
 		
