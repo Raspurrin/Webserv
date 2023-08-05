@@ -37,6 +37,7 @@ class Response
 		void	GETMethod();
 		void	DELETEMethod();
 		void	POSTMethod();
+		void	tryChdir(const char* path);
 
 		void	status200(std::string path);
 		void	status201();

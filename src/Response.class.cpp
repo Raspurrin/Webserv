@@ -1,6 +1,7 @@
 #include "../header/Response.class.hpp"
 #include "../header/Cgi.class.hpp"
 #include "../header/utils.hpp"
+#include <cstdio>
 #include <fstream>
 #include <ios>
 #include <string>
@@ -55,20 +56,26 @@ void Response::GETMethod()
 		throw ErrorResponse(400, "GET, Not regular file.");
 }
 
+void Response::tryChdir(const char* path)
+{
+	if (chdir(path) == -1)
+		throw ErrorResponse(500, strerror(errno));
+}
+
 void Response::POSTMethod()
 {
 	const char *filename = _headerFields["Filename"].c_str();
 
 	if (_headerFields["Path"] != "/files/")
 		throw ErrorResponse(403, "POST: Not matching Path with /files/");
-	chdir("./files");
+	tryChdir("./files");
 	if (access(filename, F_OK) == 0)
 	{
-		chdir("..");
+		tryChdir("..");
 		throw ErrorResponse(409, "POST: Filename already exists.");
 	}
 	std::ofstream outfile(filename);
-	chdir("..");
+	tryChdir("..");
 	if (!outfile.is_open() || !outfile.good())
 		throw ErrorResponse(500, "POST: When creating file.");
 	outfile << _headerFields["Body-Text"] << std::endl;
@@ -87,24 +94,24 @@ void Response::DELETEMethod()
 	_headerFields["Filename"] = path.substr(start + 1);
 	const char *filename = _headerFields["Filename"].c_str();
 
-	chdir("./files");
+	tryChdir("./files");
 
 	if (access(filename, F_OK) == -1)
 	{
-		chdir("..");
+		tryChdir("..");
 		throw ErrorResponse(404, "DELETE: File not found.");
 	}
 
 	std::fstream file(filename, std::ios::in);
 	if (!file.is_open())
 	{
-		chdir("..");
+		tryChdir("..");
 		throw ErrorResponse(409, "DELETE: File in use.");
 	}
 	file.close();
 
 	int rem = std::remove(filename);
-	chdir("..");
+	tryChdir("..");
 	if (rem != 0)
 		throw ErrorResponse(500, "DELETE: Delete file unsuccesful.");
 	status200("/error_pages/deleted.html");
