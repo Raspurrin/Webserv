@@ -124,7 +124,7 @@ void Request::checkHeaderFields()
 			throw ErrorResponse(413, "Try a smaller file");
 		else if (_headerFields["Content-Length"] == "0")
 			throw ErrorResponse(400, "Lack of required content.");
-		doesKeyExist(400, "Content-Type", "Missing header field.");
+		doesKeyExist(400, "Content-Type", "Missing content type field.");
 		std::string content_type = _headerFields["Content-Type"];
 		size_t found = content_type.find("multipart/form-data");
 		if (found == std::string::npos)
@@ -138,6 +138,18 @@ void Request::checkValueSize(const std::string& key, const std::string& value)
 		throw ErrorResponse(431, key);
 }
 
+void Request::whenDoneParsingHeader()
+{
+	_header_done = true;
+	checkHeaderFields();
+	if (_headerFields.count("Transfer-Encoding") > 0)
+	{
+		if (_headerFields["Transfer-Encoding"] == "chunked") {
+			_isChunked = true;
+		}
+	}
+}
+
 void Request::parseHeaderFields(std::istringstream &iss)
 {
 	std::string key, value, line;
@@ -146,11 +158,7 @@ void Request::parseHeaderFields(std::istringstream &iss)
 	while (getline(iss, line))
 	{
 		if (line.size() == 1) {
-			_header_done = true;
-			checkHeaderFields();
-			if (_headerFields["Transfer-Encoding"] == "chunked") {
-				_isChunked = true;
-			}
+			whenDoneParsingHeader();
 			break ;
 		}
 		position = line.find(':');
