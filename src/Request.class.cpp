@@ -29,8 +29,6 @@ void Request::parseBody(std::string body)
 	std::string line;
 	size_t	found, lpos;
 
-	std::cout << "contentttt" << _headerFields["Content-Length"] << std::endl;
-	doesKeyExist(411, "Content-Length", "Missing content length when parsing request");
 	/* if (_headerFields.count("Content-Length") == 0) */
 	/* 	throw ErrorResponse(411, "While parsing request."); */
 	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
@@ -106,8 +104,17 @@ void Request::checkRequiredFields()
 {
 	doesKeyExist(400, "Method", "Missing method");
 	std::string method = _headerFields["Method"];
-	if (method != "POST" || method != "GET" || method != "DELETE")
+	std::cout << "method" << method << "end" << std::endl;
+	if (method == "GET")
+		std::cout << "aaaa" << method << "end" << std::endl;
+	if (method != "POST" && method != "GET" && method != "DELETE")
+	{
+		std::cout << "throwing here" << std::endl;
 		throw ErrorResponse(501, method);
+
+	}
+	if (method == "POST")
+		doesKeyExist(411, "Content-Length", "Missing header field.");
 		
 }
 
