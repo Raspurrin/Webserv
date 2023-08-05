@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <netinet/in.h>
 #include <string>
+#include <cstring>
 #include <iostream>
 #include <istream>
 #include <sstream>

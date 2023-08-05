@@ -18,12 +18,6 @@ int main(void)
 	signal(SIGINT, signalHandler);
 	ServerManager ServerManager;
 
-	// ServerManager.eventLoop();
-	ServerConfigParser parser("configuration.conf");
-	ServerConfigVector serverConfigs = parser.getServerConfigs();
-	std::cout << RED << "=============================\n";
-	std::cout << RED << "\nOutside Parser:" << DEF << std::endl;
-	for (serverConfigVector::const_iterator it = serverConfigs.begin(); it != serverConfigs.end(); it++)
-		it->printServerConfig();
+	ServerManager.eventLoop();
 	return (0);
 }
