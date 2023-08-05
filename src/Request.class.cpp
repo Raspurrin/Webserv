@@ -29,8 +29,6 @@ void Request::parseBody(std::string body)
 	std::string line;
 	size_t	found, lpos;
 
-	/* if (_headerFields.count("Content-Length") == 0) */
-	/* 	throw ErrorResponse(411, "While parsing request."); */
 	if (_headerFields.count("Content-Type") == 0 || _headerFields["Content-Length"] == "0")
 		throw ErrorResponse(400, "In header fields");
 	
@@ -107,7 +105,11 @@ void Request::checkRequiredFields()
 	if (method != "POST" && method != "GET" && method != "DELETE")
 		throw ErrorResponse(501, method);
 	if (method == "POST")
+	{
 		doesKeyExist(411, "Content-Length", "Missing header field.");
+		if (_headerFields["Content-Length"].length() > 10)
+			throw ErrorResponse(413, "Try a smaller file");
+	}
 		
 }
 
