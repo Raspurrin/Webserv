@@ -7,7 +7,7 @@
 
 _While parsing it will catch HTTP errors with the checkers_
 
-    1. Parsing the start line.
+    1. Parsing the start line.  
         `checkStartLine()` 
 
     2. Parsing the header fields.
