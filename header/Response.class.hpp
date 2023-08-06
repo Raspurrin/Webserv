@@ -43,7 +43,7 @@ class Response
 		void	status201();
 		bool	listDir();
 
-		void	setMimes();
+		void	setMimes(StringStringMap&);
 		void	tryChdir(const char* path);
 		void	directoryUpAndThrow(int error, std::string description);
 
