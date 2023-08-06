@@ -1,7 +1,7 @@
 # Webserv
 ## HTTP server in C++ 98
 
-[Installation instructions](docs/install.md)
+[Installation instructions](docs/install.md)  
 [Technical Documentation](docs/documentation.md)
 - GET, POST, and DELETE methods.
     1. GET: Fetch an URL  
