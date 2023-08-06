@@ -6,11 +6,15 @@
 [Subject](docs/webserv.pdf)  
 ### HTTP overview
 - **Implemented methods:**
+
     * _GET:_ Fetch an URI.
     * _POST:_ Send form data to a URI and get a response back.
     * _DELETE:_ Requests that the target resource delete its state.
+
 - **HTTP Version:**
+
     * HTTP/1.1
+
 - **HTTP Error Max Values:**  
 
 | Error                           | Max Value      | Method          | Change Value in:                 |
@@ -35,7 +39,7 @@
     * [send()](https://www.man7.org/linux/man-pages/man2/send.2.html)
     * [close()](https://www.man7.org/linux/man-pages/man2/close.2.html)
 
-- Relevant RFCs  
+#### Relevant RFCs  
 RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235  
 
 ![image](https://user-images.githubusercontent.com/71138634/231741862-8518d519-c24b-4267-9444-889be657f609.png)
