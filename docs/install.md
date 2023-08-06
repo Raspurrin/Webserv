@@ -1,14 +1,15 @@
-# Installation instructions
-## Install
+# webserv
+## Installation instructions
+### Install
 ```
 git clone https://github.com/Raspurrin/Webserv.git
 ```
-## Run
+### Run
 ```
 make
 ./webserv [configuration file]
 ```
-## Use
+### Use
 ```
 localhost:8080/
 ```
