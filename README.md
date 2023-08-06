@@ -14,7 +14,7 @@
 - **HTTP Error Handling:**  
 
 | Error | Max Value | Method |
-|:--------------------------------|:-------------:|-------------:|
+|:----------|:-------------:|:-------------:|
 | Request Timeout | 2 | all |
 | Content Too Large | 1GB per chunk | POST |
 | URI Too Long | 255 bytes | all |
