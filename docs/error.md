@@ -4,10 +4,10 @@
 #### Catching thrown errors
 - Inherits from **std::exception**.
 - On construction gets and `_errorCode` and a `_description`.
-- Finds in the `errorTypes` map the corresponding error and gets the full HTTP error.
+- Finds in the `errorTypes` map a match and gets the full HTTP error.
 - Fills the `_status` struct with the corresponding data.
 
-#### Getter
+#### Returning full HTTP status code error
 
 -Returns the filled `_status` struct.
 
