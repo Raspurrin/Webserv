@@ -9,9 +9,11 @@ _While parsing it will catch HTTP errors with the checkers_
 
     1. Parsing the start line.
         a. `checkStartLine()` 
+
     2. Parsing the header fields.
         a. `checkValueSize(key, value)` for URI length check
         b. `checkHeaderFields()`
+
     3. Parsing the body/payload if existing.
 
 If an error is thrown it is catched and saved in a variable of the response instance `_response._requestParsingError`. It will stop parsing and set the variable `isRead` to true in order to be able to meet the condition in `ServerManager` to get the response._
