@@ -11,7 +11,7 @@
     * _DELETE:_ Requests that the target resource delete its state.
 - **HTTP Version:**
     * HTTP/1.1
-- **HTTP Error Handling:**
+- **HTTP Error Handling:**  
 |              Error              |   Max Value    | Method |
 |:--------------------------------|:--------------:|-------:|
 | Request Timeout                 | 2              | all    |
