@@ -5,10 +5,11 @@
 [Technical Documentation](docs/documentation.md)  
 ### General overview
 - **Implemented methods:**
-    * _GET:_ Fetch an URL  
-    * _POST:_ Send form data to a URL and get a response back  
-    * _DELETE:_ The DELETE method requests that the target resource delete its state.  
-https://en.wikipedia.org/wiki/HTTP#Request_methods  
+    * _GET:_ Fetch an URI.
+    * _POST:_ Send form data to a URI and get a response back.
+    * _DELETE:_ Requests that the target resource delete its state.
+- **Asynchronous I/O:**
+    [poll()](https://www.man7.org/linux/man-pages/man2/poll.2.html)
 - Clients must be able to upload files
 - server must be able to listen to multiple ports
 - default error pages if none are provided
