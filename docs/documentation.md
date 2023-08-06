@@ -1,10 +1,10 @@
 # webserv
 ## Classes
-[ParsingConfig](parsingconfig.md)  
-[ServerConfig](serverconfig.md)  
-[ServerManager](servermanager.md)  
+[Parsing Configuration File](parsingconfig.md)  
+[Server Configuration](serverconfig.md)  
+[Server Manager](servermanager.md)  
 [Client](client.md)  
-[Request](request.md)  
-[Response](response.md)  
-[Cgi](cgi.md)  
-[Error](error.md)  
+[Parsing HTTP Request](request.md)  
+[Building HTTP Response](response.md)  
+[CGI](cgi.md)  
+[HTTP Errors](error.md)  
