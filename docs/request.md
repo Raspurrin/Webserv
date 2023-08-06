@@ -7,14 +7,14 @@
 
 _While parsing it will catch HTTP errors with the checkers_
 
-1. Parsing the start line.  
-    a. <code>checkStartLine()</code> 
+    * **Parsing the start line.**  
+        * <code>checkStartLine()</code> 
 
-2. Parsing the header fields.  
-    a. <code>checkValueSize(key, value)</code>
-    b. <code>checkHeaderFields()</code>
+    * **Parsing the header fields.**  
+        * <code>checkValueSize(key, value)</code>
+        * <code>checkHeaderFields()</code>
 
-3. Parsing the body/payload if existing.
+    * **Parsing the body/payload if existing.**
 
 If an error is thrown it is catched and saved in a variable of the response instance `_response._requestParsingError`. It will stop parsing and set the variable `isRead` to true in order to be able to meet the condition in `ServerManager` to get the response._
 
