@@ -8,9 +8,11 @@
 _While parsing it will catch HTTP errors with the checkers_
 
     1. Parsing the start line.
+
         a. `checkStartLine()` 
 
     2. Parsing the header fields.
+
         a. `checkValueSize(key, value)` for URI length check
         b. `checkHeaderFields()`
 
