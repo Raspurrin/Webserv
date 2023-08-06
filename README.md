@@ -39,6 +39,11 @@
     * [send()](https://www.man7.org/linux/man-pages/man2/send.2.html)
     * [close()](https://www.man7.org/linux/man-pages/man2/close.2.html)
 
+### OS Compatibility
+
+- macOS
+- Linux
+
 #### Relevant RFCs  
 RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235  
 
