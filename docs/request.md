@@ -7,10 +7,10 @@
 
 _While parsing it will catch HTTP errors with the checkers_
 
-1. Parsing the start line.
+1. Parsing the start line.  
     a. <code>checkStartLine()</code> 
 
-2. Parsing the header fields.
+2. Parsing the header fields.  
     a. <code>checkValueSize(key, value)</code>
     b. <code>checkHeaderFields()</code>
 
