@@ -21,7 +21,7 @@
 | Request Header Fields Too Large | 9000 bytes     | all implemented | Request.class.cpp                |
 | Unsupported Media Type          | multipart/form | POST            | Not implemented                  |
 
-#### Main system calls
+### Main system calls
 - **Asynchronous I/O:**
     * [poll()](https://www.man7.org/linux/man-pages/man2/poll.2.html)
     * [recv()](https://www.man7.org/linux/man-pages/man2/recv.2.html)
@@ -34,6 +34,8 @@
     * [accept()](https://www.man7.org/linux/man-pages/man2/accept.2.html)
     * [send()](https://www.man7.org/linux/man-pages/man2/send.2.html)
     * [close()](https://www.man7.org/linux/man-pages/man2/close.2.html)
+
 - Relevant RFCs  
 RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234, RFC 7235  
+
 ![image](https://user-images.githubusercontent.com/71138634/231741862-8518d519-c24b-4267-9444-889be657f609.png)
