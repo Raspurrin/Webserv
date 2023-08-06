@@ -8,11 +8,11 @@
 _While parsing it will catch HTTP errors with the checkers_
 
     1. Parsing the start line.  
-        `checkStartLine()` 
+       a. <code>checkStartLine()</code> 
 
     2. Parsing the header fields.
-        `checkValueSize(key, value)`
-        `checkHeaderFields()`
+        a. <code>checkValueSize(key, value)</code
+        b. <code>checkHeaderFields()</code>
 
     3. Parsing the body/payload if existing.
 
