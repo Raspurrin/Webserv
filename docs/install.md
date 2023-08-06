@@ -4,9 +4,11 @@
 ```
 git clone https://github.com/Raspurrin/Webserv.git
 ```
+### Build
+`make` or `make DEBUG`
+
 ### Run
 ```
-make
 ./webserv [configuration file]
 ```
 ### Use
