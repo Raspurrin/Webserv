@@ -14,11 +14,11 @@
 - **HTTP Error Handling:**  
 | Error | Max Value | Method |
 |:------------|:-------------:|-------------:|
-| Request Timeout                 | 2              | all    |
-| Content Too Large               | 1GB per chunk  | POST   |
-| URI Too Long                    | 255 bytes      | all    |
-| Request Header Fields Too Large | 9000 bytes     | all    |
-| Unsupported Media Type          | multipart/form | POST   |
+| Request Timeout | 2 | all |
+| Content Too Large | 1GB per chunk | POST |
+| URI Too Long | 255 bytes | all |
+| Request Header Fields Too Large | 9000 bytes | all |
+| Unsupported Media Type | multipart/form | POST |
 #### Main system calls
 - **Asynchronous I/O:**
     * [poll()](https://www.man7.org/linux/man-pages/man2/poll.2.html)
