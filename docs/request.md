@@ -11,7 +11,7 @@ _While parsing it will catch HTTP errors with the checkers_
         `checkStartLine()` 
 
     2. Parsing the header fields.
-        `checkValueSize(key, value)` for URI length check
+        `checkValueSize(key, value)`
         `checkHeaderFields()`
 
     3. Parsing the body/payload if existing.
