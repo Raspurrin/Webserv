@@ -169,7 +169,6 @@ void Response::setMimes(StringStringMap& mimeTypes)
 	mimeTypes[".jpg"] = "image/jpeg";
 	mimeTypes[".jpeg"] = "image/jpeg";
 	mimeTypes[".gif"] = "image/gif";
-
 }
 
 std::string Response::getMimeType(const std::string& filename)
