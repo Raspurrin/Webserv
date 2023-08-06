@@ -12,8 +12,6 @@
 _While parsing it will catch HTTP errors with the checkers_
 
     `checkStartLine()`   
-    `checkValueSize(key, value)` for URI length check  
-    `checkHeaderFields()`  
 
 If an error is thrown it is catched and saved in a variable of the response instance `_response._requestParsingError`. It will stop parsing and set the variable `isRead` to true in order to be able to meet the condition in `ServerManager` to get the response._
 
