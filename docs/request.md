@@ -1,15 +1,15 @@
 # webserv
 ## Request Class
 ### The main purpose of this class is:
-- Buffered reading from the socket using `recv`.
+#### Buffered reading from the socket using `recv`.
 
-- Parse the read request in three main steps:
+#### Parse the read request in three main steps:
 
-    - Parsing the start line.
-    - Parsing the header fields.
-    - Parsing the body/payload if existing.
+- Parsing the start line.
+- Parsing the header fields.
+- Parsing the body/payload if existing.
 
-- While parsing it will catch HTTP errors with the checkers:
+_While parsing it will catch HTTP errors with the checkers:_
 
 - `checkStartLine()`   
 - `checkValueSize(key, value)` for URI length check  
