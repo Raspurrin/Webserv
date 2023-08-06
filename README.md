@@ -3,7 +3,7 @@
 
 [Installation instructions](docs/install.md)  
 [Technical Documentation](docs/documentation.md)  
-[Subject](docs/webserv.md)  
+[Subject](docs/webserv.pdf)  
 ### General overview
 - **Implemented methods:**
     * _GET:_ Fetch an URI.
