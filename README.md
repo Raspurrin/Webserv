@@ -14,6 +14,7 @@
     * [recv()](https://www.man7.org/linux/man-pages/man2/recv.2.html)
 - **Sockets:**
     * [socket()](https://www.man7.org/linux/man-pages/man2/socket.2.html)
+    * [fcntl()](https://www.man7.org/linux/man-pages/man2/fcntl.2.html)
     * [setsockopt()](https://www.man7.org/linux/man-pages/man2/setsockopt.2.html)
     * [bind()](https://www.man7.org/linux/man-pages/man2/bind.2.html)
     * [listen()](https://www.man7.org/linux/man-pages/man2/listen.2.html)
