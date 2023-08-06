@@ -11,15 +11,15 @@
     * _DELETE:_ Requests that the target resource delete its state.
 - **HTTP Version:**
     * HTTP/1.1
-- **HTTP Error Handling:**  
+- **HTTP Error Max Values:**  
 
-| Error | Max Value | Method |
-|:----------|:-------------:|:-------------:|
-| Request Timeout | 2 | all |
-| Content Too Large | 1GB per chunk | POST |
-| URI Too Long | 255 bytes | all |
-| Request Header Fields Too Large | 9000 bytes | all |
-| Unsupported Media Type | multipart/form | POST |
+| Error                           | Max Value      | Method          | Change Value in:                 |
+|:--------------------------------|:--------------:|:---------------:|:---------------------------------|
+| Request Timeout                 | 2              | all implemented | webserv.hpp                      |
+| Content Too Large               | 1GB per chunk  | POST            | config file or Request.class.cpp |
+| URI Too Long                    | 255 bytes      | all implemented | Request.class.cpp                |
+| Request Header Fields Too Large | 9000 bytes     | all implemented | Request.class.cpp                |
+| Unsupported Media Type          | multipart/form | POST            | Not implemented                  |
 
 #### Main system calls
 - **Asynchronous I/O:**
