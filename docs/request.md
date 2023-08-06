@@ -5,16 +5,15 @@
 
 - Parse the read request in three main steps:
 
-- **Parsing the start line.**  
-    <code>checkStartLine()</code> 
-
-- **Parsing the header fields.**  
-    <code>checkValueSize(key, value)</code>
-    <code>checkHeaderFields()</code>
-
-- **Parsing the body/payload if existing.**
+    1. Parsing the start line.
+    2. Parsing the header fields.
+    3. Parsing the body/payload if existing.
 
 _While parsing it will catch HTTP errors with the checkers_
+
+    - `checkStartLine()` 
+    - `checkValueSize(key, value)` for URI length check
+    - `checkHeaderFields()`
 
 If an error is thrown it is catched and saved in a variable of the response instance `_response._requestParsingError`. It will stop parsing and set the variable `isRead` to true in order to be able to meet the condition in `ServerManager` to get the response._
 
