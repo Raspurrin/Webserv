@@ -5,7 +5,7 @@
 git clone https://github.com/Raspurrin/Webserv.git
 ```
 ### Build
-`make` or `make DEBUG`
+`make` or `make debug`
 
 ### Run
 ```

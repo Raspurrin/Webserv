@@ -224,7 +224,6 @@ void Request::checkHeaderFields()
 void Request::parseBody(std::string body)
 {
 	std::string line;
-	size_t	found, lpos;
 	std::istringstream	ss(body);
 
 	getline(ss, line);
