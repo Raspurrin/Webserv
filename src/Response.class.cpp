@@ -155,25 +155,7 @@ std::string Response::getMimeType(const std::string& filename)
 	static StringStringMap mimeTypes;
 
 	if (mimeTypes.empty())
-	{
-		mimeTypes[".txt"] = "text/plain";
-		mimeTypes[".html"] = "text/html";
-		mimeTypes[".htm"] = "text/html";
-		mimeTypes[".css"] = "text/css";
-		mimeTypes[".js"]  ="text/javascript";
-		mimeTypes[".json"] = "application/json";
-		mimeTypes[".xml"] = "application/xml";
-		mimeTypes[".pdf"] = "application/pdf";
-		mimeTypes[".zip"] = "application/zip";
-		mimeTypes[".doc"] = "application/msword";
-		mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
-		mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-		mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-		mimeTypes[".png"] = "image/png";
-		mimeTypes[".jpg"] = "image/jpeg";
-		mimeTypes[".jpeg"] = "image/jpeg";
-		mimeTypes[".gif"] = "image/gif";
-	}
+		setMimes();
 
 	size_t	dotPos = filename.find_last_of('.');
 	if (dotPos != std::string::npos)
@@ -301,6 +283,29 @@ bool Response::listDir()
 	_response["Content-Type:"] = "text/html";
 	_response["Status code"] = "200 OK";
 	return true;
+}
+
+void Response::setMimes()
+{
+	static StringStringMap mimeTypes;
+
+	mimeTypes[".txt"] = "text/plain";
+	mimeTypes[".html"] = "text/html";
+	mimeTypes[".htm"] = "text/html";
+	mimeTypes[".css"] = "text/css";
+	mimeTypes[".js"]  ="text/javascript";
+	mimeTypes[".json"] = "application/json";
+	mimeTypes[".xml"] = "application/xml";
+	mimeTypes[".pdf"] = "application/pdf";
+	mimeTypes[".zip"] = "application/zip";
+	mimeTypes[".doc"] = "application/msword";
+	mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+	mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	mimeTypes[".png"] = "image/png";
+	mimeTypes[".jpg"] = "image/jpeg";
+	mimeTypes[".jpeg"] = "image/jpeg";
+	mimeTypes[".gif"] = "image/gif";
 }
 
 void Response::directoryUpAndThrow(int error, std::string description)
