@@ -110,7 +110,7 @@ IntVector	_indexesToRemove;
 
 	void	ServerManager::handleClientSocket(int i)
 	{
-		if (time(NULL) - _clients[i - _numServerSockets].getLastActivity() > REQUEST_TIMEOUT) {
+		if (!_clients[i - _numServerSockets].isRequestSent() && time(NULL) - _clients[i - _numServerSockets].getLastActivity() > REQUEST_TIMEOUT) {
 			_clients[i - _numServerSockets].setRequestError(ErrorResponse(408, "from ServerManager"));
 		}
 		if (_sockets[i].revents & POLLERR || _sockets[i].revents & POLLHUP || _sockets[i].revents & POLLPRI || _sockets[i].revents & POLLNVAL) {
