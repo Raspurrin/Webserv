@@ -30,6 +30,7 @@
 #define REQUEST_TIMEOUT 2
 
 typedef std::map<std::string, std::string>	StringStringMap;
+typedef std::map<std::string, int>	StringIntMap;
 typedef std::map<std::string, bool>         StringBoolMap;
 typedef std::map<int, std::string>	IntStringMap;
 typedef std::vector<int>			IntVector;

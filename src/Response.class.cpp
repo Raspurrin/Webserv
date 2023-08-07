@@ -41,7 +41,7 @@ void Response::processRequest()
 	try
 	{
 		checkRequestErrors();
-		methodID();
+		checkMethod();
 	}
 	catch (const std::exception &e)
 	{
@@ -61,19 +61,48 @@ void Response::checkRequestErrors()
 		throw _requestParsingError;
 }
 
-void Response::methodID()
+void Response::methodID(int method)
+{
+
+	switch (method) {
+		case 1:
+			GETMethod();
+			break ;
+		case 2:
+			POSTMethod();
+			break ;
+		case 4:
+			DELETEMethod();
+			break ;
+	}
+}
+
+void Response::checkMethod()
 {
 	_serverConfig.printServerConfig();
-	if (!_serverConfig.isRouteValid(_headerFields["Path"]))
+	std::string path = _headerFields["Path"];
+	std::string method = _headerFields["Method"];
+	static StringIntMap methods;
+
+	if (!_serverConfig.isRouteValid(path))
 		throw ErrorResponse(404, "Route not configured.");
-		
-	if (_headerFields["Method"] == "GET")
-		GETMethod();
-	if (_headerFields["Method"] == "POST")
-		POSTMethod();
-	if (_headerFields["Method"] == "DELETE")
-		DELETEMethod();
-	return ;
+
+	setMethods(methods);
+	if (methods.find(method) == methods.end())
+		throw ErrorResponse(501, method);
+	if (!_serverConfig.isRouteMethodAllowed(path, methods[method]))
+		throw ErrorResponse(405, method);
+
+	methodID(methods[method]);
+}
+
+void Response::setMethods(StringIntMap& methods)
+{
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
 }
 
 void Response::GETMethod()
@@ -167,6 +196,8 @@ void Response::readFile()
 
 void Response::setMimes(StringStringMap& mimeTypes)
 {
+	if (!mimeTypes.empty())
+		return ;
 	mimeTypes[".txt"] = "text/plain";
 	mimeTypes[".html"] = "text/html";
 	mimeTypes[".htm"] = "text/html";
@@ -190,8 +221,7 @@ std::string Response::getMimeType(const std::string& filename)
 {
 	static StringStringMap mimeTypes;
 
-	if (mimeTypes.empty())
-		setMimes(mimeTypes);
+	setMimes(mimeTypes);
 
 	size_t	dotPos = filename.find_last_of('.');
 	if (dotPos != std::string::npos)

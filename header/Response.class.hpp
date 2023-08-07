@@ -28,7 +28,9 @@ class Response
 
 		void	processRequest();
 		void	checkRequestErrors();
-		void	methodID();
+		void	methodID(int method);
+		void	checkMethod();
+		void	setMethods(StringIntMap& methods);
 		void	GETMethod();
 		void	DELETEMethod();
 		void	POSTMethod();
