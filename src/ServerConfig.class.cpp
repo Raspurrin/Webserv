@@ -66,8 +66,8 @@ int		ServerConfig::getRouteMethods(const std::string &path) const
 
 bool	ServerConfig::isRouteMethodAllowed(const std::string &path, const int methodToCheck) const
 {
-	if (_routes.find(path) != _routes.end())
-		error_handle("the route path does not exist");
+	if (_routes.find(path) == _routes.end())
+		return (false);
 	if (_routes.at(path)._methods & methodToCheck)
 		return (true);
 	return (false);
