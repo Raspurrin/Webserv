@@ -302,7 +302,7 @@ void Request::separatingPathAndFilename()
 	size_t	lastSlash = full_path.find_last_of("/\\");
 	if (lastSlash == std::string::npos)
 		return ;
-	_headerFields["Path"] = full_path.substr(0, lastSlash);
+	_headerFields["Path"] = full_path.substr(1, lastSlash - 1);
 	_headerFields["Filename"] = full_path.substr(lastSlash + 1);
 }
 

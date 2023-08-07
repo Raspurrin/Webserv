@@ -63,9 +63,8 @@ void Response::checkRequestErrors()
 
 void Response::methodID()
 {
+	_serverConfig.printServerConfig();
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/index.html";
 //	else if (_serverConfig.isRouteValid(_headerFields["Path"]))
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
