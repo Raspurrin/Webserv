@@ -16,7 +16,7 @@ Request::Request(void) :
 
 void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 {
-	(void)serverConfig;
+	_response._serverConfig = serverConfig;
 	if (DEBUG)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
@@ -210,10 +210,12 @@ void Request::checkHeaderFields()
 	if (method == "POST")
 	{
 		doesKeyExist(411, "Content-Length", "Missing header field.");
-		if (_headerFields["Content-Length"].length() > 10)
-			throw ErrorResponse(413, "Try a smaller file");
+		int content_length = atoi(_headerFields["Content-Length"].c_str());
+		if (content_length > _response._serverConfig.getClientBodySize())
+			throw ErrorResponse(413, "Content is bigger than set in config file.");
 		else if (_headerFields["Content-Length"] == "0")
 			throw ErrorResponse(400, "Lack of required content.");
+
 		doesKeyExist(400, "Content-Type", "Missing content type field.");
 		std::string content_type = _headerFields["Content-Type"];
 		size_t found = content_type.find("multipart/form-data");

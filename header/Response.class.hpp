@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <set>
 #include <dirent.h>
+#include "ServerConfig.class.hpp"
 #include "webserv.hpp"
 #include "colours.hpp"
 #include "Error.class.hpp"
@@ -56,6 +57,7 @@ class Response
 		bool	_hasError;
 		bool	_getResponseFinished();
 		ErrorResponse	_requestParsingError;
+		ServerConfig	_serverConfig;
 		void		postResponse(int socket, int indexToRemove);
 		std::string	getResponse();
 
