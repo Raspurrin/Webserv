@@ -87,14 +87,15 @@ void Response::checkDirectory()
 	std::string index = _serverConfig.getRouteIndex(route);
 	if (index.empty())
 	{
-		if (!listDir())
+		if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
 			status200("/directory.html");
 	}
 	else
 	{
 		std::stringstream build;
 		build << "/" << route << "/" << index;
-		status200(build.str());
+		_headerFields["Path"] = build.str();
+		GETMethod();
 	}
 }
 
@@ -102,8 +103,6 @@ void Response::GETMethod()
 {
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
-	std::cout << "path in get" << path << std::endl;
-	printCWD();
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
@@ -123,7 +122,7 @@ void Response::POSTMethod()
 {
 	const char *filename = _headerFields["Upload-Filename"].c_str();
 
-	if (_headerFields["Path"] != "/files/")
+	if (_headerFields["Path"] != "/form/files")
 		throw ErrorResponse(403, "POST: Not matching Path with /files/");
 	tryChdir("./files");
 	if (access(filename, F_OK) == 0)
@@ -305,10 +304,8 @@ bool Response::listDir()
 		return false;
 	struct dirent *ent;
 
-	// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
 	std::set<std::string> files;
 
-	// Return value of readdir is statically allocated and must not be freed!
 	while ((ent = readdir(dir)) != NULL)
 		files.insert(std::string(ent->d_name));
 
