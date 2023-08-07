@@ -53,8 +53,8 @@ void	ServerConfig::printErrorPages() const
 bool	ServerConfig::isRouteValid(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
-		return (false);
-	return (true);
+		return (true);
+	return (false);
 }
 
 int		ServerConfig::getRouteMethods(const std::string &path) const

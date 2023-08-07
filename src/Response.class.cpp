@@ -64,8 +64,13 @@ void Response::checkRequestErrors()
 void Response::methodID()
 {
 	_serverConfig.printServerConfig();
-	// "/" will always be a directory, so maybe we should solve this with a route later on?
-//	else if (_serverConfig.isRouteValid(_headerFields["Path"]))
+	if (!_serverConfig.isRouteValid(_headerFields["Path"]))
+	{
+		std::cout << "not valid route" << std::endl;
+		throw ErrorResponse(404, "Route not configured.");
+	}
+	std::cout << "valid route" << _headerFields["Path"] << std::endl;
+		
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
 	if (_headerFields["Method"] == "POST")
