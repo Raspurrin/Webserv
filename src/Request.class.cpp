@@ -154,7 +154,7 @@ void Request::URLDecode(const std::string& encoded)
 		else
 			decoded += encoded[i];
 	}
-	_headerFields["Full-Path"] = decoded;
+	_headerFields["Path"] = decoded;
 }
 
 void Request::checkStartLine()
@@ -164,8 +164,8 @@ void Request::checkStartLine()
 	if (method != "POST" && method != "GET" && method != "DELETE")
 		throw ErrorResponse(501, method);
 
-	doesKeyExist(400, "Full-Path", "Missing path.");
-	std::string path = _headerFields["Full-Path"];
+	doesKeyExist(400, "Path", "Missing path.");
+	std::string path = _headerFields["Path"];
 	if (path.length() > 255)
 		throw ErrorResponse(414, "Too long URI");
 	separatingPathAndFilename();
@@ -291,19 +291,13 @@ void Request::checkBoundary(const std::string& line)
 
 void Request::separatingPathAndFilename()
 {
-	std::string full_path = _headerFields["Full-Path"];
+	std::string path = _headerFields["Path"];
 
-	/* if (full_path == "/") */
-	/* { */
-	/* 	_headerFields["Path"] = "/"; */
-	/* 	_headerFields["Filename"] = "index.html"; */
-	/* 	return ; */
-	/* } */
-	size_t	lastSlash = full_path.find_last_of("/\\");
+	size_t	lastSlash = path.find_last_of("/\\");
 	if (lastSlash == std::string::npos)
 		return ;
-	_headerFields["Path"] = full_path.substr(1, lastSlash - 1);
-	_headerFields["Filename"] = full_path.substr(lastSlash + 1);
+	_headerFields["Route"] = path.substr(1, lastSlash - 1);
+	_headerFields["Filename"] = path.substr(lastSlash + 1);
 }
 
 void Request::extractingFilenameToUpload()

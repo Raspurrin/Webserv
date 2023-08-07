@@ -61,57 +61,38 @@ void Response::checkRequestErrors()
 		throw _requestParsingError;
 }
 
-void Response::methodID(int method)
-{
-
-	switch (method) {
-		case 1:
-			GETMethod();
-			break ;
-		case 2:
-			POSTMethod();
-			break ;
-		case 4:
-			DELETEMethod();
-			break ;
-	}
-}
-
 void Response::checkMethod()
 {
 	_serverConfig.printServerConfig();
-	std::string path = _headerFields["Path"];
+	std::string route = _headerFields["Route"];
 	std::string method = _headerFields["Method"];
 	static StringIntMap methods;
 
-	if (!_serverConfig.isRouteValid(path))
+	if (!_serverConfig.isRouteValid(route))
 		throw ErrorResponse(404, "Route not configured.");
 
 	setMethods(methods);
 	if (methods.find(method) == methods.end())
 		throw ErrorResponse(501, method);
-	if (!_serverConfig.isRouteMethodAllowed(path, methods[method]))
+	if (!_serverConfig.isRouteMethodAllowed(route, methods[method]))
 		throw ErrorResponse(405, method);
 
 	methodID(methods[method]);
-}
-
-void Response::setMethods(StringIntMap& methods)
-{
-	if (!methods.empty())
-		return ;
-	methods["GET"] = 1;
-	methods["POST"] = 2;
-	methods["DELETE"] = 4;
 }
 
 void Response::GETMethod()
 {
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
+	std::cout << "path in get" << path << std::endl;
+	printCWD();
 
-	if (access(path, F_OK) == -1)
+	int	result = access(path, F_OK);
+	if (result == -1)
+	{
+		perror("access");
 		throw ErrorResponse(404, "GET: File doesn't exist.");
+	}
 	if (access(path, R_OK) == -1)
 		throw ErrorResponse(403, "GET: No access rights.");
 	if (stat(path, &s) != 0)
@@ -192,29 +173,6 @@ void Response::readFile()
 		throw ErrorResponse(500, "After reading file.");
 	_response["Body"] = content;
 	_response["Content-Type:"] = getMimeType(_response["Path"]);
-}
-
-void Response::setMimes(StringStringMap& mimeTypes)
-{
-	if (!mimeTypes.empty())
-		return ;
-	mimeTypes[".txt"] = "text/plain";
-	mimeTypes[".html"] = "text/html";
-	mimeTypes[".htm"] = "text/html";
-	mimeTypes[".css"] = "text/css";
-	mimeTypes[".js"]  ="text/javascript";
-	mimeTypes[".json"] = "application/json";
-	mimeTypes[".xml"] = "application/xml";
-	mimeTypes[".pdf"] = "application/pdf";
-	mimeTypes[".zip"] = "application/zip";
-	mimeTypes[".doc"] = "application/msword";
-	mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
-	mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-	mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-	mimeTypes[".png"] = "image/png";
-	mimeTypes[".jpg"] = "image/jpeg";
-	mimeTypes[".jpeg"] = "image/jpeg";
-	mimeTypes[".gif"] = "image/gif";
 }
 
 std::string Response::getMimeType(const std::string& filename)
@@ -308,7 +266,13 @@ void Response::status201()
 {
 	_response["Status code"] = "201 CREATED";
 	_response["Path"] = "/success.html";
-	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
+	_response["Location:"] = _headerFields["Path"].append(_headerFields["Upload-Filename"]);
+}
+
+void	Response::printCWD()
+{
+	char cwd[256];
+	std::cout << "CWD" << getcwd(cwd, 256) << std::endl;
 }
 
 /**
@@ -361,6 +325,54 @@ void Response::tryChdir(const char* path)
 {
 	if (chdir(path) == -1)
 		throw ErrorResponse(500, strerror(errno));
+}
+
+void Response::setMimes(StringStringMap& mimeTypes)
+{
+	if (!mimeTypes.empty())
+		return ;
+	mimeTypes[".txt"] = "text/plain";
+	mimeTypes[".html"] = "text/html";
+	mimeTypes[".htm"] = "text/html";
+	mimeTypes[".css"] = "text/css";
+	mimeTypes[".js"]  ="text/javascript";
+	mimeTypes[".json"] = "application/json";
+	mimeTypes[".xml"] = "application/xml";
+	mimeTypes[".pdf"] = "application/pdf";
+	mimeTypes[".zip"] = "application/zip";
+	mimeTypes[".doc"] = "application/msword";
+	mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+	mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	mimeTypes[".png"] = "image/png";
+	mimeTypes[".jpg"] = "image/jpeg";
+	mimeTypes[".jpeg"] = "image/jpeg";
+	mimeTypes[".gif"] = "image/gif";
+}
+
+void Response::setMethods(StringIntMap& methods)
+{
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
+}
+
+void Response::methodID(int method)
+{
+
+	switch (method) {
+		case 1:
+			GETMethod();
+			break ;
+		case 2:
+			POSTMethod();
+			break ;
+		case 4:
+			DELETEMethod();
+			break ;
+	}
 }
 
 bool Response::_getResponseFinished() {

@@ -34,6 +34,7 @@ class Response
 		void	GETMethod();
 		void	DELETEMethod();
 		void	POSTMethod();
+		void	printCWD();
 
 		void	readFile();
 		std::string	getMimeType(const std::string& filename);
