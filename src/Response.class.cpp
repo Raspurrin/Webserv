@@ -5,6 +5,7 @@
 #include <fstream>
 #include <ios>
 #include <string>
+#include <unistd.h>
 #include <utility>
 
 Response::Response(StringStringMap& _headerFields) : _firstCall(true), _responseFinished(false), _headerFields(_headerFields), _hasError(false)
@@ -16,6 +17,7 @@ Response::Response(StringStringMap& _headerFields) : _firstCall(true), _response
 std::string	Response::getResponse()
 {
 	if (_firstCall) {
+		tryChdir("www");
 		processRequest();
 		readFile();
 		assembleResponse();
@@ -27,6 +29,7 @@ std::string	Response::getResponse()
 	std::string response(_responseBuff, BUFLEN);
 
 	if (_responseStream.eof()) {
+		tryChdir("..");
 		_responseFinished = true;
 	}
 
@@ -63,7 +66,7 @@ void Response::methodID()
 	// "/" will always be a directory, so maybe we should solve this with a route later on?
 	if (_headerFields["Path"] == "/")
 		_headerFields["Path"] = "/index.html";
-
+//	else if (_serverConfig.isRouteValid(_headerFields["Path"]))
 	if (_headerFields["Method"] == "GET")
 		GETMethod();
 	if (_headerFields["Method"] == "POST")
@@ -97,7 +100,7 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	const char *filename = _headerFields["Filename"].c_str();
+	const char *filename = _headerFields["Upload-Filename"].c_str();
 
 	if (_headerFields["Path"] != "/files/")
 		throw ErrorResponse(403, "POST: Not matching Path with /files/");

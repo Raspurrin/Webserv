@@ -36,7 +36,8 @@ class Request
 		void			parseBody(std::string body);
 		void			URLDecode(const std::string& encoded);
 		void			checkBoundary(const std::string&);
-		void			extractingFilename();
+		void			extractingFilenameToUpload();
+		void			separatingPathAndFilename();
 		void			doesKeyExist(int, const std::string&, const std::string&);
 		void			checkHeaderFields();
 		void			checkStartLine();

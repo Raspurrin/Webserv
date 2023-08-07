@@ -110,6 +110,7 @@ void Request::readIntoString(int &socket)
 	{
 		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
 		std::cout << CYAN << "Read count:\n" << DEF << _readCount << std::endl;
+		printMap();
 	}
 	// _requestBuffer.append(readBuffer);
 }
@@ -153,7 +154,7 @@ void Request::URLDecode(const std::string& encoded)
 		else
 			decoded += encoded[i];
 	}
-	_headerFields["Path"] = decoded;
+	_headerFields["Full-Path"] = decoded;
 }
 
 void Request::checkStartLine()
@@ -163,10 +164,11 @@ void Request::checkStartLine()
 	if (method != "POST" && method != "GET" && method != "DELETE")
 		throw ErrorResponse(501, method);
 
-	doesKeyExist(400, "Path", "Missing path.");
-	std::string path = _headerFields["Path"];
+	doesKeyExist(400, "Full-Path", "Missing path.");
+	std::string path = _headerFields["Full-Path"];
 	if (path.length() > 255)
 		throw ErrorResponse(414, "Too long URI");
+	separatingPathAndFilename();
 
 	doesKeyExist(400, "Version", "Missing version.");
 	std::string version = _headerFields["Version"];
@@ -232,7 +234,7 @@ void Request::parseBody(std::string body)
 	getline(ss, line);
 	checkBoundary(line);
 	getline(ss, _headerFields["Body-Disposition"]);
-	extractingFilename();
+	extractingFilenameToUpload();
 	getline(ss, _headerFields["Body-Type"]);
 	getline(ss, line);
 	std::stringstream remainder;
@@ -287,7 +289,18 @@ void Request::checkBoundary(const std::string& line)
 		throw ErrorResponse(400, "No boundary found in payload.");
 }
 
-void Request::extractingFilename()
+void Request::separatingPathAndFilename()
+{
+	std::string full_path = _headerFields["Full-Path"];
+
+	size_t	lastSlash = full_path.find_last_of("/\\");
+	if (lastSlash == std::string::npos)
+		return ;
+	_headerFields["Path"] = full_path.substr(0, lastSlash);
+	_headerFields["Filename"] = full_path.substr(lastSlash + 1);
+}
+
+void Request::extractingFilenameToUpload()
 {
 	size_t	found, lpos;
 	std::string body_disposition = _headerFields["Body-Disposition"];
@@ -297,7 +310,7 @@ void Request::extractingFilename()
 	lpos = found;
 	while (body_disposition[lpos] != '"')
 		lpos--;
-	_headerFields["Filename"] = body_disposition.substr(lpos + 1, found - lpos);
+	_headerFields["Upload-Filename"] = body_disposition.substr(lpos + 1, found - lpos);
 }
 
 std::string	Request::getResponse()
