@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <fstream>
 #include <ios>
+#include <sstream>
 #include <string>
 #include <unistd.h>
 #include <utility>
@@ -224,14 +225,18 @@ void Response::assembleResponse()
 
 void Response::buildError(const t_status& _status) {
 	std::stringstream ss;
-	ss << _status._code << " " << _status._description;
+	ss << _status._code;
+	std::string custom = _serverConfig.getErrorPage(ss.str());
+	ss << " " << _status._description;
 	_response["Status code"] = ss.str();
-	//use getErrorPage from config file with pair first
-	//if default
-	//generate html
-	generateHTML(_status);
-	//else
-	//save string into path
+	if (custom.empty())
+		generateHTML(_status);
+	else
+	{
+		std::stringstream path;
+		path << "/" << custom;
+		_response["Path"] = path.str();
+	}
 }
 
 void Response::generateHTML(const t_status& _status)
