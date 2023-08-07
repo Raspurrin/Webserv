@@ -210,8 +210,9 @@ void Request::readIntoString(int &socket)
 	// _requestBuffer.append(readBuffer);
 }
 
-void	Request::getRequest(int	&socket)
+void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 {
+	(void)serverConfig;
 	if (DEBUG)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {

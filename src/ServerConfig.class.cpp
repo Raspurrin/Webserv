@@ -1,4 +1,5 @@
 #include "../header/ServerConfig.class.hpp"
+#include "../header/colours.hpp"
 
 ServerConfig::ServerConfig() :
 	_host(0),
@@ -111,23 +112,24 @@ ServerConfig::~ServerConfig(void)
 
 void	ServerConfig::printServerConfig() const
 {
-	std::cout << "ServerConfig:" << std::endl;
-	std::cout << "  host: " << (_host >> 24) << "." << ((_host >> 16) & 255) << "." << ((_host >> 8) & 255) << "." << (_host & 255) << std::endl;
+	std::cout << PINK << "===============================" << std::endl;
+	std::cout <<  "ServerConfig:" << RESET << std::endl;
+	std::cout << CYAN << "  host: " << (_host >> 24) << "." << ((_host >> 16) & 255) << "." << ((_host >> 8) & 255) << "." << (_host & 255) << std::endl;
 	std::cout << "  port: " << _port << std::endl;
 	std::cout << "  name: " << _name << std::endl;
 	std::cout << "  clientBodySize: " << _clientBodySize << std::endl;
-	std::cout << "  errorPages:" << std::endl;
+	std::cout << GREEN << "  errorPages:" << CYAN << std::endl;
 	for (StringStringMap::const_iterator it = _errorPages.begin(); it != _errorPages.end(); it++)
 		std::cout << "    " << it->first << ": " << it->second << std::endl;
-	std::cout << "  routes:" << std::endl;
+	std::cout << GREEN << "  routes:" << RESET << std::endl;
 	for (StringRouteMap::const_iterator it = _routes.begin(); it != _routes.end(); it++)
 	{
-		std::cout << "    " << it->first << ":" << std::endl;
+		std::cout << "    " << GREEN << it->first << ":" << CYAN << std::endl;
 		std::cout << "      methods: " << it->second._methods << std::endl;
 		std::cout << "      directoryListing: " << it->second._directoryListing << std::endl;
 		std::cout << "      HTTPRedirect: " << it->second._HTTPRedirect << std::endl;
 		std::cout << "      root: " << it->second._root << std::endl;
-		std::cout << "      index: " << it->second._index << std::endl;
+		std::cout << "      index: " << it->second._index <<  RESET << std::endl;
 	}
 }
 

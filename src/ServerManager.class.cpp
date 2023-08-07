@@ -16,7 +16,11 @@
 	void	ServerManager::addServerSockets(void)
 	{
 		for (std::vector<ServerConfig>::iterator it = _serverConfigs.begin(); it != _serverConfigs.end(); it++)
+		{
+			if (DEBUG)
+				it->printServerConfig();
 			addServerSocket(*it);
+		}
 	}
 
 	void	ServerManager::addServerSocket(ServerConfig &serverConfig)

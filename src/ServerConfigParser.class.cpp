@@ -33,8 +33,6 @@ void	ServerConfigParser::checkMinimumConfiguration(ServerConfig &oneServerConfig
 {
 	if (oneServerConfig._port == 0)
 		throw std::invalid_argument("Port not set");
-	if (oneServerConfig._name.empty())
-		throw std::invalid_argument("Server name not set");
 	if (oneServerConfig._clientBodySize == 0)
 		throw std::invalid_argument("Client body size not set");
 }
