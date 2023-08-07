@@ -80,6 +80,24 @@ void Response::checkMethod()
 	methodID(methods[method]);
 }
 
+void Response::checkDirectory()
+{
+	std::string route = _headerFields["Route"];
+
+	std::string index = _serverConfig.getRouteIndex(route);
+	if (index.empty())
+	{
+		if (!listDir())
+			status200("/directory.html");
+	}
+	else
+	{
+		std::stringstream build;
+		build << "/" << route << "/" << index;
+		status200(build.str());
+	}
+}
+
 void Response::GETMethod()
 {
 	struct	stat s;
@@ -87,21 +105,14 @@ void Response::GETMethod()
 	std::cout << "path in get" << path << std::endl;
 	printCWD();
 
-	int	result = access(path, F_OK);
-	if (result == -1)
-	{
-		perror("access");
+	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
-	}
 	if (access(path, R_OK) == -1)
 		throw ErrorResponse(403, "GET: No access rights.");
 	if (stat(path, &s) != 0)
 		throw ErrorResponse(500, "GET: Error fetching file status.");
 	if (S_ISDIR(s.st_mode))
-	{
-		if (!listDir())
-			status200("/directory.html");
-	}
+		checkDirectory();
 	else if (S_ISREG(s.st_mode))
 		status200(_headerFields["Path"]);
 	else

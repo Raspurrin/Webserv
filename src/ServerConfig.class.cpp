@@ -90,7 +90,7 @@ const std::string	ServerConfig::getRouteRoot(const std::string &path) const
 const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 {
 	if (_routes.find(path) == _routes.end())
-		return ("Non existing path");
+		return ("");
 	return (_routes.at(path)._index);
 }
 

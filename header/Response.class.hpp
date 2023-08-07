@@ -35,6 +35,7 @@ class Response
 		void	DELETEMethod();
 		void	POSTMethod();
 		void	printCWD();
+		void	checkDirectory();
 
 		void	readFile();
 		std::string	getMimeType(const std::string& filename);
