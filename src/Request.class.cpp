@@ -293,6 +293,12 @@ void Request::separatingPathAndFilename()
 {
 	std::string full_path = _headerFields["Full-Path"];
 
+	if (full_path == "/")
+	{
+		_headerFields["Path"] = "/";
+		_headerFields["Filename"] = "index.html";
+		return ;
+	}
 	size_t	lastSlash = full_path.find_last_of("/\\");
 	if (lastSlash == std::string::npos)
 		return ;
