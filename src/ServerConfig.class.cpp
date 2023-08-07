@@ -101,7 +101,14 @@ t_sockaddr_in&		ServerConfig::getAddress()
 
 ServerConfig&	ServerConfig::operator=(ServerConfig const &assign)
 {
-	(void)assign;
+	this->_host = assign._host;
+	this->_name = assign._name;
+	this->_port = assign._port;
+	this->_clientBodySize = assign._clientBodySize;
+	this->_errorPages = assign._errorPages;
+	this->_routes = assign._routes;
+	this->_address = assign._address;
+
 	return (*this);
 }
 
