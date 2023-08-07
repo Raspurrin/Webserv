@@ -18,10 +18,12 @@
 class Response
 {
 	private:
-
-		StringStringMap	_response;
+		bool				_firstCall;
+		bool				_responseFinished;
+		StringStringMap		_response;
 		StringStringMap&	_headerFields;
-		std::string		_responseMessage;
+		std::string			_responseMessage;
+		std::stringstream	_responseStream;
 
 		void	processRequest();
 		void	checkRequestErrors();
@@ -52,6 +54,7 @@ class Response
 	public:
 
 		bool	_hasError;
+		bool	_getResponseFinished();
 		ErrorResponse	_requestParsingError;
 		void		postResponse(int socket, int indexToRemove);
 		std::string	getResponse();

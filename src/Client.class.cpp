@@ -56,3 +56,7 @@ time_t Client::getLastActivity() {
 void Client::setRequestError(const ErrorResponse &error) {
 	_request.setError(error);
 }
+
+bool Client::responseFinished() {
+	return _request.responseFinished();
+}
