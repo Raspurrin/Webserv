@@ -23,25 +23,30 @@ class Response
 		StringStringMap&	_headerFields;
 		std::string		_responseMessage;
 
-		bool	listDir();
-		void	methodID();
-		std::string	getMimeType(const std::string& filename);
-		void	checkRequestErrors();
-
 		void	processRequest();
-		void	assembleResponse();
-		void	buildError(const IntStringPair _errorType);
-		std::string	readTemplate();
-		void	generateHTML(IntStringPair pair);
-
+		void	checkRequestErrors();
+		void	methodID();
 		void	GETMethod();
 		void	DELETEMethod();
 		void	POSTMethod();
 
+		void	readFile();
+		std::string	getMimeType(const std::string& filename);
+
+		void	assembleResponse();
+
+		void	buildError(const t_status& _status);
+		void	generateHTML(const t_status& status);
+		std::string	readTemplate();
+
 		void	status200(std::string path);
 		void	status201();
+		bool	listDir();
 
-		void	readFile();
+		void	setMimes(StringStringMap&);
+		void	tryChdir(const char* path);
+		void	directoryUpAndThrow(int error, std::string description);
+
 		Response();
 
 	public:
