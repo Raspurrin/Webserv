@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-Response::Response(StringStringMap& _headerFields) : _headerFields(_headerFields), _hasError(false)
+Response::Response(StringStringMap& _headerFields) : _firstCall(true), _responseFinished(false), _headerFields(_headerFields), _hasError(false)
 {
 	if (DEBUG)
 		std::cout << CYAN << "\nIn response constructor...\n\n" << DEF;
@@ -15,10 +15,22 @@ Response::Response(StringStringMap& _headerFields) : _headerFields(_headerFields
 
 std::string	Response::getResponse()
 {
-	processRequest();
-	readFile();
-	assembleResponse();
-	return (_responseMessage);
+	if (_firstCall) {
+		processRequest();
+		readFile();
+		assembleResponse();
+		_responseStream << _responseMessage;
+		_firstCall = false;
+	}
+	char _responseBuff[BUFLEN] = {0};
+	_responseStream.read(_responseBuff, BUFLEN);
+	std::string response(_responseBuff, BUFLEN);
+
+	if (_responseStream.eof()) {
+		_responseFinished = true;
+	}
+
+	return (response);
 }
 
 void Response::processRequest()
@@ -316,6 +328,10 @@ void Response::tryChdir(const char* path)
 {
 	if (chdir(path) == -1)
 		throw ErrorResponse(500, strerror(errno));
+}
+
+bool Response::_getResponseFinished() {
+	return _responseFinished;
 }
 
 // Response &	Response::operator=(Response &assign)

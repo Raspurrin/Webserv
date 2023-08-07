@@ -53,6 +53,7 @@ class Request
 		bool			isFlagOn();
 		void			setError(const ErrorResponse &error);
 		time_t			getLastActivity();
+		bool			responseFinished();
 
 		Request(void);
 		Request&	operator=(Request const &assign);

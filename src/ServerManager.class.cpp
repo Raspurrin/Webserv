@@ -108,7 +108,9 @@
 		send(client.getSocket(),_response.c_str(), _response.length(), 0);
 		if (DEBUG)
 			std::cout << RED << "------> SUCCESS: Message sent from server. <-------\n\n" << DEF;
-		close(client.getSocket());
+		if (client.responseFinished()) {
+			close(client.getSocket());
+		}
 		i++;
 	}
 
@@ -128,7 +130,9 @@
 		}
 		else if (_clients[i - _numServerSockets].isRequestSent() && _sockets[i].revents & POLLOUT) {
 			sendResponse(_clients[i - _numServerSockets]);
-			_indexesToRemove.push_back(i);
+			if (_clients[i - _numServerSockets].responseFinished()) {
+				_indexesToRemove.push_back(i);
+			}
 		}
 	}
 

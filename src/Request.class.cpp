@@ -334,6 +334,10 @@ void Request::printMap()
 	}
 }
 
+bool	Request::responseFinished() {
+	return _response._getResponseFinished();
+}
+
 Request 		&Request::operator=(const Request &assign)
 {
 	(void) assign;

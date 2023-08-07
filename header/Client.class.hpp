@@ -21,6 +21,7 @@ class Client
 		bool					_getIsCgi();
 		time_t					getLastActivity();
 		void					setRequestError(const ErrorResponse &error);
+		bool					responseFinished();
 
 	public:
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);
