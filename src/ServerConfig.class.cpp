@@ -1,32 +1,70 @@
 #include "../header/ServerConfig.class.hpp"
+#include "../header/colours.hpp"
 
-// template<typename T>
-// T	parsingKeyValue(std::stringstream Input)
-// {
+ServerConfig::ServerConfig() :
+	_host(0),
+	_port(0),
+	_name(""),
+	_clientBodySize(0)
+{
+	_errorPages.insert(std::make_pair("408", "default"));
+    _errorPages.insert(std::make_pair("413", "default"));
+    _errorPages.insert(std::make_pair("414", "default"));
+    _errorPages.insert(std::make_pair("431", "default"));
+}
 
-// }
+std::string ServerConfig::getHTTPRedirect(const std::string &path) const
+{
+	if (_routes.find(path) != _routes.end())
+		error_handle("the route path does not exist");
+	return (_routes.at(path)._HTTPRedirect);
+}
 
-
-int		ServerConfig::getPort() const
+int	ServerConfig::getPort() const
 {
 	return (_port);
 }
 
-bool	ServerConfig::checkRoutePath(const std::string &path) const
+std::string	ServerConfig::getName() const
 {
-	if (_routes.find(path) != _routes.end())
-		return (true);
-	return (false);
+	return (_name);
 }
 
-int		ServerConfig::getMethods(const std::string &path) const
+int		ServerConfig::getClientBodySize() const
+{
+	return (_clientBodySize);
+}
+
+std::string	ServerConfig::getErrorPage(std::string errorCode) const
+{
+	if (_errorPages.find(errorCode) != _errorPages.end())
+		error_handle("the error code does not exist");
+	if (_errorPages.at(errorCode) == "default")
+		return ("default");
+	return (_errorPages.at(errorCode));
+}
+
+void	ServerConfig::printErrorPages() const
+{
+	for (StringStringMap::const_iterator it = _errorPages.begin(); it != _errorPages.end(); it++)
+		std::cout << it->first << ": " << it->second << std::endl;
+}
+
+bool	ServerConfig::isRouteValid(const std::string &path) const
+{
+	if (_routes.find(path) != _routes.end())
+		return (false);
+	return (true);
+}
+
+int		ServerConfig::getRouteMethods(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
 	return (_routes.at(path)._methods);
 }
 
-bool	ServerConfig::isMethodAllowed(const std::string &path, const int methodToCheck) const
+bool	ServerConfig::isRouteMethodAllowed(const std::string &path, const int methodToCheck) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
@@ -35,7 +73,7 @@ bool	ServerConfig::isMethodAllowed(const std::string &path, const int methodToCh
 	return (false);
 }
 
-bool	ServerConfig::isDirListEnabled(const std::string &path) const
+bool	ServerConfig::isRouteDirListingEnabled(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
 		error_handle("the route path does not exist");
@@ -70,4 +108,33 @@ ServerConfig&	ServerConfig::operator=(ServerConfig const &assign)
 ServerConfig::~ServerConfig(void)
 {
 	// Chaoss!
+}
+
+void	ServerConfig::printServerConfig() const
+{
+	std::cout << PINK << "===============================" << std::endl;
+	std::cout <<  "ServerConfig:" << RESET << std::endl;
+	std::cout << CYAN << "  host: " << (_host >> 24) << "." << ((_host >> 16) & 255) << "." << ((_host >> 8) & 255) << "." << (_host & 255) << std::endl;
+	std::cout << "  port: " << _port << std::endl;
+	std::cout << "  name: " << _name << std::endl;
+	std::cout << "  clientBodySize: " << _clientBodySize << std::endl;
+	std::cout << GREEN << "  errorPages:" << CYAN << std::endl;
+	for (StringStringMap::const_iterator it = _errorPages.begin(); it != _errorPages.end(); it++)
+		std::cout << "    " << it->first << ": " << it->second << std::endl;
+	std::cout << GREEN << "  routes:" << RESET << std::endl;
+	for (StringRouteMap::const_iterator it = _routes.begin(); it != _routes.end(); it++)
+	{
+		std::cout << "    " << GREEN << it->first << ":" << CYAN << std::endl;
+		std::cout << "      methods: " << it->second._methods << std::endl;
+		std::cout << "      directoryListing: " << it->second._directoryListing << std::endl;
+		std::cout << "      HTTPRedirect: " << it->second._HTTPRedirect << std::endl;
+		std::cout << "      root: " << it->second._root << std::endl;
+		std::cout << "      index: " << it->second._index <<  RESET << std::endl;
+	}
+}
+
+std::ostream&	operator<<(std::ostream &out, const ServerConfig &serverConfig)
+{
+	serverConfig.printServerConfig();
+	return (out);
 }

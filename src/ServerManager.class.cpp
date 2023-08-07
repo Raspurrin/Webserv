@@ -1,22 +1,26 @@
 	#include "../header/ServerManager.class.hpp"
-	#include "../header/ParsingConfig.hpp"
+	#include "../header/ServerConfigParser.class.hpp"
 	#include "../header/Cgi.class.hpp"
 
-IntVector	_indexesToRemove;
+	IntVector	_indexesToRemove;
 
 	ServerManager::ServerManager(void) :
 		_opt(1), _numServerSockets(0)
 	{
-		ParsingConfig	parsingConfig;
-
-		_serverConfigs = parsingConfig.parsing("config");
+		ServerConfigParser	parsingConfig("configuration.conf");
+	
+		_serverConfigs = parsingConfig.getServerConfigs();
 		addServerSockets();
 	}
 
 	void	ServerManager::addServerSockets(void)
 	{
 		for (std::vector<ServerConfig>::iterator it = _serverConfigs.begin(); it != _serverConfigs.end(); it++)
+		{
+			if (DEBUG)
+				it->printServerConfig();
 			addServerSocket(*it);
+		}
 	}
 
 	void	ServerManager::addServerSocket(ServerConfig &serverConfig)

@@ -10,7 +10,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <netinet/in.h>
-#include <string.h>
+#include <string>
+#include <cstring>
 #include <iostream>
 #include <istream>
 #include <sstream>
@@ -29,6 +30,7 @@
 #define REQUEST_TIMEOUT 2
 
 typedef std::map<std::string, std::string>	StringStringMap;
+typedef std::map<std::string, bool>         StringBoolMap;
 typedef std::map<int, std::string>	IntStringMap;
 typedef std::vector<int>			IntVector;
 typedef struct statusResponse {

@@ -16,7 +16,8 @@ SRCS =	main.cpp \
 		ServerConfig.class.cpp \
 		ServerManager.class.cpp \
 		Client.class.cpp \
-		ParsingConfig.class.cpp \
+		ServerConfigParser.class.cpp \
+		Cgi.class.cpp \
 		utils.cpp
 #		Cgi.class.cpp \
 

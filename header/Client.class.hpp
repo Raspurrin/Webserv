@@ -1,5 +1,4 @@
-#ifndef CLIENT_HPP
-# define CLIENT_HPP
+#pragma once
 
 #include "ServerConfig.class.hpp"
 #include "webserv.hpp"
@@ -29,5 +28,3 @@ class Client
 		Client&	operator=(Client const &rhs);
 		~Client(void);
 };
-
-#endif

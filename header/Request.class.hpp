@@ -1,10 +1,10 @@
-#ifndef REQUEST_CLASS_HPP
-# define REQUEST_CLASS_HPP
+#pragma once
 
 #include "colours.hpp"
 #include "Response.class.hpp"
 #include "Error.class.hpp"
 #include "webserv.hpp"
+#include "ServerConfig.class.hpp"
 #include <sstream>
 
 #define BUFLEN 120000
@@ -47,7 +47,7 @@ class Request
 	public:
 
 		void			printMap();
-		void		getRequest(int &socket);
+		void			getRequest(int &socket, ServerConfig &serverConfig);
 		std::string		getResponse();
 		StringStringMap	getHeaderFields();
 		bool			isFlagOn();
@@ -59,5 +59,3 @@ class Request
 		std::string	operator[](std::string const &key);
 		~Request(void);
 };
-
-#endif
