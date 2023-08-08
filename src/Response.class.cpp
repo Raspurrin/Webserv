@@ -27,7 +27,7 @@ std::string	Response::getResponse()
 	}
 	char _responseBuff[BUFLEN] = {0};
 	_responseStream.read(_responseBuff, BUFLEN);
-	std::string response(_responseBuff, BUFLEN);
+	std::string response(_responseBuff, _responseStream.gcount());
 
 	if (_responseStream.eof()) {
 		tryChdir("..");
