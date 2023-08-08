@@ -23,20 +23,18 @@ Cgi::Cgi(StringStringMap &headerFields): _headerFields(headerFields) {
 		_env.push_back("SERVER_PORT=80");
 	}
 	_env.push_back("SERVER_NAME=" + host.substr(0, pos));
-	std::string& path = _headerFields["Path"];
-	if (path.find('?') != std::string::npos) {
-		_env.push_back("QUERY_STRING=" + path.substr(path.find('?') + 1));
+	if (_headerFields.count("Query-String") > 0) {
+		_env.push_back("QUERY_STRING=" + _headerFields["Query-String"]);
 	} else {
 		_env.push_back("QUERY_STRING=");
 	}
-	_env.push_back("SCRIPT_NAME=" + path.substr(0, path.find('?')));
+	_env.push_back("SCRIPT_NAME=" + _headerFields["Filename"]);
 	_env.push_back("SERVER_SOFTWARE=webserv");
 	for (StringStringMap::iterator it = _headerFields.begin(); it != _headerFields.end(); it++) {
 		_env.push_back("HTTP_" + (*it).first + "=" + (*it).second);
 	}
-	//TODO: investigate if REMOTE_* variables are necessary.
-	//TODO: implement PATH_INFO and PATH_TRANSLATED. https://www.mnm-team.org/pub/Diplomarbeiten/haub95/HTML-Version/node144.html https://www.rfc-editor.org/rfc/rfc3875#section-4.1.2
-
+	_env.push_back("PATH_TRANSLATED=" + _headerFields["Path_Info"]);
+	_env.push_back("PATH_INFO=" + _headerFields["Path"]);
 }
 
 static StringStringMap parse_output(const std::string &output) {

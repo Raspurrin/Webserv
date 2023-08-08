@@ -56,6 +56,8 @@ class Response
 		void	printCWD();
 		void	tryChdir(const char* path);
 
+		void	getQueryString();
+
 		Response();
 
 	public:
