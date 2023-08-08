@@ -33,7 +33,6 @@ std::string	Response::getResponse()
 		tryChdir("..");
 		_responseFinished = true;
 	}
-
 	return (response);
 }
 
@@ -44,9 +43,52 @@ void Response::processRequest()
 		checkMethod();
 	} catch (const ErrorResponse& error) {
 		std::cout << "Catched exception " << error.what() << std::endl;
-			buildError(error.getError());
+		buildError(error.getError());
 	}
 	return ;
+}
+
+void Response::readFile()
+{
+	if (_response.count("Body") > 0)
+		return ;
+	std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
+	std::string	content;
+
+	if (!fin)
+	{
+		_response["Body"] = "Error reading contents of file in ifstream.";
+		_response["Content-Type:"] = "text/plain";
+		return ;
+	}
+	fin.seekg(0, std::ios::end);
+	std::streampos fileSize = fin.tellg();
+	fin.seekg(0, std::ios::beg);
+	content.resize(fileSize);
+	fin.read(&content[0], fileSize);
+	fin.close();
+	_response["Body"] = content;
+	_response["Content-Type:"] = getMimeType(_response["Path"]);
+}
+
+void Response::assembleResponse()
+{
+	_response["Content-Length:"] = lenToStr(_response["Body"]);
+	_response["Version"] = "HTTP/1.1";
+
+	_responseMessage += _response["Version"] + " "
+		+ _response["Status code"] + "\n";
+
+	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
+	{
+		if ((*it).first.find(':') != std::string::npos)
+			_responseMessage += (*it).first + " " + (*it).second + "\n";
+	}
+	_responseMessage += "Connection: close\r\n\r\n"
+		+ _response["Body"];
+
+	if (DEBUG)
+		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
 }
 
 void Response::checkRequestErrors()
@@ -72,25 +114,6 @@ void Response::checkMethod()
 		throw ErrorResponse(405, method);
 
 	methodID(methods[method]);
-}
-
-void Response::checkDirectory()
-{
-	std::string route = _headerFields["Route"];
-
-	std::string index = _serverConfig.getRouteIndex(route);
-	if (index.empty())
-	{
-		if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
-			status200("/directory.html");
-	}
-	else
-	{
-		std::stringstream build;
-		build << "/" << route << "/" << index;
-		_headerFields["Path"] = build.str();
-		GETMethod();
-	}
 }
 
 void Response::GETMethod()
@@ -158,66 +181,6 @@ void Response::DELETEMethod()
 	status200("/error_pages/deleted.html");
 }
 
-void Response::readFile()
-{
-	if (_response.count("Body") > 0)
-		return ;
-	std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
-	std::string	content;
-
-	if (!fin)
-	{
-		_response["Body"] = "Error reading contents of file in ifstream.";
-		_response["Content-Type:"] = "text/plain";
-		return ;
-	}
-	fin.seekg(0, std::ios::end);
-	std::streampos fileSize = fin.tellg();
-	fin.seekg(0, std::ios::beg);
-	content.resize(fileSize);
-	fin.read(&content[0], fileSize);
-	fin.close();
-	_response["Body"] = content;
-	_response["Content-Type:"] = getMimeType(_response["Path"]);
-}
-
-std::string Response::getMimeType(const std::string& filename)
-{
-	static StringStringMap mimeTypes;
-
-	setMimes(mimeTypes);
-
-	size_t	dotPos = filename.find_last_of('.');
-	if (dotPos != std::string::npos)
-	{
-		std::string extension = filename.substr(dotPos);
-		StringStringMap::iterator it = mimeTypes.find(extension);
-		if (it != mimeTypes.end())
-			return (it->second);
-	}
-	return ("application/octet-stream");
-}
-
-void Response::assembleResponse()
-{
-	_response["Content-Length:"] = lenToStr(_response["Body"]);
-	_response["Version"] = "HTTP/1.1";
-
-	_responseMessage += _response["Version"] + " "
-		+ _response["Status code"] + "\n";
-
-	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
-	{
-		if ((*it).first.find(':') != std::string::npos)
-			_responseMessage += (*it).first + " " + (*it).second + "\n";
-	}
-	_responseMessage += "Connection: close\r\n\r\n"
-		+ _response["Body"];
-
-	if (DEBUG)
-		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
-}
-
 void Response::buildError(const t_status& _status) {
 	std::stringstream ss;
 	ss << _status._code;
@@ -233,7 +196,10 @@ void Response::buildError(const t_status& _status) {
 		_response["Path"] = path.str();
 		std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
 		if (!fin)
+		{
+			std::cout << RED << "WARNING: Custom error page set in configuration file was not accesible, fallback to default error pages has been performed." << DEF << std::endl;
 			generateHTML(_status);
+		}
 		fin.close();
 	}
 }
@@ -288,10 +254,23 @@ void Response::status201()
 	_response["Location:"] = _headerFields["Path"].append(_headerFields["Upload-Filename"]);
 }
 
-void	Response::printCWD()
+void Response::checkDirectory()
 {
-	char cwd[256];
-	std::cout << "CWD" << getcwd(cwd, 256) << std::endl;
+	std::string route = _headerFields["Route"];
+
+	std::string index = _serverConfig.getRouteIndex(route);
+	if (index.empty())
+	{
+		if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
+			status200("/directory.html");
+	}
+	else
+	{
+		std::stringstream build;
+		build << "/" << route << "/" << index;
+		_headerFields["Path"] = build.str();
+		GETMethod();
+	}
 }
 
 /**
@@ -332,16 +311,46 @@ bool Response::listDir()
 	return true;
 }
 
-void Response::directoryUpAndThrow(int error, std::string description)
+void Response::setMethods(StringIntMap& methods)
 {
-	tryChdir("..");
-	throw ErrorResponse(error, description);
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
 }
 
-void Response::tryChdir(const char* path)
+void Response::methodID(int method)
 {
-	if (chdir(path) == -1)
-		throw ErrorResponse(500, strerror(errno));
+
+	switch (method) {
+		case 1:
+			GETMethod();
+			break ;
+		case 2:
+			POSTMethod();
+			break ;
+		case 4:
+			DELETEMethod();
+			break ;
+	}
+}
+
+std::string Response::getMimeType(const std::string& filename)
+{
+	static StringStringMap mimeTypes;
+
+	setMimes(mimeTypes);
+
+	size_t	dotPos = filename.find_last_of('.');
+	if (dotPos != std::string::npos)
+	{
+		std::string extension = filename.substr(dotPos);
+		StringStringMap::iterator it = mimeTypes.find(extension);
+		if (it != mimeTypes.end())
+			return (it->second);
+	}
+	return ("application/octet-stream");
 }
 
 void Response::setMimes(StringStringMap& mimeTypes)
@@ -367,30 +376,24 @@ void Response::setMimes(StringStringMap& mimeTypes)
 	mimeTypes[".gif"] = "image/gif";
 }
 
-void Response::setMethods(StringIntMap& methods)
+void	Response::printCWD()
 {
-	if (!methods.empty())
-		return ;
-	methods["GET"] = 1;
-	methods["POST"] = 2;
-	methods["DELETE"] = 4;
+	char cwd[256];
+	std::cout << "CWD" << getcwd(cwd, 256) << std::endl;
 }
 
-void Response::methodID(int method)
+void Response::directoryUpAndThrow(int error, std::string description)
 {
-
-	switch (method) {
-		case 1:
-			GETMethod();
-			break ;
-		case 2:
-			POSTMethod();
-			break ;
-		case 4:
-			DELETEMethod();
-			break ;
-	}
+	tryChdir("..");
+	throw ErrorResponse(error, description);
 }
+
+void Response::tryChdir(const char* path)
+{
+	if (chdir(path) == -1)
+		throw ErrorResponse(500, strerror(errno));
+}
+
 
 bool Response::_getResponseFinished() {
 	return _responseFinished;

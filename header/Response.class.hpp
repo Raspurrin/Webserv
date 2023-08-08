@@ -28,17 +28,19 @@ class Response
 
 		void	processRequest();
 		void	checkRequestErrors();
-		void	methodID(int method);
 		void	checkMethod();
+		void	methodID(int method);
 		void	setMethods(StringIntMap& methods);
 		void	GETMethod();
+		void	checkDirectory();
+		bool	listDir();
 		void	DELETEMethod();
 		void	POSTMethod();
-		void	printCWD();
-		void	checkDirectory();
+
 
 		void	readFile();
 		std::string	getMimeType(const std::string& filename);
+		void	setMimes(StringStringMap&);
 
 		void	assembleResponse();
 
@@ -48,9 +50,8 @@ class Response
 
 		void	status200(std::string path);
 		void	status201();
-		bool	listDir();
 
-		void	setMimes(StringStringMap&);
+		void	printCWD();
 		void	tryChdir(const char* path);
 		void	directoryUpAndThrow(int error, std::string description);
 
@@ -58,12 +59,12 @@ class Response
 
 	public:
 
-		bool	_hasError;
-		bool	_getResponseFinished();
+		bool			_hasError;
+		bool			_getResponseFinished();
 		ErrorResponse	_requestParsingError;
 		ServerConfig	_serverConfig;
-		void		postResponse(int socket, int indexToRemove);
-		std::string	getResponse();
+		void			postResponse(int socket, int indexToRemove);
+		std::string		getResponse();
 
 	public:
 		Response(StringStringMap& _headerFields);
