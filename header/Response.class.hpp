@@ -44,7 +44,7 @@ class Response
 
 		void	buildError(const t_status& _status);
 		void	generateHTML(const t_status& status);
-		std::string	readTemplate();
+		std::string	readTemplate(const t_status& _status);
 
 		void	status200(std::string path);
 		void	status201();

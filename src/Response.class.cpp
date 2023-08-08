@@ -20,12 +20,7 @@ std::string	Response::getResponse()
 	if (_firstCall) {
 		tryChdir("www");
 		processRequest();
-		try {
 		readFile();
-		} catch (const ErrorResponse& error) {
-			std::cout << "Catched exception " << error.what() << std::endl;
-			buildError(error.getError());
-		}
 		assembleResponse();
 		_responseStream << _responseMessage;
 		_firstCall = false;
@@ -49,7 +44,7 @@ void Response::processRequest()
 		checkMethod();
 	} catch (const ErrorResponse& error) {
 		std::cout << "Catched exception " << error.what() << std::endl;
-		buildError(error.getError());
+			buildError(error.getError());
 	}
 	return ;
 }
@@ -171,15 +166,17 @@ void Response::readFile()
 	std::string	content;
 
 	if (!fin)
-		throw ErrorResponse(500, "When reading file");
+	{
+		_response["Body"] = "Error reading contents of file in ifstream.";
+		_response["Content-Type:"] = "text/plain";
+		return ;
+	}
 	fin.seekg(0, std::ios::end);
 	std::streampos fileSize = fin.tellg();
 	fin.seekg(0, std::ios::beg);
 	content.resize(fileSize);
 	fin.read(&content[0], fileSize);
 	fin.close();
-	if (!fin)
-		throw ErrorResponse(500, "After reading file.");
 	_response["Body"] = content;
 	_response["Content-Type:"] = getMimeType(_response["Path"]);
 }
@@ -234,12 +231,16 @@ void Response::buildError(const t_status& _status) {
 		std::stringstream path;
 		path << "/" << custom;
 		_response["Path"] = path.str();
+		std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
+		if (!fin)
+			generateHTML(_status);
+		fin.close();
 	}
 }
 
 void Response::generateHTML(const t_status& _status)
 {
-	std::string htmlTemplate = readTemplate();
+	std::string htmlTemplate = readTemplate(_status);
 	size_t pos = htmlTemplate.find("{{TITLE}}");
 	if (pos != std::string::npos) {
 		std::stringstream ss;
@@ -258,11 +259,16 @@ void Response::generateHTML(const t_status& _status)
 	_response["Content-Type:"] = "text/html";
 }
 
-std::string Response::readTemplate() {
+std::string Response::readTemplate(const t_status& _status) {
 	std::ifstream	file("template.html");
-	if (!file)
-		return ("ifstream error");
 	std::string templateContent, line;
+
+	if (!file)
+	{
+		std::stringstream ss;
+		ss << "<h1>" <<  _status._code << _status._description << _status._message << "</h1>";
+		return (ss.str());
+	}
 	while (getline(file, line))
 		templateContent += line + "\n";
 	file.close();
