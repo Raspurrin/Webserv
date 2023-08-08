@@ -262,7 +262,10 @@ void Response::checkDirectory()
 	if (index.empty())
 	{
 		if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
-			status200("/directory.html");
+		{
+			const t_status _status = {200, "OK", "Directory listing disabled."};
+			generateHTML(_status);
+		}
 	}
 	else
 	{
