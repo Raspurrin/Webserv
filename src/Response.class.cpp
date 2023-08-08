@@ -97,6 +97,7 @@ void Response::checkRequestErrors()
 		throw _requestParsingError;
 }
 
+
 void Response::checkMethod()
 {
 	_serverConfig.printServerConfig();
@@ -107,7 +108,11 @@ void Response::checkMethod()
 	if (!_serverConfig.isRouteValid(route))
 		throw ErrorResponse(404, "Route not configured.");
 
+	std::cout << "path in header fields map before root: " << _headerFields["Path"] << std::endl;
+	checkRoot(route);
+	std::cout << "path in header fields map after root: " << _headerFields["Path"] << std::endl;
 	setMethods(methods);
+
 	if (methods.find(method) == methods.end())
 		throw ErrorResponse(501, method);
 	if (!_serverConfig.isRouteMethodAllowed(route, methods[method]))
@@ -241,6 +246,44 @@ std::string Response::readTemplate(const t_status& _status) {
 	return (templateContent);
 }
 
+void Response::checkRoot(const std::string& route)
+{
+	std::string root = _serverConfig.getRouteRoot(route);
+	if (root.empty())
+		return ;
+	if (root[0] == '/')
+		root = root.substr(1);
+	size_t pos = 0;
+	pos = _headerFields["Path"].find(route, pos);
+	if (pos != std::string::npos)
+		_headerFields["Path"].replace(pos, route.length(), root);
+}
+
+void Response::setMethods(StringIntMap& methods)
+{
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
+}
+
+void Response::methodID(int method)
+{
+
+	switch (method) {
+		case 1:
+			GETMethod();
+			break ;
+		case 2:
+			POSTMethod();
+			break ;
+		case 4:
+			DELETEMethod();
+			break ;
+	}
+}
+
 void Response::status200(std::string path)
 {
 	_response["Status code"] = "200 OK";
@@ -312,31 +355,6 @@ bool Response::listDir()
 	_response["Content-Type:"] = "text/html";
 	_response["Status code"] = "200 OK";
 	return true;
-}
-
-void Response::setMethods(StringIntMap& methods)
-{
-	if (!methods.empty())
-		return ;
-	methods["GET"] = 1;
-	methods["POST"] = 2;
-	methods["DELETE"] = 4;
-}
-
-void Response::methodID(int method)
-{
-
-	switch (method) {
-		case 1:
-			GETMethod();
-			break ;
-		case 2:
-			POSTMethod();
-			break ;
-		case 4:
-			DELETEMethod();
-			break ;
-	}
 }
 
 std::string Response::getMimeType(const std::string& filename)

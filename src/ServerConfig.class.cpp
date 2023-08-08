@@ -76,8 +76,8 @@ bool	ServerConfig::isRouteDirListingEnabled(const std::string &path) const
 
 const std::string	ServerConfig::getRouteRoot(const std::string &path) const
 {
-	if (_routes.find(path) != _routes.end())
-		error_handle("the route path does not exist");
+	if (_routes.find(path) == _routes.end())
+		return ("error");
 	return (_routes.at(path)._root);
 }
 
