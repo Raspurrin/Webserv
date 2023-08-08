@@ -126,6 +126,8 @@ void Response::GETMethod()
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
 
+	printCWD();
+	std::cout << "path in get: " << path << std::endl;
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
 	if (access(path, R_OK) == -1)
@@ -249,6 +251,7 @@ std::string Response::readTemplate(const t_status& _status) {
 void Response::checkRoot(const std::string& route)
 {
 	std::string root = _serverConfig.getRouteRoot(route);
+
 	if (root.empty())
 		return ;
 	if (root[0] == '/')
@@ -313,7 +316,11 @@ void Response::checkDirectory()
 	else
 	{
 		std::stringstream build;
-		build << "/" << route << "/" << index;
+		int last = _headerFields["Path"].length() - 1;
+		if (_headerFields["Path"][last] == '/')
+			build << _headerFields["Path"] << index;
+		else
+			build << _headerFields["Path"] << "/" << index;
 		_headerFields["Path"] = build.str();
 		GETMethod();
 	}
@@ -383,6 +390,8 @@ void Response::setMimes(StringStringMap& mimeTypes)
 	mimeTypes[".htm"] = "text/html";
 	mimeTypes[".css"] = "text/css";
 	mimeTypes[".js"]  ="text/javascript";
+	mimeTypes[".py"]  ="text/x-python";
+	mimeTypes[".pyc"]  ="application/x-python-code";
 	mimeTypes[".json"] = "application/json";
 	mimeTypes[".xml"] = "application/xml";
 	mimeTypes[".pdf"] = "application/pdf";
