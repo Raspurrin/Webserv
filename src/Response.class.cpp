@@ -146,6 +146,7 @@ void Response::GETMethod()
 void Response::POSTMethod()
 {
 	std::stringstream ss;
+	std::string location;
 	const char* upload_path;
 
 	if (_headerFields["Route"] != "upload")
@@ -154,8 +155,8 @@ void Response::POSTMethod()
 		ss << _headerFields["Root"] << "/" << _headerFields["Upload-Filename"];
 	else
 		ss << _headerFields["Route"] << "/" << _headerFields["Upload-Filename"];
-
-	upload_path = ss.str().c_str();
+	location = ss.str();
+	upload_path = location.c_str();
 
 	if (access(upload_path, F_OK) == 0)
 		throw ErrorResponse(409, "POST: Conflicting filename.");
@@ -164,12 +165,12 @@ void Response::POSTMethod()
 		throw ErrorResponse(500, "POST: When creating file.");
 	outfile << _headerFields["Body-Text"] << std::endl;
 	outfile.close();
-	status201(upload_path);
+	status201(location);
 }
 
 void Response::DELETEMethod()
 {
-	const char* path = _headerFields["Path"].c_str();
+	const char* path = _headerFields["Path"].c_str() + 1;
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "DELETE: File not found.");
