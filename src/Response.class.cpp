@@ -169,30 +169,21 @@ void Response::POSTMethod()
 
 void Response::DELETEMethod()
 {
-	std::string path = _headerFields["Path"];
+	const char* path = _headerFields["Path"].c_str();
 
-	if (path.rfind("/files/", 0) == std::string::npos)
-		throw ErrorResponse(403, "DELETE: No rights to delete from other directories");
+	if (access(path, F_OK) == -1)
+		throw ErrorResponse(404, "DELETE: File not found.");
 
-	int start = path.find_last_of('/');
-	_headerFields["Filename"] = path.substr(start + 1);
-	const char *filename = _headerFields["Filename"].c_str();
-
-	tryChdir("./files");
-
-	if (access(filename, F_OK) == -1)
-		directoryUpAndThrow(404, "DELETE: File not found.");
-
-	std::fstream file(filename, std::ios::in);
+	std::fstream file(path, std::ios::in);
 	if (!file.is_open())
-		directoryUpAndThrow(409, "DELETE: File in use.");
+		throw ErrorResponse(409, "DELETE: File in use.");
 	file.close();
 
-	int rem = std::remove(filename);
-	tryChdir("..");
+	int rem = std::remove(path);
 	if (rem != 0)
 		throw ErrorResponse(500, "DELETE: Delete file unsuccesful.");
-	status200("/error_pages/deleted.html");
+	const t_status _status = {200, "OK", "File deleted."};
+	generateHTML(_status);
 }
 
 void Response::buildError(const t_status& _status) {
