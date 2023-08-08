@@ -28,7 +28,6 @@ void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 	}
 }
 
-// TODO: Maybe find a way to avoid so many if statements?
 void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
@@ -100,7 +99,6 @@ void Request::readIntoString(int &socket)
 		ss << _bodyBuffer.length();
 		_headerFields["Content-Length"] = ss.str();
 		if (_bodyBuffer.length() > 0 || _chunkedFinished) {
-			// std::cout << _bodyBuffer << std::endl;
 			parseBody(_bodyBuffer);
 		}
 		_isRead = true;
@@ -111,7 +109,6 @@ void Request::readIntoString(int &socket)
 		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
 		std::cout << CYAN << "Read count:\n" << DEF << _readCount << std::endl;
 	}
-	// _requestBuffer.append(readBuffer);
 }
 
 void Request::parseStartLine(std::string startLine)
@@ -209,7 +206,8 @@ void Request::checkHeaderFields()
 
 	if (method == "POST")
 	{
-		doesKeyExist(411, "Content-Length", "Missing header field.");
+		if (!_isChunked)
+			doesKeyExist(411, "Content-Length", "Missing header field.");
 		if (_headerFields["Content-Length"].length() > 10)
 			throw ErrorResponse(413, "Try a smaller file");
 		else if (_headerFields["Content-Length"] == "0")
@@ -260,13 +258,13 @@ void Request::checkValueSize(const std::string& key, const std::string& value)
 void Request::whenDoneParsingHeader()
 {
 	_header_done = true;
-	checkHeaderFields();
 	if (_headerFields.count("Transfer-Encoding") > 0)
 	{
 		if (_headerFields["Transfer-Encoding"] == "chunked") {
 			_isChunked = true;
 		}
 	}
+	checkHeaderFields();
 }
 
 void Request::doesKeyExist(int error, const std::string& key, const std::string& message)
