@@ -15,10 +15,19 @@ Response::Response(StringStringMap& _headerFields) : _firstCall(true), _response
 		std::cout << CYAN << "\nIn response constructor...\n\n" << DEF;
 }
 
+void Response::getQueryString() {
+	if (_headerFields["Path"].find('?') != std::string::npos) {
+		_headerFields["Query-String"] = _headerFields["Path"].substr(_headerFields["Path"].find('?') + 1);
+		_headerFields["Path"] = _headerFields["Path"].substr(0, _headerFields["Path"].find('?'));
+		std::cout << "!!!!!" << _headerFields["Query-String"] << std::endl;
+	}
+}
+
 std::string	Response::getResponse()
 {
 	if (_firstCall) {
 		tryChdir("www");
+		getQueryString();
 		processRequest();
 		readFile();
 		assembleResponse();
@@ -27,7 +36,7 @@ std::string	Response::getResponse()
 	}
 	char _responseBuff[BUFLEN] = {0};
 	_responseStream.read(_responseBuff, BUFLEN);
-	std::string response(_responseBuff, BUFLEN);
+	std::string response(_responseBuff, _responseStream.gcount());
 
 	if (_responseStream.eof()) {
 		tryChdir("..");
@@ -279,6 +288,7 @@ void Response::checkRoot(const std::string& route)
 	if (root[0] == '/')
 		root = root.substr(1);
 	size_t pos = 0;
+	_headerFields["Path_Info"] = _headerFields["Path"];
 	pos = _headerFields["Path"].find(route, pos);
 	if (pos != std::string::npos)
 		_headerFields["Path"].replace(pos, route.length(), root);
