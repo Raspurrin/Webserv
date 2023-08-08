@@ -139,8 +139,8 @@ void Response::POSTMethod()
 {
 	const char *filename = _headerFields["Upload-Filename"].c_str();
 
-	if (_headerFields["Path"] != "/form/files")
-		throw ErrorResponse(403, "POST: Not matching Path with /files/");
+	/* if (_headerFields["Path"] != "/form/files") */
+	/* 	throw ErrorResponse(403, "POST: Not matching Path with /files/"); */
 	tryChdir("./files");
 	if (access(filename, F_OK) == 0)
 		directoryUpAndThrow(409, "POST: Filename already exists.");
@@ -249,8 +249,8 @@ void Response::status200(std::string path)
 
 void Response::status201()
 {
-	_response["Status code"] = "201 CREATED";
-	_response["Path"] = "/success.html";
+	const t_status _status = {201, "CREATED", "Success, file uploaded."};
+	generateHTML(_status);
 	_response["Location:"] = _headerFields["Path"].append(_headerFields["Upload-Filename"]);
 }
 
