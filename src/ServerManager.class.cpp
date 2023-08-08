@@ -8,7 +8,7 @@
 		_opt(1), _numServerSockets(0)
 	{
 		ServerConfigParser	parsingConfig("configuration.conf");
-	
+
 		_serverConfigs = parsingConfig.getServerConfigs();
 		addServerSockets();
 	}
@@ -105,10 +105,10 @@
 				<< DEF << "Sending response: " << i
 				<< YELLOW << " =========\n\n" << DEF;
 		}
-		send(client.getSocket(),_response.c_str(), _response.length(), 0);
+		int err = send(client.getSocket(),_response.c_str(), _response.length(), 0);
 		if (DEBUG)
 			std::cout << RED << "------> SUCCESS: Message sent from server. <-------\n\n" << DEF;
-		if (client.responseFinished()) {
+		if (client.responseFinished() || err == -1 || (size_t)err != _response.length()) {
 			close(client.getSocket());
 		}
 		i++;
