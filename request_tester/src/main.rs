@@ -9,7 +9,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
 	let client = reqwest::Client::new();
 
-	let res = client.post("http://localhost:8080")
+	let res = client.post("http://localhost:8080/cgi-bin/post.py")
 		.body(body)
 		.send()
 		.await;

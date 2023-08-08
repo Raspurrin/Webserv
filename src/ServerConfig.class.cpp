@@ -88,6 +88,13 @@ const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 	return (_routes.at(path)._index);
 }
 
+std::set<std::string>	ServerConfig::getRouteCGI(const std::string &path) const
+{
+	if (_routes.find(path) == _routes.end())
+		return (std::set<std::string>());
+	return (_routes.at(path)._CGI);
+}
+
 t_sockaddr_in&		ServerConfig::getAddress()
 {
 	return (_address);
@@ -130,7 +137,9 @@ void	ServerConfig::printServerConfig() const
 		std::cout << "      directoryListing: " << it->second._directoryListing << std::endl;
 		std::cout << "      HTTPRedirect: " << it->second._HTTPRedirect << std::endl;
 		std::cout << "      root: " << it->second._root << std::endl;
-		std::cout << "      index: " << it->second._index <<  RESET << std::endl;
+		std::cout << "      index: " << it->second._index << std::endl;
+		for (std::set<std::string>::const_iterator setIt = it->second._CGI.begin(); setIt != it->second._CGI.end(); ++setIt)
+        	std::cout << "	CGI: " << *setIt << std::endl;
 	}
 }
 

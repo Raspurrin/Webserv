@@ -124,10 +124,22 @@ void Response::checkMethod()
 	methodID(methods[method]);
 }
 
+bool Response::checkCgi() {
+	if (_headerFields["Path"].find('.') == std::string::npos) {
+		return false;
+	}
+
+	std::string path_end =  _headerFields["Path"].substr(_headerFields["Path"].find_last_of('.'));
+	std::set<std::string> cgi_types = _serverConfig.getRouteCGI(_headerFields["Route"]);
+
+	return cgi_types.find(path_end) != cgi_types.end();
+}
+
 void Response::GETMethod()
 {
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
+	bool is_cgi = checkCgi();
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
@@ -135,12 +147,17 @@ void Response::GETMethod()
 		throw ErrorResponse(403, "GET: No access rights.");
 	if (stat(path, &s) != 0)
 		throw ErrorResponse(500, "GET: Error fetching file status.");
-	if (S_ISDIR(s.st_mode))
-		checkDirectory();
-	else if (S_ISREG(s.st_mode))
-		status200(_headerFields["Path"]);
-	else
-		throw ErrorResponse(400, "GET, Not regular file.");
+	if (is_cgi) {
+		Cgi cgi(_headerFields);
+		_response = cgi.runGet();
+	} else {
+		if (S_ISDIR(s.st_mode))
+			checkDirectory();
+		else if (S_ISREG(s.st_mode))
+			status200(_headerFields["Path"]);
+		else
+			throw ErrorResponse(400, "GET, Not regular file.");
+	}
 }
 
 void Response::POSTMethod()
@@ -148,7 +165,13 @@ void Response::POSTMethod()
 	std::stringstream ss;
 	std::string location;
 	const char* upload_path;
+  bool is_cgi = checkCgi();
 
+	if (is_cgi) {
+		Cgi cgi(_headerFields);
+		_response = cgi.runPost();
+    return ;
+  }
 	if (_headerFields["Route"] != "upload")
 		throw ErrorResponse(403, "POST: Route to save files must be called upload.");
 	if (_headerFields.count("Root") > 0)

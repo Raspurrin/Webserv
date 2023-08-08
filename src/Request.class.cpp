@@ -98,8 +98,10 @@ void Request::readIntoString(int &socket)
 		std::stringstream ss;
 		ss << _bodyBuffer.length();
 		_headerFields["Content-Length"] = ss.str();
-		if (_bodyBuffer.length() > 0 || _chunkedFinished) {
+		if ((_bodyBuffer.length() > 0 || _chunkedFinished) && _response._serverConfig.getRouteCGI(_headerFields["Route"]).empty()) {
 			parseBody(_bodyBuffer);
+		} else if ((_bodyBuffer.length() > 0 || _chunkedFinished) && !_response._serverConfig.getRouteCGI(_headerFields["Route"]).empty()) {
+			_headerFields["Body"] = _bodyBuffer;
 		}
 		_isRead = true;
 	}
