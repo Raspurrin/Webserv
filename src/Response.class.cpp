@@ -97,6 +97,7 @@ void Response::checkRequestErrors()
 		throw _requestParsingError;
 }
 
+
 void Response::checkMethod()
 {
 	_serverConfig.printServerConfig();
@@ -106,8 +107,15 @@ void Response::checkMethod()
 
 	if (!_serverConfig.isRouteValid(route))
 		throw ErrorResponse(404, "Route not configured.");
-
+	std::string redirect = _serverConfig.getHTTPRedirect(route);
+	if (!redirect.empty())
+	{
+		status307(redirect);
+		return ;
+	}
+	checkRoot(route);
 	setMethods(methods);
+
 	if (methods.find(method) == methods.end())
 		throw ErrorResponse(501, method);
 	if (!_serverConfig.isRouteMethodAllowed(route, methods[method]))
@@ -154,55 +162,52 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	const char *filename = _headerFields["Upload-Filename"].c_str();
-	bool is_cgi = checkCgi();
-
+	std::stringstream ss;
+	std::string location;
+	const char* upload_path;
+  bool is_cgi = checkCgi();
 
 	if (is_cgi) {
 		Cgi cgi(_headerFields);
 		_response = cgi.runPost();
-	} else {
-		/* if (_headerFields["Path"] != "/form/files") */
-		/* 	throw ErrorResponse(403, "POST: Not matching Path with /files/"); */
-		tryChdir("./files");
-		if (access(filename, F_OK) == 0)
-			directoryUpAndThrow(409, "POST: Filename already exists.");
-		std::ofstream outfile(filename);
-		tryChdir("..");
-		if (!outfile.is_open() || !outfile.good())
-			throw ErrorResponse(500, "POST: When creating file.");
-		outfile << _headerFields["Body-Text"] << std::endl;
-		outfile.close();
-		status201();
-	}
+    return ;
+  }
+	if (_headerFields["Route"] != "upload")
+		throw ErrorResponse(403, "POST: Route to save files must be called upload.");
+	if (_headerFields.count("Root") > 0)
+		ss << _headerFields["Root"] << "/" << _headerFields["Upload-Filename"];
+	else
+		ss << _headerFields["Route"] << "/" << _headerFields["Upload-Filename"];
+	location = ss.str();
+	upload_path = location.c_str();
+
+	if (access(upload_path, F_OK) == 0)
+		throw ErrorResponse(409, "POST: Conflicting filename.");
+	std::ofstream outfile(upload_path);
+	if (!outfile.is_open() || !outfile.good())
+		throw ErrorResponse(500, "POST: When creating file.");
+	outfile << _headerFields["Body-Text"] << std::endl;
+	outfile.close();
+	status201(location);
 }
 
 void Response::DELETEMethod()
 {
-	std::string path = _headerFields["Path"];
+	const char* path = _headerFields["Path"].c_str() + 1;
 
-	if (path.rfind("/files/", 0) == std::string::npos)
-		throw ErrorResponse(403, "DELETE: No rights to delete from other directories");
+	if (access(path, F_OK) == -1)
+		throw ErrorResponse(404, "DELETE: File not found.");
 
-	int start = path.find_last_of('/');
-	_headerFields["Filename"] = path.substr(start + 1);
-	const char *filename = _headerFields["Filename"].c_str();
-
-	tryChdir("./files");
-
-	if (access(filename, F_OK) == -1)
-		directoryUpAndThrow(404, "DELETE: File not found.");
-
-	std::fstream file(filename, std::ios::in);
+	std::fstream file(path, std::ios::in);
 	if (!file.is_open())
-		directoryUpAndThrow(409, "DELETE: File in use.");
+		throw ErrorResponse(409, "DELETE: File in use.");
 	file.close();
 
-	int rem = std::remove(filename);
-	tryChdir("..");
+	int rem = std::remove(path);
 	if (rem != 0)
 		throw ErrorResponse(500, "DELETE: Delete file unsuccesful.");
-	status200("/error_pages/deleted.html");
+	const t_status _status = {200, "OK", "File deleted."};
+	generateHTML(_status);
 }
 
 void Response::buildError(const t_status& _status) {
@@ -265,17 +270,64 @@ std::string Response::readTemplate(const t_status& _status) {
 	return (templateContent);
 }
 
+void Response::checkRoot(const std::string& route)
+{
+	std::string root = _serverConfig.getRouteRoot(route);
+
+	if (root.empty())
+		return ;
+	if (root[0] == '/')
+		root = root.substr(1);
+	size_t pos = 0;
+	pos = _headerFields["Path"].find(route, pos);
+	if (pos != std::string::npos)
+		_headerFields["Path"].replace(pos, route.length(), root);
+	_headerFields["Root"] = root;
+}
+
+void Response::setMethods(StringIntMap& methods)
+{
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
+}
+
+void Response::methodID(int method)
+{
+
+	switch (method) {
+		case 1:
+			GETMethod();
+			break ;
+		case 2:
+			POSTMethod();
+			break ;
+		case 4:
+			DELETEMethod();
+			break ;
+	}
+}
+
 void Response::status200(std::string path)
 {
 	_response["Status code"] = "200 OK";
 	_response["Path"] = path;
 }
 
-void Response::status201()
+void Response::status201(const std::string& location)
 {
 	const t_status _status = {201, "CREATED", "Success, file uploaded."};
 	generateHTML(_status);
-	_response["Location:"] = _headerFields["Path"].append(_headerFields["Upload-Filename"]);
+	_response["Location:"] = location;
+}
+
+void Response::status307(const std::string& location)
+{
+	const t_status _status = {307, "Temporary Redirect", "Route redirected."};
+	generateHTML(_status);
+	_response["Location:"] = location;
 }
 
 void Response::checkDirectory()
@@ -294,7 +346,11 @@ void Response::checkDirectory()
 	else
 	{
 		std::stringstream build;
-		build << "/" << route << "/" << index;
+		int last = _headerFields["Path"].length() - 1;
+		if (_headerFields["Path"][last] == '/')
+			build << _headerFields["Path"] << index;
+		else
+			build << _headerFields["Path"] << "/" << index;
 		_headerFields["Path"] = build.str();
 		GETMethod();
 	}
@@ -338,31 +394,6 @@ bool Response::listDir()
 	return true;
 }
 
-void Response::setMethods(StringIntMap& methods)
-{
-	if (!methods.empty())
-		return ;
-	methods["GET"] = 1;
-	methods["POST"] = 2;
-	methods["DELETE"] = 4;
-}
-
-void Response::methodID(int method)
-{
-
-	switch (method) {
-		case 1:
-			GETMethod();
-			break ;
-		case 2:
-			POSTMethod();
-			break ;
-		case 4:
-			DELETEMethod();
-			break ;
-	}
-}
-
 std::string Response::getMimeType(const std::string& filename)
 {
 	static StringStringMap mimeTypes;
@@ -389,6 +420,8 @@ void Response::setMimes(StringStringMap& mimeTypes)
 	mimeTypes[".htm"] = "text/html";
 	mimeTypes[".css"] = "text/css";
 	mimeTypes[".js"]  ="text/javascript";
+	mimeTypes[".py"]  ="text/x-python";
+	mimeTypes[".pyc"]  ="application/x-python-code";
 	mimeTypes[".json"] = "application/json";
 	mimeTypes[".xml"] = "application/xml";
 	mimeTypes[".pdf"] = "application/pdf";
@@ -407,12 +440,6 @@ void	Response::printCWD()
 {
 	char cwd[256];
 	std::cout << "CWD" << getcwd(cwd, 256) << std::endl;
-}
-
-void Response::directoryUpAndThrow(int error, std::string description)
-{
-	tryChdir("..");
-	throw ErrorResponse(error, description);
 }
 
 void Response::tryChdir(const char* path)
