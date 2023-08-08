@@ -20,7 +20,12 @@ std::string	Response::getResponse()
 	if (_firstCall) {
 		tryChdir("www");
 		processRequest();
+		try {
 		readFile();
+		} catch (const ErrorResponse& error) {
+			std::cout << "Catched exception " << error.what() << std::endl;
+			buildError(error.getError());
+		}
 		assembleResponse();
 		_responseStream << _responseMessage;
 		_firstCall = false;
@@ -39,19 +44,12 @@ std::string	Response::getResponse()
 
 void Response::processRequest()
 {
-	try
-	{
+	try {
 		checkRequestErrors();
 		checkMethod();
-	}
-	catch (const std::exception &e)
-	{
-		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
-		std::cout << "Catched exception " << e.what() << std::endl;
-		if (_errorType != NULL)
-			buildError(_errorType->getError());
-	/* else */
-		/* 	buildError(Internal_Error); */
+	} catch (const ErrorResponse& error) {
+		std::cout << "Catched exception " << error.what() << std::endl;
+		buildError(error.getError());
 	}
 	return ;
 }
