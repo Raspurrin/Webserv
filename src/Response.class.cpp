@@ -146,9 +146,9 @@ void Response::POSTMethod()
 {
 	const char *filename = _headerFields["Upload-Filename"].c_str();
 
-	/* if (_headerFields["Path"] != "/form/files") */
-	/* 	throw ErrorResponse(403, "POST: Not matching Path with /files/"); */
-	tryChdir("./files");
+	if (_headerFields["Route"] != "upload")
+		throw ErrorResponse(403, "POST: Route to save files must be called upload.");
+	tryChdir("./upload");
 	if (access(filename, F_OK) == 0)
 		directoryUpAndThrow(409, "POST: Filename already exists.");
 	std::ofstream outfile(filename);
