@@ -51,6 +51,7 @@ class Response
 
 		void	status200(std::string path);
 		void	status201(const std::string& location);
+		void	status307(const std::string& location);
 
 		void	printCWD();
 		void	tryChdir(const char* path);

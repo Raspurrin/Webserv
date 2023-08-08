@@ -107,10 +107,13 @@ void Response::checkMethod()
 
 	if (!_serverConfig.isRouteValid(route))
 		throw ErrorResponse(404, "Route not configured.");
-
-	std::cout << "path in header fields map before root: " << _headerFields["Path"] << std::endl;
+	std::string redirect = _serverConfig.getHTTPRedirect(route);
+	if (!redirect.empty())
+	{
+		status307(redirect);
+		return ;
+	}
 	checkRoot(route);
-	std::cout << "path in header fields map after root: " << _headerFields["Path"] << std::endl;
 	setMethods(methods);
 
 	if (methods.find(method) == methods.end())
@@ -303,6 +306,13 @@ void Response::status200(std::string path)
 void Response::status201(const std::string& location)
 {
 	const t_status _status = {201, "CREATED", "Success, file uploaded."};
+	generateHTML(_status);
+	_response["Location:"] = location;
+}
+
+void Response::status307(const std::string& location)
+{
+	const t_status _status = {307, "Temporary Redirect", "Route redirected."};
 	generateHTML(_status);
 	_response["Location:"] = location;
 }
