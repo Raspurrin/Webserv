@@ -295,12 +295,16 @@ void Request::checkBoundary(const std::string& line)
 
 void Request::separatingPathAndFilename()
 {
-	std::string path = _headerFields["Path"];
+	const std::string &path = _headerFields["Path"];
 
 	size_t	lastSlash = path.find_last_of("/\\");
 	if (lastSlash == std::string::npos)
 		return ;
-	_headerFields["Route"] = path.substr(1, lastSlash - 1);
+	if (path == "/") {
+		_headerFields["Route"] = "/";
+	} else {
+		_headerFields["Route"] = path.substr(1, lastSlash - 1);
+	}
 	_headerFields["Filename"] = path.substr(lastSlash + 1);
 }
 

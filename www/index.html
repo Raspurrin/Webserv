@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>webserv</title>
+	<style>
+		h1.title
+		{
+			font-style: bold;
+			text-align: center;
+			padding-top: 200px;
+			font-size: 60px;
+			color: RebeccaPurple;
+		}
+		h2.description
+		{
+			text-align: center;
+			font-size: 40px;
+		}
+		p.footer
+		{
+			text-align: right;
+			font-style: italic;
+			font-size: 20px;
+			text-align: center;
+			color: CadetBlue;
+		}
+	</style>
+</head>
+<body>
+	<h1 class="title">Get cgi</h1>
+	<h2 class="description">You can enter your name in the form here:</h2>
+	<form action="/cgi-bin/test.py" method="get" accept-charset="utf-8">
+		<label for="first_name">First Name</label>
+		<input type="text" id="first_name" name="first_name"><br>
+		<label for="last_name">Last Name</label>
+		<input type="text" id="last_name" name="last_name"><br>
+		<input type="submit" value="Submit">
+  </form>
+	<p class="footer">powered by webserv</p>
+</body>
+</html>
+

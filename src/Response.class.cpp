@@ -149,6 +149,7 @@ void Response::GETMethod()
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
 	bool is_cgi = checkCgi();
+	std::cout << "!!!!!!Path: " << _headerFields["Path"] << std::endl;
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
