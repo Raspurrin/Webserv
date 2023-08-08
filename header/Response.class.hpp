@@ -29,6 +29,7 @@ class Response
 		void	processRequest();
 		void	checkRequestErrors();
 		void	checkMethod();
+		void	checkRoot(const std::string& route);
 		void	methodID(int method);
 		void	setMethods(StringIntMap& methods);
 		void	GETMethod();
@@ -49,11 +50,11 @@ class Response
 		std::string	readTemplate(const t_status& _status);
 
 		void	status200(std::string path);
-		void	status201();
+		void	status201(const std::string& location);
+		void	status307(const std::string& location);
 
 		void	printCWD();
 		void	tryChdir(const char* path);
-		void	directoryUpAndThrow(int error, std::string description);
 
 		Response();
 
