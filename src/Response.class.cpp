@@ -144,20 +144,26 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	const char *filename = _headerFields["Upload-Filename"].c_str();
+	std::stringstream ss;
+	const char* upload_path;
 
 	if (_headerFields["Route"] != "upload")
 		throw ErrorResponse(403, "POST: Route to save files must be called upload.");
-	tryChdir("./upload");
-	if (access(filename, F_OK) == 0)
-		directoryUpAndThrow(409, "POST: Filename already exists.");
-	std::ofstream outfile(filename);
-	tryChdir("..");
+	if (_headerFields.count("Root") > 0)
+		ss << _headerFields["Root"] << "/" << _headerFields["Upload-Filename"];
+	else
+		ss << _headerFields["Route"] << "/" << _headerFields["Upload-Filename"];
+
+	upload_path = ss.str().c_str();
+
+	if (access(upload_path, F_OK) == 0)
+		throw ErrorResponse(409, "POST: Conflicting filename.");
+	std::ofstream outfile(upload_path);
 	if (!outfile.is_open() || !outfile.good())
 		throw ErrorResponse(500, "POST: When creating file.");
 	outfile << _headerFields["Body-Text"] << std::endl;
 	outfile.close();
-	status201();
+	status201(upload_path);
 }
 
 void Response::DELETEMethod()
@@ -260,6 +266,7 @@ void Response::checkRoot(const std::string& route)
 	pos = _headerFields["Path"].find(route, pos);
 	if (pos != std::string::npos)
 		_headerFields["Path"].replace(pos, route.length(), root);
+	_headerFields["Root"] = root;
 }
 
 void Response::setMethods(StringIntMap& methods)
@@ -293,11 +300,11 @@ void Response::status200(std::string path)
 	_response["Path"] = path;
 }
 
-void Response::status201()
+void Response::status201(const std::string& location)
 {
 	const t_status _status = {201, "CREATED", "Success, file uploaded."};
 	generateHTML(_status);
-	_response["Location:"] = _headerFields["Path"].append(_headerFields["Upload-Filename"]);
+	_response["Location:"] = location;
 }
 
 void Response::checkDirectory()

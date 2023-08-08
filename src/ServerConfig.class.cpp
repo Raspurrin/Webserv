@@ -11,8 +11,8 @@ ServerConfig::ServerConfig() :
 
 std::string ServerConfig::getHTTPRedirect(const std::string &path) const
 {
-	if (_routes.find(path) != _routes.end())
-		error_handle("the route path does not exist");
+	if (_routes.find(path) == _routes.end())
+		return ("");
 	return (_routes.at(path)._HTTPRedirect);
 }
 

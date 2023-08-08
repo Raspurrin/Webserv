@@ -50,7 +50,7 @@ class Response
 		std::string	readTemplate(const t_status& _status);
 
 		void	status200(std::string path);
-		void	status201();
+		void	status201(const std::string& location);
 
 		void	printCWD();
 		void	tryChdir(const char* path);
