@@ -257,10 +257,17 @@ void	ServerConfigParser::setPort(std::string &value, ServerConfig &oneServerConf
 	oneServerConfig._port = port;
 }
 
+static int isValidChar(int c) {
+	if (isalnum(c) || c == '-' || c == '.') {
+		return 1;
+	}
+	return 0;
+}
+
 void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &oneServerConfig)
 {
-	if (!validate(serverName, isalnum))
-		throw std::invalid_argument("Server name should be alphanumeric");
+	if (!validate(serverName, isValidChar))
+		throw std::invalid_argument("Server name can only contain alphanumeric characters and '-' and '.'");
 	if (serverName.empty())
 		throw std::invalid_argument("Server name cannot be empty");
 	if (!oneServerConfig._name.empty())
@@ -297,7 +304,7 @@ void	ServerConfigParser::addErrorPage(ServerConfig &oneServerConfig, std::string
 
 	line = line.substr(10, line.length());
 	extractKeyValue(line, key, value);
-	
+
 	keyInt = std::atoi(key.c_str());
 	if (keyInt < 100 || keyInt > 599)
 		throw std::invalid_argument("Invalid error code for error page");

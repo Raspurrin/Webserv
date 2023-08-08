@@ -147,10 +147,11 @@ bool Response::checkCgi() {
 void Response::GETMethod()
 {
 	struct	stat s;
+
+	checkIndex();
 	const char *path = _headerFields["Path"].c_str() + 1;
 	bool is_cgi = checkCgi();
 
-	checkIndex();
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
@@ -176,7 +177,7 @@ void Response::POSTMethod()
 	std::stringstream ss;
 	std::string location;
 	const char* upload_path;
-  bool is_cgi = checkCgi();
+	bool is_cgi = checkCgi();
 
 	if (is_cgi) {
 		Cgi cgi(_headerFields);
