@@ -208,12 +208,14 @@ void Request::checkHeaderFields()
 
 	if (method == "POST")
 	{
+		if (!_isChunked) {
 			doesKeyExist(411, "Content-Length", "Missing header field.");
-		int content_length = atoi(_headerFields["Content-Length"].c_str());
-		if (content_length > _response._serverConfig.getClientBodySize())
-			throw ErrorResponse(413, "Content is bigger than set in config file.");
-		else if (_headerFields["Content-Length"] == "0")
-			throw ErrorResponse(400, "Lack of required content.");
+			int content_length = atoi(_headerFields["Content-Length"].c_str());
+			if (content_length > _response._serverConfig.getClientBodySize())
+				throw ErrorResponse(413, "Content is bigger than set in config file.");
+			else if (_headerFields["Content-Length"] == "0")
+				throw ErrorResponse(400, "Lack of required content.");
+		}
 
 		doesKeyExist(400, "Content-Type", "Missing content type field.");
 		std::string content_type = _headerFields["Content-Type"];
@@ -250,6 +252,9 @@ void Request::whenReadSmallerThanLen(std::istringstream& iss, char* readBuffer)
 	// We need to consider that there are possible conditions where the trailing \r\n gets send later
 	// TODO: talk to the team about it
 	_bodyBuffer += std::string(readBuffer, count);
+	if (_bodyBuffer.size() > _response._serverConfig.getClientBodySize()) {
+		throw ErrorResponse(413, "Body of chunked request is biger than max body size.");
+	}
 }
 
 void Request::checkValueSize(const std::string& key, const std::string& value)
