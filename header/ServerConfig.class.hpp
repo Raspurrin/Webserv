@@ -21,6 +21,7 @@ class ServerConfig
 			std::string		_HTTPRedirect;
 			std::string		_root;
 			std::string		_index;
+			std::set<std::string> _CGI;
 			myRoute() : _methods(0), _directoryListing(false), _HTTPRedirect(""), _root(""), _index("") {};
 		} route;
 

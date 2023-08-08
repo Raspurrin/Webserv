@@ -130,7 +130,9 @@ void	ServerConfig::printServerConfig() const
 		std::cout << "      directoryListing: " << it->second._directoryListing << std::endl;
 		std::cout << "      HTTPRedirect: " << it->second._HTTPRedirect << std::endl;
 		std::cout << "      root: " << it->second._root << std::endl;
-		std::cout << "      index: " << it->second._index <<  RESET << std::endl;
+		std::cout << "      index: " << it->second._index << std::endl;
+		for (std::set<std::string>::const_iterator setIt = it->second._CGI.begin(); setIt != it->second._CGI.end(); ++setIt)
+        	std::cout << "	CGI: " << *setIt << std::endl;
 	}
 }
 

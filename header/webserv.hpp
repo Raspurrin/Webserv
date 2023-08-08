@@ -5,6 +5,7 @@
 #include <csignal>
 #include <list>
 #include <map>
+#include <set>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <cstdio>

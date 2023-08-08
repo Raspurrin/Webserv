@@ -123,6 +123,8 @@ void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &
 		setRouteIndex(value, newRoute);
 	else if (key == "HTTPRedirect")
 		setRouteHTTPRedirect(value, newRoute);
+	else if (key == "CGI")
+		setCGI(value, newRoute);
 	else 
 		throw std::invalid_argument("Invalid configuration key");
 }
@@ -152,6 +154,27 @@ void	ServerConfigParser::setRouteIndex(std::string &index, ServerConfig::route &
 	if (!newRoute._index.empty())
 		throw std::invalid_argument("Index already set");
 	newRoute._index = index;
+}
+
+void	ServerConfigParser::setCGI(std::string &value, ServerConfig::route &newRoute)
+{
+	std::stringstream ss(value);
+	std::string fileExtension;
+
+	if (value.empty())
+		throw std::invalid_argument("CGI cannot be empty");
+	if (!newRoute._CGI.empty())
+		throw std::invalid_argument("CGI already set");
+    while (getline (ss, fileExtension, ' '))
+	{
+		if (fileExtension[0] != '.')
+			throw std::invalid_argument("CGI file extension must start with a dot");
+		if (validate(fileExtension.substr(1), isalpha) == false)
+			throw std::invalid_argument("CGI file extension must be a character");
+		if (!newRoute._CGI.insert(fileExtension).second)
+			throw std::invalid_argument("duplicate file extension set for CGI");
+	}
+	std::cout << "CGI: " << value << std::endl;
 }
 
 bool	ServerConfigParser::checkBooleanString(std::string boolString)
