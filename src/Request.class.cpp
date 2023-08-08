@@ -304,8 +304,8 @@ void Request::separatingPathAndFilename()
 		_headerFields["Route"] = "/";
 	} else {
 		_headerFields["Route"] = path.substr(1, lastSlash - 1);
+		_headerFields["Filename"] = path.substr(lastSlash + 1);
 	}
-	_headerFields["Filename"] = path.substr(lastSlash + 1);
 }
 
 void Request::extractingFilenameToUpload()

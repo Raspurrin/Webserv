@@ -30,6 +30,7 @@ class Response
 		void	checkRequestErrors();
 		void	checkMethod();
 		void	checkRoot(const std::string& route);
+		void	checkIndex();
 		void	methodID(int method);
 		void	setMethods(StringIntMap& methods);
 		void	GETMethod();

@@ -149,7 +149,8 @@ void Response::GETMethod()
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
 	bool is_cgi = checkCgi();
-	std::cout << "!!!!!!Path: " << _headerFields["Path"] << std::endl;
+
+	checkIndex();
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
@@ -286,7 +287,7 @@ void Response::checkRoot(const std::string& route)
 
 	if (root.empty())
 		return ;
-	if (root[0] == '/')
+	if (root[0] == '/' && _headerFields["Path"].length() != 1)
 		root = root.substr(1);
 	size_t pos = 0;
 	_headerFields["Path_Info"] = _headerFields["Path"];
@@ -294,6 +295,23 @@ void Response::checkRoot(const std::string& route)
 	if (pos != std::string::npos)
 		_headerFields["Path"].replace(pos, route.length(), root);
 	_headerFields["Root"] = root;
+}
+
+void Response::checkIndex()
+{
+	std::string route = _headerFields["Route"];
+
+	std::string index = _serverConfig.getRouteIndex(route);
+	if (index.empty())
+		return ;
+
+	std::stringstream build;
+	int last = _headerFields["Path"].length() - 1;
+	if (_headerFields["Path"][last] == '/')
+		build << _headerFields["Path"] << index;
+	else
+		build << _headerFields["Path"] << "/" << index;
+	_headerFields["Path"] = build.str();
 }
 
 void Response::setMethods(StringIntMap& methods)
@@ -345,25 +363,10 @@ void Response::checkDirectory()
 {
 	std::string route = _headerFields["Route"];
 
-	std::string index = _serverConfig.getRouteIndex(route);
-	if (index.empty())
+	if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
 	{
-		if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
-		{
-			const t_status _status = {200, "OK", "Directory listing disabled."};
-			generateHTML(_status);
-		}
-	}
-	else
-	{
-		std::stringstream build;
-		int last = _headerFields["Path"].length() - 1;
-		if (_headerFields["Path"][last] == '/')
-			build << _headerFields["Path"] << index;
-		else
-			build << _headerFields["Path"] << "/" << index;
-		_headerFields["Path"] = build.str();
-		GETMethod();
+		const t_status _status = {200, "OK", "Directory listing disabled."};
+		generateHTML(_status);
 	}
 }
 
