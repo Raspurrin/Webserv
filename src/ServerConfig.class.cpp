@@ -88,6 +88,13 @@ const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 	return (_routes.at(path)._index);
 }
 
+std::set<std::string>	ServerConfig::getRouteCGI(const std::string &path) const
+{
+	if (_routes.find(path) == _routes.end())
+		return (std::set<std::string>());
+	return (_routes.at(path)._CGI);
+}
+
 t_sockaddr_in&		ServerConfig::getAddress()
 {
 	return (_address);

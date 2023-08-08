@@ -42,8 +42,6 @@ class ServerConfig
 	public:
 		// bool				setClientBodySize(int &clientBodySize);
 		std::string			getHTTPRedirect(const std::string &path) const;
-		bool 				setServerName(std::string &serverName);
-		bool 				setPort(int &port);
 		int					getPort() const;
 		std::string			getName() const;
 		int					getClientBodySize() const;
@@ -54,6 +52,7 @@ class ServerConfig
 		bool				isRouteDirListingEnabled(const std::string &path) const;
 		const std::string	getRouteRoot(const std::string &path) const;
 		const std::string 	getRouteIndex(const std::string &path) const;
+		std::set<std::string>	getRouteCGI(const std::string &path) const;
 		t_sockaddr_in&		getAddress();
 		void				printErrorPages() const;
 		void				printServerConfig() const;
