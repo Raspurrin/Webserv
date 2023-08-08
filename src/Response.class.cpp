@@ -129,8 +129,6 @@ void Response::GETMethod()
 	struct	stat s;
 	const char *path = _headerFields["Path"].c_str() + 1;
 
-	printCWD();
-	std::cout << "path in get: " << path << std::endl;
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
 	if (access(path, R_OK) == -1)
