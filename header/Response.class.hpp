@@ -65,6 +65,7 @@ class Response
 		ServerConfig	_serverConfig;
 		void			postResponse(int socket, int indexToRemove);
 		std::string		getResponse();
+		bool			checkCgi();
 
 	public:
 		Response(StringStringMap& _headerFields);
