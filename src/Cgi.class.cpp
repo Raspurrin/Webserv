@@ -108,21 +108,19 @@ static std::string get_child_output(std::string &file, int pid) {int status = 0;
 	std::ostringstream output;
 	output << output_file.rdbuf();
 
-	// if (std::remove(file.c_str())) {
-	// 	std::cout << "Could not remove tmp file";
-	// }
+	if (std::remove(file.c_str())) {
+		std::cout << "Could not remove tmp file";
+	}
 
 	return output.str();
 }
 
 static std::string generate_filename() {
 	std::string tmp_file;
-	// std::stringstream str;
-	// str << rand();
-	// str >> tmp_file;
-	// tmp_file = "/tmp/webserv" + tmp_file;
-	// std::cout << "Tmp file is: " << tmp_file << std::endl;
-	tmp_file = "tmp";
+	std::stringstream str;
+	str << rand();
+	str >> tmp_file;
+	tmp_file = "/tmp/webserv" + tmp_file;
 	return tmp_file;
 }
 
@@ -189,10 +187,10 @@ StringStringMap Cgi::runPost() {
 		perror("Execve failed");
 		exit(1);
 	} else {
-		// if (std::remove(in_file.c_str())) {
-		// 	std::cout << "Could not remove tmp file";
-		// }
 		std::string output = get_child_output(out_file, pid);
+		if (std::remove(in_file.c_str())) {
+			std::cout << "Could not remove in tmp file";
+		}
 		StringStringMap response = parse_output(output);
 		check_output(response);
 		return response;
