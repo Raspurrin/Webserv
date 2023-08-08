@@ -419,12 +419,6 @@ void	Response::printCWD()
 	std::cout << "CWD" << getcwd(cwd, 256) << std::endl;
 }
 
-void Response::directoryUpAndThrow(int error, std::string description)
-{
-	tryChdir("..");
-	throw ErrorResponse(error, description);
-}
-
 void Response::tryChdir(const char* path)
 {
 	if (chdir(path) == -1)

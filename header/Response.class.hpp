@@ -55,7 +55,6 @@ class Response
 
 		void	printCWD();
 		void	tryChdir(const char* path);
-		void	directoryUpAndThrow(int error, std::string description);
 
 		Response();
 
