@@ -15,6 +15,7 @@ class ServerConfigParser
 		StringBoolMap			_availableOptions;
 
 	private:
+		void					setCGI(std::string &value, ServerConfig::route &newRoute);
 		void 					setHost(std::string &value, ServerConfig &oneServerConfig);
 		void 					checkForServerNameDuplicate(const std::string &serverName) const;
 		void 					checkMinimumConfiguration(ServerConfig &oneServerConfig);
