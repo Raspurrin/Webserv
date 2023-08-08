@@ -7,10 +7,6 @@ ServerConfig::ServerConfig() :
 	_name(""),
 	_clientBodySize(0)
 {
-	_errorPages.insert(std::make_pair("408", "default"));
-    _errorPages.insert(std::make_pair("413", "default"));
-    _errorPages.insert(std::make_pair("414", "default"));
-    _errorPages.insert(std::make_pair("431", "default"));
 }
 
 std::string ServerConfig::getHTTPRedirect(const std::string &path) const
@@ -37,10 +33,8 @@ int		ServerConfig::getClientBodySize() const
 
 std::string	ServerConfig::getErrorPage(std::string errorCode) const
 {
-	if (_errorPages.find(errorCode) != _errorPages.end())
-		error_handle("the error code does not exist");
-	if (_errorPages.at(errorCode) == "default")
-		return ("default");
+	if (_errorPages.find(errorCode) == _errorPages.end())
+		return ("");
 	return (_errorPages.at(errorCode));
 }
 
@@ -53,8 +47,8 @@ void	ServerConfig::printErrorPages() const
 bool	ServerConfig::isRouteValid(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
-		return (false);
-	return (true);
+		return (true);
+	return (false);
 }
 
 int		ServerConfig::getRouteMethods(const std::string &path) const
@@ -66,8 +60,8 @@ int		ServerConfig::getRouteMethods(const std::string &path) const
 
 bool	ServerConfig::isRouteMethodAllowed(const std::string &path, const int methodToCheck) const
 {
-	if (_routes.find(path) != _routes.end())
-		error_handle("the route path does not exist");
+	if (_routes.find(path) == _routes.end())
+		return (false);
 	if (_routes.at(path)._methods & methodToCheck)
 		return (true);
 	return (false);
@@ -75,8 +69,8 @@ bool	ServerConfig::isRouteMethodAllowed(const std::string &path, const int metho
 
 bool	ServerConfig::isRouteDirListingEnabled(const std::string &path) const
 {
-	if (_routes.find(path) != _routes.end())
-		error_handle("the route path does not exist");
+	if (_routes.find(path) == _routes.end())
+		return (false);
 	return (_routes.at(path)._directoryListing);
 }
 
@@ -89,8 +83,8 @@ const std::string	ServerConfig::getRouteRoot(const std::string &path) const
 
 const std::string	ServerConfig::getRouteIndex(const std::string &path) const
 {
-	if (_routes.find(path) != _routes.end())
-		error_handle("the route path does not exist");
+	if (_routes.find(path) == _routes.end())
+		return ("");
 	return (_routes.at(path)._index);
 }
 
@@ -101,7 +95,14 @@ t_sockaddr_in&		ServerConfig::getAddress()
 
 ServerConfig&	ServerConfig::operator=(ServerConfig const &assign)
 {
-	(void)assign;
+	this->_host = assign._host;
+	this->_name = assign._name;
+	this->_port = assign._port;
+	this->_clientBodySize = assign._clientBodySize;
+	this->_errorPages = assign._errorPages;
+	this->_routes = assign._routes;
+	this->_address = assign._address;
+
 	return (*this);
 }
 

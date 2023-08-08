@@ -4,7 +4,9 @@
 #include <cstdio>
 #include <fstream>
 #include <ios>
+#include <sstream>
 #include <string>
+#include <unistd.h>
 #include <utility>
 
 Response::Response(StringStringMap& _headerFields) : _firstCall(true), _responseFinished(false), _headerFields(_headerFields), _hasError(false)
@@ -16,6 +18,7 @@ Response::Response(StringStringMap& _headerFields) : _firstCall(true), _response
 std::string	Response::getResponse()
 {
 	if (_firstCall) {
+		tryChdir("www");
 		processRequest();
 		readFile();
 		assembleResponse();
@@ -27,29 +30,65 @@ std::string	Response::getResponse()
 	std::string response(_responseBuff, BUFLEN);
 
 	if (_responseStream.eof()) {
+		tryChdir("..");
 		_responseFinished = true;
 	}
-
 	return (response);
 }
 
 void Response::processRequest()
 {
-	try
-	{
+	try {
 		checkRequestErrors();
-		methodID();
-	}
-	catch (const std::exception &e)
-	{
-		const ErrorResponse *_errorType = dynamic_cast<const ErrorResponse *>(&e);
-		std::cout << "Catched exception " << e.what() << std::endl;
-		if (_errorType != NULL)
-			buildError(_errorType->getError());
-	/* else */
-		/* 	buildError(Internal_Error); */
+		checkMethod();
+	} catch (const ErrorResponse& error) {
+		std::cout << "Catched exception " << error.what() << std::endl;
+		buildError(error.getError());
 	}
 	return ;
+}
+
+void Response::readFile()
+{
+	if (_response.count("Body") > 0)
+		return ;
+	std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
+	std::string	content;
+
+	if (!fin)
+	{
+		_response["Body"] = "Error reading contents of file in ifstream.";
+		_response["Content-Type:"] = "text/plain";
+		return ;
+	}
+	fin.seekg(0, std::ios::end);
+	std::streampos fileSize = fin.tellg();
+	fin.seekg(0, std::ios::beg);
+	content.resize(fileSize);
+	fin.read(&content[0], fileSize);
+	fin.close();
+	_response["Body"] = content;
+	_response["Content-Type:"] = getMimeType(_response["Path"]);
+}
+
+void Response::assembleResponse()
+{
+	_response["Content-Length:"] = lenToStr(_response["Body"]);
+	_response["Version"] = "HTTP/1.1";
+
+	_responseMessage += _response["Version"] + " "
+		+ _response["Status code"] + "\n";
+
+	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
+	{
+		if ((*it).first.find(':') != std::string::npos)
+			_responseMessage += (*it).first + " " + (*it).second + "\n";
+	}
+	_responseMessage += "Connection: close\r\n\r\n"
+		+ _response["Body"];
+
+	if (DEBUG)
+		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
 }
 
 void Response::checkRequestErrors()
@@ -58,19 +97,23 @@ void Response::checkRequestErrors()
 		throw _requestParsingError;
 }
 
-void Response::methodID()
+void Response::checkMethod()
 {
-	// "/" will always be a directory, so maybe we should solve this with a route later on?
-	if (_headerFields["Path"] == "/")
-		_headerFields["Path"] = "/index.html";
+	_serverConfig.printServerConfig();
+	std::string route = _headerFields["Route"];
+	std::string method = _headerFields["Method"];
+	static StringIntMap methods;
 
-	if (_headerFields["Method"] == "GET")
-		GETMethod();
-	if (_headerFields["Method"] == "POST")
-		POSTMethod();
-	if (_headerFields["Method"] == "DELETE")
-		DELETEMethod();
-	return ;
+	if (!_serverConfig.isRouteValid(route))
+		throw ErrorResponse(404, "Route not configured.");
+
+	setMethods(methods);
+	if (methods.find(method) == methods.end())
+		throw ErrorResponse(501, method);
+	if (!_serverConfig.isRouteMethodAllowed(route, methods[method]))
+		throw ErrorResponse(405, method);
+
+	methodID(methods[method]);
 }
 
 void Response::GETMethod()
@@ -85,10 +128,7 @@ void Response::GETMethod()
 	if (stat(path, &s) != 0)
 		throw ErrorResponse(500, "GET: Error fetching file status.");
 	if (S_ISDIR(s.st_mode))
-	{
-		if (!listDir())
-			status200("/directory.html");
-	}
+		checkDirectory();
 	else if (S_ISREG(s.st_mode))
 		status200(_headerFields["Path"]);
 	else
@@ -97,10 +137,10 @@ void Response::GETMethod()
 
 void Response::POSTMethod()
 {
-	const char *filename = _headerFields["Filename"].c_str();
+	const char *filename = _headerFields["Upload-Filename"].c_str();
 
-	if (_headerFields["Path"] != "/files/")
-		throw ErrorResponse(403, "POST: Not matching Path with /files/");
+	/* if (_headerFields["Path"] != "/form/files") */
+	/* 	throw ErrorResponse(403, "POST: Not matching Path with /files/"); */
 	tryChdir("./files");
 	if (access(filename, F_OK) == 0)
 		directoryUpAndThrow(409, "POST: Filename already exists.");
@@ -141,101 +181,32 @@ void Response::DELETEMethod()
 	status200("/error_pages/deleted.html");
 }
 
-void Response::readFile()
-{
-	if (_response.count("Body") > 0)
-		return ;
-	std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
-	std::string	content;
-
-	if (!fin)
-		throw ErrorResponse(500, "When reading file");
-	fin.seekg(0, std::ios::end);
-	std::streampos fileSize = fin.tellg();
-	fin.seekg(0, std::ios::beg);
-	content.resize(fileSize);
-	fin.read(&content[0], fileSize);
-	fin.close();
-	if (!fin)
-		throw ErrorResponse(500, "After reading file.");
-	_response["Body"] = content;
-	_response["Content-Type:"] = getMimeType(_response["Path"]);
-}
-
-void Response::setMimes(StringStringMap& mimeTypes)
-{
-	mimeTypes[".txt"] = "text/plain";
-	mimeTypes[".html"] = "text/html";
-	mimeTypes[".htm"] = "text/html";
-	mimeTypes[".css"] = "text/css";
-	mimeTypes[".js"]  ="text/javascript";
-	mimeTypes[".json"] = "application/json";
-	mimeTypes[".xml"] = "application/xml";
-	mimeTypes[".pdf"] = "application/pdf";
-	mimeTypes[".zip"] = "application/zip";
-	mimeTypes[".doc"] = "application/msword";
-	mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
-	mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-	mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-	mimeTypes[".png"] = "image/png";
-	mimeTypes[".jpg"] = "image/jpeg";
-	mimeTypes[".jpeg"] = "image/jpeg";
-	mimeTypes[".gif"] = "image/gif";
-}
-
-std::string Response::getMimeType(const std::string& filename)
-{
-	static StringStringMap mimeTypes;
-
-	if (mimeTypes.empty())
-		setMimes(mimeTypes);
-
-	size_t	dotPos = filename.find_last_of('.');
-	if (dotPos != std::string::npos)
-	{
-		std::string extension = filename.substr(dotPos);
-		StringStringMap::iterator it = mimeTypes.find(extension);
-		if (it != mimeTypes.end())
-			return (it->second);
-	}
-	return ("application/octet-stream");
-}
-
-void Response::assembleResponse()
-{
-	_response["Content-Length:"] = lenToStr(_response["Body"]);
-	_response["Version"] = "HTTP/1.1";
-
-	_responseMessage += _response["Version"] + " "
-		+ _response["Status code"] + "\n";
-
-	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
-	{
-		if ((*it).first.find(':') != std::string::npos)
-			_responseMessage += (*it).first + " " + (*it).second + "\n";
-	}
-	_responseMessage += "Connection: close\r\n\r\n"
-		+ _response["Body"];
-
-	if (DEBUG)
-		std::cout << CYAN << "RESPONSE MESSAGE: \n\n" << DEF << _responseMessage << "\n\n";
-}
-
 void Response::buildError(const t_status& _status) {
 	std::stringstream ss;
-	ss << _status._code << " " << _status._description;
+	ss << _status._code;
+	std::string custom = _serverConfig.getErrorPage(ss.str());
+	ss << " " << _status._description;
 	_response["Status code"] = ss.str();
-	//use getErrorPage from config file with pair first
-	//if default
-	//generate html
-	generateHTML(_status);
-	//else
-	//save string into path
+	if (custom.empty())
+		generateHTML(_status);
+	else
+	{
+		std::stringstream path;
+		path << "/" << custom;
+		_response["Path"] = path.str();
+		std::ifstream	fin(_response["Path"].c_str() + 1, std::ios::binary);
+		if (!fin)
+		{
+			std::cout << RED << "WARNING: Custom error page set in configuration file was not accesible, fallback to default error pages has been performed." << DEF << std::endl;
+			generateHTML(_status);
+		}
+		fin.close();
+	}
 }
 
 void Response::generateHTML(const t_status& _status)
 {
-	std::string htmlTemplate = readTemplate();
+	std::string htmlTemplate = readTemplate(_status);
 	size_t pos = htmlTemplate.find("{{TITLE}}");
 	if (pos != std::string::npos) {
 		std::stringstream ss;
@@ -254,11 +225,16 @@ void Response::generateHTML(const t_status& _status)
 	_response["Content-Type:"] = "text/html";
 }
 
-std::string Response::readTemplate() {
+std::string Response::readTemplate(const t_status& _status) {
 	std::ifstream	file("template.html");
-	if (!file)
-		return ("ifstream error");
 	std::string templateContent, line;
+
+	if (!file)
+	{
+		std::stringstream ss;
+		ss << "<h1>" <<  _status._code << _status._description << _status._message << "</h1>";
+		return (ss.str());
+	}
 	while (getline(file, line))
 		templateContent += line + "\n";
 	file.close();
@@ -273,9 +249,31 @@ void Response::status200(std::string path)
 
 void Response::status201()
 {
-	_response["Status code"] = "201 CREATED";
-	_response["Path"] = "/success.html";
-	_response["Location:"] = _headerFields["Path"].append(_headerFields["Filename"]);
+	const t_status _status = {201, "CREATED", "Success, file uploaded."};
+	generateHTML(_status);
+	_response["Location:"] = _headerFields["Path"].append(_headerFields["Upload-Filename"]);
+}
+
+void Response::checkDirectory()
+{
+	std::string route = _headerFields["Route"];
+
+	std::string index = _serverConfig.getRouteIndex(route);
+	if (index.empty())
+	{
+		if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
+		{
+			const t_status _status = {200, "OK", "Directory listing disabled."};
+			generateHTML(_status);
+		}
+	}
+	else
+	{
+		std::stringstream build;
+		build << "/" << route << "/" << index;
+		_headerFields["Path"] = build.str();
+		GETMethod();
+	}
 }
 
 /**
@@ -297,10 +295,8 @@ bool Response::listDir()
 		return false;
 	struct dirent *ent;
 
-	// TODO: using a set makes it easier to sort the entries but has longer blocking time than an unsortet list. Need to investigate if it is too long.
 	std::set<std::string> files;
 
-	// Return value of readdir is statically allocated and must not be freed!
 	while ((ent = readdir(dir)) != NULL)
 		files.insert(std::string(ent->d_name));
 
@@ -318,6 +314,77 @@ bool Response::listDir()
 	return true;
 }
 
+void Response::setMethods(StringIntMap& methods)
+{
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
+}
+
+void Response::methodID(int method)
+{
+
+	switch (method) {
+		case 1:
+			GETMethod();
+			break ;
+		case 2:
+			POSTMethod();
+			break ;
+		case 4:
+			DELETEMethod();
+			break ;
+	}
+}
+
+std::string Response::getMimeType(const std::string& filename)
+{
+	static StringStringMap mimeTypes;
+
+	setMimes(mimeTypes);
+
+	size_t	dotPos = filename.find_last_of('.');
+	if (dotPos != std::string::npos)
+	{
+		std::string extension = filename.substr(dotPos);
+		StringStringMap::iterator it = mimeTypes.find(extension);
+		if (it != mimeTypes.end())
+			return (it->second);
+	}
+	return ("application/octet-stream");
+}
+
+void Response::setMimes(StringStringMap& mimeTypes)
+{
+	if (!mimeTypes.empty())
+		return ;
+	mimeTypes[".txt"] = "text/plain";
+	mimeTypes[".html"] = "text/html";
+	mimeTypes[".htm"] = "text/html";
+	mimeTypes[".css"] = "text/css";
+	mimeTypes[".js"]  ="text/javascript";
+	mimeTypes[".json"] = "application/json";
+	mimeTypes[".xml"] = "application/xml";
+	mimeTypes[".pdf"] = "application/pdf";
+	mimeTypes[".zip"] = "application/zip";
+	mimeTypes[".doc"] = "application/msword";
+	mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+	mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	mimeTypes[".png"] = "image/png";
+	mimeTypes[".jpg"] = "image/jpeg";
+	mimeTypes[".jpeg"] = "image/jpeg";
+	mimeTypes[".gif"] = "image/gif";
+}
+
+void	Response::printCWD()
+{
+	char cwd[256];
+	std::cout << "CWD" << getcwd(cwd, 256) << std::endl;
+}
+
 void Response::directoryUpAndThrow(int error, std::string description)
 {
 	tryChdir("..");
@@ -329,6 +396,7 @@ void Response::tryChdir(const char* path)
 	if (chdir(path) == -1)
 		throw ErrorResponse(500, strerror(errno));
 }
+
 
 bool Response::_getResponseFinished() {
 	return _responseFinished;

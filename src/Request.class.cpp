@@ -16,7 +16,7 @@ Request::Request(void) :
 
 void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 {
-	(void)serverConfig;
+	_response._serverConfig = serverConfig;
 	if (DEBUG)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
@@ -108,6 +108,7 @@ void Request::readIntoString(int &socket)
 	{
 		std::cout << CYAN << "\nReceived message:\n\n" << DEF << readBuffer << std::endl;
 		std::cout << CYAN << "Read count:\n" << DEF << _readCount << std::endl;
+		printMap();
 	}
 }
 
@@ -164,6 +165,7 @@ void Request::checkStartLine()
 	std::string path = _headerFields["Path"];
 	if (path.length() > 255)
 		throw ErrorResponse(414, "Too long URI");
+	separatingPathAndFilename();
 
 	doesKeyExist(400, "Version", "Missing version.");
 	std::string version = _headerFields["Version"];
@@ -206,12 +208,13 @@ void Request::checkHeaderFields()
 
 	if (method == "POST")
 	{
-		if (!_isChunked)
 			doesKeyExist(411, "Content-Length", "Missing header field.");
-		if (_headerFields["Content-Length"].length() > 10)
-			throw ErrorResponse(413, "Try a smaller file");
+		int content_length = atoi(_headerFields["Content-Length"].c_str());
+		if (content_length > _response._serverConfig.getClientBodySize())
+			throw ErrorResponse(413, "Content is bigger than set in config file.");
 		else if (_headerFields["Content-Length"] == "0")
 			throw ErrorResponse(400, "Lack of required content.");
+
 		doesKeyExist(400, "Content-Type", "Missing content type field.");
 		std::string content_type = _headerFields["Content-Type"];
 		size_t found = content_type.find("multipart/form-data");
@@ -228,7 +231,7 @@ void Request::parseBody(std::string body)
 	getline(ss, line);
 	checkBoundary(line);
 	getline(ss, _headerFields["Body-Disposition"]);
-	extractingFilename();
+	extractingFilenameToUpload();
 	getline(ss, _headerFields["Body-Type"]);
 	getline(ss, line);
 	std::stringstream remainder;
@@ -283,7 +286,18 @@ void Request::checkBoundary(const std::string& line)
 		throw ErrorResponse(400, "No boundary found in payload.");
 }
 
-void Request::extractingFilename()
+void Request::separatingPathAndFilename()
+{
+	std::string path = _headerFields["Path"];
+
+	size_t	lastSlash = path.find_last_of("/\\");
+	if (lastSlash == std::string::npos)
+		return ;
+	_headerFields["Route"] = path.substr(1, lastSlash - 1);
+	_headerFields["Filename"] = path.substr(lastSlash + 1);
+}
+
+void Request::extractingFilenameToUpload()
 {
 	size_t	found, lpos;
 	std::string body_disposition = _headerFields["Body-Disposition"];
@@ -293,7 +307,7 @@ void Request::extractingFilename()
 	lpos = found;
 	while (body_disposition[lpos] != '"')
 		lpos--;
-	_headerFields["Filename"] = body_disposition.substr(lpos + 1, found - lpos);
+	_headerFields["Upload-Filename"] = body_disposition.substr(lpos + 1, found - lpos);
 }
 
 std::string	Request::getResponse()
