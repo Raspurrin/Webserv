@@ -12,7 +12,7 @@ std::string Client::getResponse()
 
 void	Client::getRequest(int& socketsIndex)
 {
-	_request.getRequest(_pollFd.fd, _serverConfig);
+	_request.getRequest(_pollFd.fd, _serverConfig, socketsIndex);
 }
 
 bool	Client::isRequestSent()
