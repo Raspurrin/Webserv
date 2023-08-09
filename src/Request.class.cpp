@@ -298,17 +298,14 @@ void Request::separatingPathAndFilename()
 	const std::string& path = _headerFields["Path"];
 	const std::string& route = _headerFields["Route"];
 	const std::string& method = _headerFields["Method"];
-	size_t	lastSlash = path.find_last_of("/\\");
 	static StringIntMap methods;
 
-	if (lastSlash == std::string::npos)
-		return ;
 	if (path == "/") {
 		_headerFields["Route"] = "/";
 	} else {
-		_headerFields["Route"] = path.substr(1, lastSlash - 1);
-		_headerFields["Filename"] = path.substr(lastSlash + 1);
+		StringRouteMap::reverse_iterator rit = _response._serverConfig.getRoutesMap();
 	}
+
 	if (!_response._serverConfig.isRouteValid(route))
 		throw ErrorResponse(404, "Route not configured.");
 	checkRoot(route);

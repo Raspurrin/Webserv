@@ -13,20 +13,8 @@ class ServerConfig
 {
 	private:
 		friend class ServerConfigParser;
-		
-		typedef struct myRoute
-		{
-			int				_methods;
-			bool			_directoryListing;
-			std::string		_HTTPRedirect;
-			std::string		_root;
-			std::string		_index;
-			std::set<std::string> _CGI;
-			myRoute() : _methods(0), _directoryListing(false), _HTTPRedirect(""), _root(""), _index("") {};
-		} route;
 
-		typedef struct pollfd						t_pollfd;
-		typedef std::map<std::string, route> 		StringRouteMap;
+		typedef struct pollfd	t_pollfd;
 
 		int					_host;
 		int					_port;
@@ -46,6 +34,7 @@ class ServerConfig
 		std::string			getName() const;
 		int					getClientBodySize() const;
 		std::string			getErrorPage(std::string errorCode) const;
+		const StringRouteMap&		getRoutesMap() const;
 		bool				isRouteValid(const std::string &path) const;
 		int					getRouteMethods(const std::string &path) const;
 		bool				isRouteMethodAllowed(const std::string &path, const int methodToCheck) const;

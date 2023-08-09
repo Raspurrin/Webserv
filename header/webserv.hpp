@@ -31,15 +31,29 @@
 #define REQUEST_TIMEOUT 2
 
 typedef std::map<std::string, std::string>	StringStringMap;
-typedef std::map<std::string, int>	StringIntMap;
+typedef std::map<std::string, int>			StringIntMap;
 typedef std::map<std::string, bool>         StringBoolMap;
-typedef std::map<int, std::string>	IntStringMap;
-typedef std::vector<int>			IntVector;
+typedef std::map<int, std::string>			IntStringMap;
+typedef std::vector<int>					IntVector;
+
 typedef struct statusResponse {
 	int _code;
 	std::string _description;
 	std::string _message;
 } t_status;
+
+typedef struct myRoute
+{
+	int				_methods;
+	bool			_directoryListing;
+	std::string		_HTTPRedirect;
+	std::string		_root;
+	std::string		_index;
+	std::set<std::string> _CGI;
+	myRoute() : _methods(0), _directoryListing(false), _HTTPRedirect(""), _root(""), _index("") {};
+} route;
+
+typedef std::map<std::string, route> 		StringRouteMap;
 
 extern IntVector			_indexesToRemove;
 

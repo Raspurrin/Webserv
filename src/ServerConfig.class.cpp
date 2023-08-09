@@ -51,6 +51,11 @@ bool	ServerConfig::isRouteValid(const std::string &path) const
 	return (false);
 }
 
+const StringRouteMap&	ServerConfig::getRoutesMap() const
+{
+	return (_routes);
+}
+
 int		ServerConfig::getRouteMethods(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
