@@ -156,16 +156,21 @@ void	ServerManager::handleClientSocket(int i)
 {
 	int	clientIndex = i - _numServerSockets;
 
-	if (!_clients[clientIndex].isRequestSent() && time(NULL) - _clients[clientIndex].getLastActivity() > REQUEST_TIMEOUT) {
-		_clients[clientIndex].setRequestError(ErrorResponse(408, "from ServerManager"));
-	}
-	else if (_sockets[i].revents & POLLERR || _sockets[i].revents & POLLHUP || _sockets[i].revents & POLLPRI || _sockets[i].revents & POLLNVAL) {
+	if (_sockets[i].revents & POLLNVAL) {
 		_indexesToRemove.push_back(i);
+	}
+	else if (_sockets[i].revents & POLLERR || _sockets[i].revents & POLLHUP) {
+		close(_sockets[i].fd);
+		_indexesToRemove.push_back(i);
+	}
+	else if (!_clients[clientIndex].isRequestSent() && time(NULL) - _clients[clientIndex].getLastActivity() > REQUEST_TIMEOUT) {
+		_clients[clientIndex].setRequestError(ErrorResponse(408, "from ServerManager"));
 	}
 	else if (_sockets[i].revents & POLLIN && !_clients[clientIndex].isRequestSent())
 	{
 		if (DEBUG)
 			std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;
+
 		_clients[clientIndex].getRequest(i);
 	}
 	else if (_clients[clientIndex].isRequestSent() && _sockets[i].revents & POLLOUT) {
