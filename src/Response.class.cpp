@@ -276,9 +276,9 @@ std::string Response::readTemplate(const t_status& _status) {
 
 void Response::checkIndex()
 {
-	std::string route = _headerFields["Route"];
+	const std::string &route = _headerFields["Route"];
 
-	std::string index = _serverConfig.getRouteIndex(route);
+	const std::string &index = _serverConfig.getRouteIndex(route);
 	if (index.empty())
 		return ;
 

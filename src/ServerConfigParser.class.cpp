@@ -13,7 +13,7 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 		{
 			if (!checkForServerDeclaration())
 				break;
-	
+
 			ServerConfig oneServerConfig = parsingOneServerConfig();
 			checkMinimumConfiguration(oneServerConfig);
 			setAddress(oneServerConfig);
@@ -77,7 +77,7 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 			addRoute(line, oneServerConfig);
 		else
 		{
-	
+
 			initializeConfiguration(oneServerConfig, line);
 		}
 	}
@@ -96,20 +96,20 @@ std::string 	ServerConfigParser::getRouteName(std::string &firstLine)
 route ServerConfigParser::addRoute(std::string firstLine, ServerConfig &oneServerConfig)
 {
 	std::string				line;
-	route		newRoute;
+	route					newRoute;
 	std::string				routeName;
 
 	routeName = getRouteName(firstLine);
 	while (getline(_fileToBeParsed, line) && trim(line).substr(0, 2) != "</")
 		initializeRoute(line, newRoute);
-	
+
 	oneServerConfig._routes[routeName] = newRoute;
 	return (newRoute);
 }
 
 void	ServerConfigParser::initializeRoute(std::string line, route &newRoute)
 {
-	std::string		key; 
+	std::string		key;
 	std::string		value;
 
 	extractKeyValue(line, key, value);
@@ -125,7 +125,7 @@ void	ServerConfigParser::initializeRoute(std::string line, route &newRoute)
 		setRouteHTTPRedirect(value, newRoute);
 	else if (key == "CGI")
 		setCGI(value, newRoute);
-	else 
+	else
 		throw std::invalid_argument("Invalid configuration key");
 }
 
@@ -201,7 +201,7 @@ void	ServerConfigParser::addAllowedMethod(std::string method, int &allowedMethod
 
 void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, std::string line)
 {
-	std::string		key; 
+	std::string		key;
 	std::string		value;
 	std::string		firstWord;
 
