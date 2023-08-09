@@ -29,7 +29,7 @@ class Response
 		void	processRequest();
 		void	checkRequestErrors();
 		void	checkMethod();
-		void	checkIndex();
+		bool	checkIndex();
 		void	methodID(int method);
 		void	setMethods(StringIntMap& methods);
 		void	GETMethod();

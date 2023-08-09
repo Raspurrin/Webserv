@@ -139,8 +139,8 @@ bool Response::checkCgi() {
 void Response::GETMethod()
 {
 	struct	stat s;
-
-	checkIndex();
+	if (_headerFields["Path"] == "/")
+		checkIndex();
 	const char *path = _headerFields["Path"].c_str() + 1;
 	bool is_cgi = checkCgi();
 
@@ -274,21 +274,22 @@ std::string Response::readTemplate(const t_status& _status) {
 	return (templateContent);
 }
 
-void Response::checkIndex()
+bool Response::checkIndex()
 {
 	const std::string &route = _headerFields["Route"];
-
 	const std::string &index = _serverConfig.getRouteIndex(route);
-	if (index.empty())
-		return ;
-
 	std::stringstream build;
+
+	if (index.empty())
+		return (false) ;
+
 	int last = _headerFields["Path"].length() - 1;
 	if (_headerFields["Path"][last] == '/')
 		build << _headerFields["Path"] << index;
 	else
 		build << _headerFields["Path"] << "/" << index;
 	_headerFields["Path"] = build.str();
+	return (true) ;
 }
 
 void Response::setMethods(StringIntMap& methods)
@@ -338,9 +339,10 @@ void Response::status307(const std::string& location)
 
 void Response::checkDirectory()
 {
-	std::string route = _headerFields["Route"];
-
-	if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
+	const std::string& route = _headerFields["Route"];
+	if (checkIndex())
+		GETMethod();
+	else if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
 	{
 		const t_status _status = {200, "OK", "Directory listing disabled."};
 		generateHTML(_status);
