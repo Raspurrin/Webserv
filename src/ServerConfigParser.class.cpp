@@ -239,7 +239,6 @@ void 	ServerConfigParser::setHost(std::string &value, ServerConfig &oneServerCon
 		if (nbrInt < 0 || nbrInt > 255)
 			throw std::invalid_argument("Invalid host number");
 		oneServerConfig._host = (oneServerConfig._host << 8) | nbrInt;
-		std::cout << "HOST " << std::hex << oneServerConfig._host << std::endl;
 	}
 	if (iteration != 4)
 		throw std::invalid_argument("Invalid host");

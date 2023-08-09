@@ -81,43 +81,56 @@
 
 		while (!g_shutdown_flag)
 		{
-			// no timeout needed since poll checks now both, servers and connections
 			numEvent = poll(_sockets.data(), _sockets.size(), -1);
-			if (numEvent > 0) {
-				for (size_t i = 0; i < _sockets.size(); ++i) {
-					if (i < (size_t)_numServerSockets)
-					{
-						listenToServerSocket(i);
-						if (g_shutdown_flag)
-							break ;
-					}
-					else {
-						handleClientSocket(i);
-					}
-					removeIndexes();
+			if (numEvent == -1)
+			{
+				perror("Poll error");
+				break ;
+			}
+			else if (numEvent == 0)
+				continue ;
+			for (size_t i = 0; i < _sockets.size(); ++i)
+			{
+				if (i < (size_t)_numServerSockets)
+				{
+					listenToServerSocket(i);
+					if (g_shutdown_flag)
+						break ;
 				}
+				else {
+					handleClientSocket(i);
+				}
+				removeIndexes();
 			}
 		}
 	}
 
 	void	ServerManager::listenToServerSocket(int i)
 	{
-			if (_sockets[i].revents & POLLIN)
-				addClientSocket(_sockets[i], _serverConfigs[i]);
+		if (_sockets[i].revents & POLLIN)
+			addClientSocket(_sockets[i], _serverConfigs[i]);
 	}
 
 	void	ServerManager::addClientSocket(t_pollfd &serverSocket, ServerConfig &serverConfig)
 	{
-		pollfd	newPfd;
+		int	newClientSocket;
 
-		newPfd.fd = accept(serverSocket.fd, NULL, NULL);
-		configureSocket(newPfd.fd);
-		setsockopt(newPfd.fd, IPPROTO_TCP, TCP_NODELAY, &_opt, sizeof(_opt));
-		newPfd.events = POLLIN | POLLOUT | POLLERR;
-		newPfd.revents = 0;
-		_sockets.push_back(newPfd);
-		Client	newClient(newPfd, serverConfig);
-		_clients.push_back(newClient);
+		newClientSocket = accept(serverSocket.fd, NULL, NULL);
+		if (newClientSocket == -1)
+			perror("Accept error");
+		else
+		{
+			configureSocket(newClientSocket);
+			setsockopt(newClientSocket, IPPROTO_TCP, TCP_NODELAY, &_opt, sizeof(_opt));
+
+			pollfd	newPfd;
+			newPfd.fd = newClientSocket;
+			newPfd.events = POLLIN | POLLOUT | POLLERR;
+			newPfd.revents = 0;
+			_sockets.push_back(newPfd);
+			Client	newClient(newPfd, serverConfig);
+			_clients.push_back(newClient);
+		}
 	}
 
 	void	ServerManager::sendResponse(Client &client)
