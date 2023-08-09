@@ -109,27 +109,19 @@ void Response::checkRequestErrors()
 
 void Response::checkMethod()
 {
-	_serverConfig.printServerConfig();
-	std::string route = _headerFields["Route"];
-	std::string method = _headerFields["Method"];
+	if (DEBUG)
+		_serverConfig.printServerConfig();
+	const std::string& route = _headerFields["Route"];
+	const std::string& method = _headerFields["Method"];
 	static StringIntMap methods;
 
-	if (!_serverConfig.isRouteValid(route))
-		throw ErrorResponse(404, "Route not configured.");
 	std::string redirect = _serverConfig.getHTTPRedirect(route);
 	if (!redirect.empty())
 	{
 		status307(redirect);
 		return ;
 	}
-	checkRoot(route);
 	setMethods(methods);
-
-	if (methods.find(method) == methods.end())
-		throw ErrorResponse(501, method);
-	if (!_serverConfig.isRouteMethodAllowed(route, methods[method]))
-		throw ErrorResponse(405, method);
-
 	methodID(methods[method]);
 }
 
@@ -280,22 +272,6 @@ std::string Response::readTemplate(const t_status& _status) {
 		templateContent += line + "\n";
 	file.close();
 	return (templateContent);
-}
-
-void Response::checkRoot(const std::string& route)
-{
-	std::string root = _serverConfig.getRouteRoot(route);
-
-	if (root.empty())
-		return ;
-	if (root[0] == '/' && _headerFields["Path"].length() != 1)
-		root = root.substr(1);
-	size_t pos = 0;
-	_headerFields["Path_Info"] = _headerFields["Path"];
-	pos = _headerFields["Path"].find(route, pos);
-	if (pos != std::string::npos)
-		_headerFields["Path"].replace(pos, route.length(), root);
-	_headerFields["Root"] = root;
 }
 
 void Response::checkIndex()

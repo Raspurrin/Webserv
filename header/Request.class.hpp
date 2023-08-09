@@ -42,6 +42,8 @@ class Request
 		void			checkHeaderFields();
 		void			checkStartLine();
 		void			checkValueSize(const std::string&, const std::string&);
+		void			setMethods(StringIntMap& methods);
+
 		void			whenDoneParsingHeader();
 		void			whenReadSmallerThanLen(std::istringstream&, char*);
 

@@ -295,9 +295,12 @@ void Request::checkBoundary(const std::string& line)
 
 void Request::separatingPathAndFilename()
 {
-	const std::string &path = _headerFields["Path"];
-
+	const std::string& path = _headerFields["Path"];
+	const std::string& route = _headerFields["Route"];
+	const std::string& method = _headerFields["Method"];
 	size_t	lastSlash = path.find_last_of("/\\");
+	static StringIntMap methods;
+
 	if (lastSlash == std::string::npos)
 		return ;
 	if (path == "/") {
@@ -306,6 +309,40 @@ void Request::separatingPathAndFilename()
 		_headerFields["Route"] = path.substr(1, lastSlash - 1);
 		_headerFields["Filename"] = path.substr(lastSlash + 1);
 	}
+	if (!_response._serverConfig.isRouteValid(route))
+		throw ErrorResponse(404, "Route not configured.");
+	checkRoot(route);
+	setMethods(methods);
+
+	if (methods.find(method) == methods.end())
+		throw ErrorResponse(501, method);
+	if (!_response._serverConfig.isRouteMethodAllowed(route, methods[method]))
+		throw ErrorResponse(405, method);
+}
+
+void Request::checkRoot(const std::string& route)
+{
+	std::string root = _response._serverConfig.getRouteRoot(route);
+
+	if (root.empty())
+		return ;
+	if (root[0] == '/' && _headerFields["Path"].length() != 1)
+		root = root.substr(1);
+	size_t pos = 0;
+	_headerFields["Path_Info"] = _headerFields["Path"];
+	pos = _headerFields["Path"].find(route, pos);
+	if (pos != std::string::npos)
+		_headerFields["Path"].replace(pos, route.length(), root);
+	_headerFields["Root"] = root;
+}
+
+void Request::setMethods(StringIntMap& methods)
+{
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
 }
 
 void Request::extractingFilenameToUpload()
