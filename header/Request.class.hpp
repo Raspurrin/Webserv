@@ -28,7 +28,7 @@ class Request
 		std::string		_bodyBuffer;
 		std::string		_requestBuffer;
 
-		void			readIntoString(int &socket);
+		void			readIntoString(int &socket, int& socketsIndex);
 		std::string		readingRequest(int &socket);
 		void			parseHeaderSection();
 		void			parseStartLine(std::string startLine);
@@ -51,7 +51,7 @@ class Request
 	public:
 
 		void			printMap();
-		void			getRequest(int &socket, ServerConfig &serverConfig);
+		void			getRequest(int &socket, ServerConfig &serverConfig, int& socketsIndex);
 		std::string		getResponse();
 		StringStringMap	getHeaderFields();
 		bool			isFlagOn();

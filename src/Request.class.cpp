@@ -14,13 +14,13 @@ Request::Request(void) :
 {
 }
 
-void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
+void	Request::getRequest(int	&socket, ServerConfig &serverConfig, int& socketsIndex)
 {
 	_response._serverConfig = serverConfig;
 	if (DEBUG)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
-		readIntoString(socket);
+		readIntoString(socket, socketsIndex);
 	} catch (const ErrorResponse& error) {
 		if (DEBUG)
 		{
@@ -32,7 +32,7 @@ void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 	}
 }
 
-void Request::readIntoString(int &socket)
+void Request::readIntoString(int &socket, int &socketsIndex)
 {
 	char	readBuffer[BUFLEN] = {0};
 
@@ -41,6 +41,7 @@ void Request::readIntoString(int &socket)
 	if (bytes_read <= 0)
 	{
 		close(socket);
+		_indexesToRemove.push_back(socketsIndex);
 		return;
 	}
 

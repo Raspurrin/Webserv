@@ -10,7 +10,7 @@ std::string Client::getResponse()
 	return (_request.getResponse());
 }
 
-void	Client::getRequest()
+void	Client::getRequest(int& socketsIndex)
 {
 	_request.getRequest(_pollFd.fd, _serverConfig);
 }

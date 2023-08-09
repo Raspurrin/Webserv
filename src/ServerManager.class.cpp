@@ -139,15 +139,13 @@
 		static int i = 0;
 
 		if (DEBUG)
-		{
-			std::cout
-				<< YELLOW << "========= "
-				<< DEF << "Sending response: " << i
-				<< YELLOW << " =========\n\n" << DEF;
-		}
+			std::cout << YELLOW << "========= " << DEF << "Sending response: " << i << YELLOW << " =========\n\n" << DEF;
+
 		int err = send(client.getSocket(),_response.c_str(), _response.length(), 0);
+
 		if (DEBUG)
 			std::cout << RED << "------> SUCCESS: Message sent from server. <-------\n\n" << DEF;
+
 		if (client.responseFinished() || err == -1 || (size_t)err != _response.length()) {
 			close(client.getSocket());
 		}
@@ -156,6 +154,7 @@
 
 	void	ServerManager::handleClientSocket(int i)
 	{
+
 		if (!_clients[i - _numServerSockets].isRequestSent() && time(NULL) - _clients[i - _numServerSockets].getLastActivity() > REQUEST_TIMEOUT) {
 			_clients[i - _numServerSockets].setRequestError(ErrorResponse(408, "from ServerManager"));
 		}
@@ -166,7 +165,7 @@
 		{
 			if (DEBUG)
 				std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;
-			_clients[i - _numServerSockets].getRequest();
+			_clients[i - _numServerSockets].getRequest(i);
 		}
 		else if (_clients[i - _numServerSockets].isRequestSent() && _sockets[i].revents & POLLOUT) {
 			sendResponse(_clients[i - _numServerSockets]);
