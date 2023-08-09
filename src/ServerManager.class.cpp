@@ -27,26 +27,35 @@
 	{
 		int	listen_socket_fd;
 
-		t_pollfd serverSocket;
-
-		serverSocket.events = POLLIN;
-
 		if ((listen_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 			error_handle("Socket error in webserver");
 
 		if (DEBUG)
-			std::cout << "- addServerSocket: Socket " << serverSocket.fd << std::endl;
+			std::cout << "- addServerSocket: Socket " << listen_socket_fd << std::endl;
 
 		configureSocket(listen_socket_fd);
 
-		if (setsockopt(serverSocket.fd, SOL_SOCKET, SO_REUSEADDR, &_opt, sizeof(_opt)))
+		if (setsockopt(listen_socket_fd, SOL_SOCKET, SO_REUSEADDR, &_opt, sizeof(_opt)))
+		{
+			close(listen_socket_fd);
 			error_handle("setsockopt");
+		}
 
-		if (bind(serverSocket.fd, reinterpret_cast<struct sockaddr *>(&serverConfig.getAddress()), sizeof(serverConfig.getAddress())) < 0)
+		if (bind(listen_socket_fd, reinterpret_cast<struct sockaddr *>(&serverConfig.getAddress()), sizeof(serverConfig.getAddress())) < 0)
+		{
+			close(listen_socket_fd);
 			error_handle("Binding error");
+		}
 
-		if (listen(serverSocket.fd, BACKLOG) < 0)
+		if (listen(listen_socket_fd, BACKLOG) < 0)
+		{
+			close(listen_socket_fd);
 			error_handle("Listen error");
+		}
+
+		t_pollfd serverSocket;
+		serverSocket.fd = listen_socket_fd;
+		serverSocket.events = POLLIN;
 
 		_sockets.push_back(serverSocket);
 		++_numServerSockets;

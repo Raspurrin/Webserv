@@ -9,6 +9,7 @@ volatile sig_atomic_t	g_shutdown_flag = 0;
 
 void signalHandler(int sigNum)
 {
+	(void)sigNum;
 	g_shutdown_flag = 1;
 }
 
