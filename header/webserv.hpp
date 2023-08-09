@@ -1,6 +1,7 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
+#include <bits/types/sig_atomic_t.h>
 #include <vector>
 #include <csignal>
 #include <list>
@@ -56,7 +57,8 @@ typedef struct myRoute
 typedef std::map<std::string, route> 		StringRouteMap;
 
 
-extern IntVector			_indexesToRemove;
+extern IntVector				_indexesToRemove;
+extern volatile sig_atomic_t	g_shutdown_flag;
 
 void	error_handle(std::string type);
 IntStringMap	createErrorMap();

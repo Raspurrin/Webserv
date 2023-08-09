@@ -1,21 +1,21 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
 #include "../header/ServerManager.class.hpp"
+#include <bits/types/sig_atomic_t.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 
+volatile sig_atomic_t	g_shutdown_flag = 0;
+
 void signalHandler(int sigNum)
 {
-	std::cout
-		<< RED << "\nInterrupt signal caught.\n"
-		<< CYAN << "Shutting down web server...Bye!"
-		<< DEF << std::endl;
-	exit(sigNum);
+	g_shutdown_flag = 1;
 }
 
 int main(void)
 {
 	signal(SIGINT, signalHandler);
+
 	ServerManager ServerManager;
 
 	ServerManager.eventLoop();

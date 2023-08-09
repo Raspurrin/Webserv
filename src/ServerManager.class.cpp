@@ -25,45 +25,63 @@
 
 	void	ServerManager::addServerSocket(ServerConfig &serverConfig)
 	{
+		int	listen_socket_fd;
+
 		t_pollfd serverSocket;
 
 		serverSocket.events = POLLIN;
-		if ((serverSocket.fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-			error_handle("Socket error");
+
+		if ((listen_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+			error_handle("Socket error in webserver");
+
 		if (DEBUG)
 			std::cout << "- addServerSocket: Socket " << serverSocket.fd << std::endl;
-		configureSocket(serverSocket.fd);
+
+		configureSocket(listen_socket_fd);
+
 		if (setsockopt(serverSocket.fd, SOL_SOCKET, SO_REUSEADDR, &_opt, sizeof(_opt)))
 			error_handle("setsockopt");
+
 		if (bind(serverSocket.fd, reinterpret_cast<struct sockaddr *>(&serverConfig.getAddress()), sizeof(serverConfig.getAddress())) < 0)
 			error_handle("Binding error");
+
 		if (listen(serverSocket.fd, BACKLOG) < 0)
 			error_handle("Listen error");
+
 		_sockets.push_back(serverSocket);
 		++_numServerSockets;
 	}
 
 	void	ServerManager::configureSocket(int newSocket)
 	{
-		int		flags;
 		if (DEBUG)
 			std::cout << "- configureSocket: Socket " << newSocket << std::endl;
+
+		int		flags;
+
 		flags = fcntl(newSocket, F_GETFL, 0);
-		fcntl(newSocket, F_SETFL, flags | O_NONBLOCK);
+		if (flags == -1)
+			error_handle("Failed to get socket flags in fcntl().");
+		if (fcntl(newSocket, F_SETFL, flags | O_NONBLOCK) == -1)
+			error_handle("Failed to set socket to non-blocking in fcntl().");
 	}
 
 	void	ServerManager::eventLoop(void)
 	{
 		int	numEvent;
 
-		while (69)
+		while (!g_shutdown_flag)
 		{
 			// no timeout needed since poll checks now both, servers and connections
 			numEvent = poll(_sockets.data(), _sockets.size(), -1);
 			if (numEvent > 0) {
 				for (size_t i = 0; i < _sockets.size(); ++i) {
 					if (i < (size_t)_numServerSockets)
+					{
 						listenToServerSocket(i);
+						if (g_shutdown_flag)
+							break ;
+					}
 					else {
 						handleClientSocket(i);
 					}
