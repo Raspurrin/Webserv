@@ -265,7 +265,7 @@ std::string Response::readTemplate(const t_status& _status) {
 	if (!file)
 	{
 		std::stringstream ss;
-		ss << "<h1>" <<  _status._code << _status._description << _status._message << "</h1>";
+		ss << "<h1>" <<  _status._code << " " << _status._description << " "<< _status._message << "</h1>";
 		return (ss.str());
 	}
 	while (getline(file, line))
