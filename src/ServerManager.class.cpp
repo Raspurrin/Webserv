@@ -154,28 +154,29 @@ void	ServerManager::sendResponse(Client &client)
 
 void	ServerManager::handleClientSocket(int i)
 {
-	int	clientIndex = i - _numServerSockets;
+	t_pollfd&		socketPoll = _sockets[i];
+	class Client&	clientPoll = _clients[i - _numServerSockets];
 
-	if (_sockets[i].revents & POLLNVAL) {
+	if (socketPoll.revents & POLLNVAL) {
 		_indexesToRemove.push_back(i);
 	}
-	else if (_sockets[i].revents & POLLERR || _sockets[i].revents & POLLHUP) {
-		close(_sockets[i].fd);
+	else if (socketPoll.revents & POLLERR || socketPoll.revents & POLLHUP) {
+		close(socketPoll.fd);
 		_indexesToRemove.push_back(i);
 	}
-	else if (!_clients[clientIndex].isRequestSent() && time(NULL) - _clients[clientIndex].getLastActivity() > REQUEST_TIMEOUT) {
-		_clients[clientIndex].setRequestError(ErrorResponse(408, "from ServerManager"));
+	else if (!clientPoll.isRequestSent() && time(NULL) - clientPoll.getLastActivity() > REQUEST_TIMEOUT) {
+		clientPoll.setRequestError(ErrorResponse(408, "from ServerManager"));
 	}
-	else if (_sockets[i].revents & POLLIN && !_clients[clientIndex].isRequestSent())
+	else if (socketPoll.revents & POLLIN && !clientPoll.isRequestSent())
 	{
 		if (DEBUG)
 			std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;
 
-		_clients[clientIndex].getRequest(i);
+		clientPoll.getRequest(i);
 	}
-	else if (_clients[clientIndex].isRequestSent() && _sockets[i].revents & POLLOUT) {
-		sendResponse(_clients[clientIndex]);
-		if (_clients[clientIndex].responseFinished()) {
+	else if (clientPoll.isRequestSent() && socketPoll.revents & POLLOUT) {
+		sendResponse(clientPoll);
+		if (clientPoll.responseFinished()) {
 			_indexesToRemove.push_back(i);
 		}
 	}
