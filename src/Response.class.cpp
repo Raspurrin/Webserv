@@ -259,7 +259,7 @@ void Response::generateHTML(const t_status& _status)
 }
 
 std::string Response::readTemplate(const t_status& _status) {
-	std::ifstream	file("template.html");
+	std::ifstream	file("www/template.html");
 	std::string templateContent, line;
 
 	if (!file)
