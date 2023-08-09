@@ -28,7 +28,7 @@
 # define DEBUG 0
 #endif
 
-#define REQUEST_TIMEOUT 2
+#define REQUEST_TIMEOUT 10
 
 typedef std::map<std::string, std::string>	StringStringMap;
 typedef std::map<std::string, int>			StringIntMap;
@@ -54,6 +54,7 @@ typedef struct myRoute
 } route;
 
 typedef std::map<std::string, route> 		StringRouteMap;
+
 
 extern IntVector			_indexesToRemove;
 

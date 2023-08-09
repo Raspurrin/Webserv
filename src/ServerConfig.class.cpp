@@ -148,8 +148,8 @@ void	ServerConfig::printServerConfig() const
 	}
 }
 
-std::ostream&	operator<<(std::ostream &out, const ServerConfig &serverConfig)
-{
-	serverConfig.printServerConfig();
-	return (out);
-}
+// std::ostream&	operator<<(std::ostream &out, const ServerConfig &serverConfig)
+// {
+// 	serverConfig.printServerConfig();
+// 	return (out);
+// }

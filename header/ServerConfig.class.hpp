@@ -23,7 +23,7 @@ class ServerConfig
 		StringStringMap		_errorPages;
 		StringRouteMap		_routes;
 		t_sockaddr_in		_address;
-	
+
 	private:
 		size_t				calculateStringOverlap(const std::string &str1, const std::string &str2) const;
 

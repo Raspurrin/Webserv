@@ -28,6 +28,7 @@ Cgi::Cgi(StringStringMap &headerFields): _headerFields(headerFields) {
 	} else {
 		_env.push_back("QUERY_STRING=");
 	}
+	// FIXME: CHANGE THIS!!!!
 	_env.push_back("SCRIPT_NAME=" + _headerFields["Filename"]);
 	_env.push_back("SERVER_SOFTWARE=webserv");
 	for (StringStringMap::iterator it = _headerFields.begin(); it != _headerFields.end(); it++) {

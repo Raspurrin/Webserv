@@ -19,14 +19,13 @@ void Response::getQueryString() {
 	if (_headerFields["Path"].find('?') != std::string::npos) {
 		_headerFields["Query-String"] = _headerFields["Path"].substr(_headerFields["Path"].find('?') + 1);
 		_headerFields["Path"] = _headerFields["Path"].substr(0, _headerFields["Path"].find('?'));
-		std::cout << "!!!!!" << _headerFields["Query-String"] << std::endl;
 	}
 }
 
 std::string	Response::getResponse()
 {
 	if (_firstCall) {
-		tryChdir("www");
+		// tryChdir("www");
 		getQueryString();
 		processRequest();
 		readFile();
@@ -39,7 +38,7 @@ std::string	Response::getResponse()
 	std::string response(_responseBuff, _responseStream.gcount());
 
 	if (_responseStream.eof()) {
-		tryChdir("..");
+		// tryChdir("..");
 		_responseFinished = true;
 	}
 	return (response);
@@ -109,10 +108,11 @@ void Response::checkRequestErrors()
 
 void Response::checkMethod()
 {
-	if (DEBUG)
+	if (DEBUG) {
 		_serverConfig.printServerConfig();
-	const std::string& route = _headerFields["Route"];
-	const std::string& method = _headerFields["Method"];
+	}
+	std::string route = _headerFields["Route"];
+	std::string method = _headerFields["Method"];
 	static StringIntMap methods;
 
 	std::string redirect = _serverConfig.getHTTPRedirect(route);

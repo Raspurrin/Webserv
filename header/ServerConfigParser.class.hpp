@@ -15,15 +15,15 @@ class ServerConfigParser
 		StringBoolMap			_availableOptions;
 
 	private:
-		void					setCGI(std::string &value, ServerConfig::route &newRoute);
+		void					setCGI(std::string &value, route &newRoute);
 		void 					setHost(std::string &value, ServerConfig &oneServerConfig);
 		void 					checkForServerNameDuplicate(const std::string &serverName) const;
 		void 					checkMinimumConfiguration(ServerConfig &oneServerConfig);
 		bool 					validate(std::string str, int (*checkFunc)(int));
-		void 					setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute);
+		void 					setRouteHTTPRedirect(std::string &value, route &newRoute);
 		std::string				findFirstWord(std::string line);
-		void 					setRouteRoot(std::string &root, ServerConfig::route &newRoute);
-		void 					setRouteIndex(std::string &index, ServerConfig::route &newRoute);
+		void 					setRouteRoot(std::string &root, route &newRoute);
+		void 					setRouteIndex(std::string &index, route &newRoute);
 		void					setPort(std::string &value, ServerConfig &oneServerConfig);
 		void					setServerName(std::string &serverName, ServerConfig &oneServerConfig);
 		void					setClientBodySize(std::string &value, ServerConfig &oneServerConfig);
@@ -34,8 +34,8 @@ class ServerConfigParser
 		void					addErrorPage(ServerConfig &oneServerConfig, std::string line);
 		ServerConfig			parsingOneServerConfig();
 		void					initializeConfiguration(ServerConfig &oneServerConfig, std::string line);
-		void					initializeRoute(std::string line, ServerConfig::route &newRoute);
-		ServerConfig::route		addRoute(std::string firstLine, ServerConfig &oneServerConfig);
+		void					initializeRoute(std::string line, route &newRoute);
+		route		addRoute(std::string firstLine, ServerConfig &oneServerConfig);
 		void			   		setAddress(ServerConfig &oneServerConfig);
 		void					addToVector(ServerConfig &oneServerConfig);
 		void					removeCommentFrom(std::string &line);
@@ -48,7 +48,7 @@ class ServerConfigParser
 
 	public:
 		serverConfigVector		getServerConfigs();
-	
+
 	public:
 		ServerConfigParser(const char *fileName);
 		~ServerConfigParser(void);

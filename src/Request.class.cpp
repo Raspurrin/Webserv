@@ -22,6 +22,10 @@ void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 	try {
 		readIntoString(socket);
 	} catch (const ErrorResponse& error) {
+		if (DEBUG)
+		{
+			printMap();
+		}
 		_isRead = true;
 		_response._hasError = true;
 		_response._requestParsingError = error;
@@ -303,7 +307,13 @@ void Request::separatingPathAndFilename()
 	if (path == "/") {
 		_headerFields["Route"] = "/";
 	} else {
-		StringRouteMap::reverse_iterator rit = _response._serverConfig.getRoutesMap();
+		const StringRouteMap &routes = _response._serverConfig.getRoutesMap();
+		StringRouteMap::reverse_iterator rit = routes.rbegin();
+		for (; rit != routes.rend(); rit++) {
+			size_t pos = path.find(rit->first, 1);
+			if (pos == 1)
+				_headerFields["Route"] = rit->first;
+		}
 	}
 
 	if (!_response._serverConfig.isRouteValid(route))
