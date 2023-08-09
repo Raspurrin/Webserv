@@ -307,7 +307,7 @@ void Request::separatingPathAndFilename()
 	if (path == "/") {
 		_headerFields["Route"] = "/";
 	} else {
-		const StringRouteMap &routes = _response._serverConfig.getRoutesMap();
+		StringRouteMap routes = _response._serverConfig.getRoutesMap();
 		StringRouteMap::reverse_iterator rit = routes.rbegin();
 		for (; rit != routes.rend(); rit++) {
 			size_t pos = path.find(rit->first, 1);
@@ -315,6 +315,7 @@ void Request::separatingPathAndFilename()
 				_headerFields["Route"] = rit->first;
 		}
 	}
+	std::cout << "ROUTE: " << route << std::endl;
 
 	if (!_response._serverConfig.isRouteValid(route))
 		throw ErrorResponse(404, "Route not configured.");

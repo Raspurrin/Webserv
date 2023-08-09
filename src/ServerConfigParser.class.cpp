@@ -93,10 +93,10 @@ std::string 	ServerConfigParser::getRouteName(std::string &firstLine)
 	return (routeName);
 }
 
-ServerConfig::route ServerConfigParser::addRoute(std::string firstLine, ServerConfig &oneServerConfig)
+route ServerConfigParser::addRoute(std::string firstLine, ServerConfig &oneServerConfig)
 {
 	std::string				line;
-	ServerConfig::route		newRoute;
+	route		newRoute;
 	std::string				routeName;
 
 	routeName = getRouteName(firstLine);
@@ -107,7 +107,7 @@ ServerConfig::route ServerConfigParser::addRoute(std::string firstLine, ServerCo
 	return (newRoute);
 }
 
-void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &newRoute)
+void	ServerConfigParser::initializeRoute(std::string line, route &newRoute)
 {
 	std::string		key; 
 	std::string		value;
@@ -129,7 +129,7 @@ void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &
 		throw std::invalid_argument("Invalid configuration key");
 }
 
-void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute)
+void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, route &newRoute)
 {
 	if (value.empty())
 		throw std::invalid_argument("HTTP redirect cannot be empty");
@@ -138,7 +138,7 @@ void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, ServerConfig::
 	newRoute._HTTPRedirect = value;
 }
 
-void	ServerConfigParser::setRouteRoot(std::string &root, ServerConfig::route &newRoute)
+void	ServerConfigParser::setRouteRoot(std::string &root, route &newRoute)
 {
 	if (root.empty())
 		throw std::invalid_argument("Root cannot be empty");
@@ -147,7 +147,7 @@ void	ServerConfigParser::setRouteRoot(std::string &root, ServerConfig::route &ne
 	newRoute._root = root;
 }
 
-void	ServerConfigParser::setRouteIndex(std::string &index, ServerConfig::route &newRoute)
+void	ServerConfigParser::setRouteIndex(std::string &index, route &newRoute)
 {
 	if (index.empty())
 		throw std::invalid_argument("Index cannot be empty");
@@ -156,7 +156,7 @@ void	ServerConfigParser::setRouteIndex(std::string &index, ServerConfig::route &
 	newRoute._index = index;
 }
 
-void	ServerConfigParser::setCGI(std::string &value, ServerConfig::route &newRoute)
+void	ServerConfigParser::setCGI(std::string &value, route &newRoute)
 {
 	std::stringstream ss(value);
 	std::string fileExtension;
