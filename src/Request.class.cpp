@@ -223,10 +223,6 @@ void Request::checkHeaderFields()
 		}
 
 		doesKeyExist(400, "Content-Type", "Missing content type field.");
-		std::string content_type = _headerFields["Content-Type"];
-		size_t found = content_type.find("multipart/form-data");
-		if (found == std::string::npos)
-			throw ErrorResponse(415, content_type);
 	}
 }
 
@@ -235,6 +231,11 @@ void Request::parseBody(std::string body)
 	std::string line;
 	std::istringstream	ss(body);
 
+
+	std::string content_type = _headerFields["Content-Type"];
+	size_t found = content_type.find("multipart/form-data");
+	if (found == std::string::npos)
+		throw ErrorResponse(415, content_type);
 	getline(ss, line);
 	checkBoundary(line);
 	getline(ss, _headerFields["Body-Disposition"]);
