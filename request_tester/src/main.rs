@@ -5,16 +5,13 @@ use fastcmp::Compare;
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-	let chunks: Vec<std::result::Result<_, std::io::Error>> = vec![Ok(""), Ok(" "),  Ok("World"), Ok("!")];
-	let stream = futures_util::stream::iter(chunks);
-
-	let _body = reqwest::Body::wrap_stream(stream);
 
 	let client = reqwest::Client::new();
 	let upload_name = generate(5, "0123456789");
 	evaluate_test("Get", test_get(&client).await);
 	evaluate_test("Post", test_post(&client, upload_name.clone()).await);
 	evaluate_test("Delete", test_delete(&client, upload_name).await);
+	evaluate_test("Cgi", test_cgi(&client).await);
 
 	Ok(())
 }
@@ -187,6 +184,105 @@ async fn test_delete(client: &reqwest::Client, filename: String) -> Result<(), &
 	match res {
 		Ok(ret) => if ret.status() != 405 {
 			return Err("Could not delete file")
+		},
+		Err(_) => return Err("Failed to send request")
+	}
+
+	Ok(())
+}
+
+async fn test_cgi(client: &reqwest::Client) -> Result<(), &'static str> {
+	let res = client.get("http://localhost:8080/scripts/test.pl").send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 200 {
+				return Err("Got wrong Status code")
+			}
+			match ret.text().await {
+				Ok(text) => {
+					if text != "Hello World\n" {
+						return Err("Got wrong body")
+					}
+				},
+				Err(_) => return Err("Could not parse body")
+			}
+		},
+		Err(_) => return Err("Failed to send request")
+	}
+
+	let res = client.get("http://localhost:8080/scripts/test.py?first_name=Hello&last_name=World").send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 200 {
+				return Err("Got wrong Status code")
+			}
+			match ret.text().await {
+				Ok(text) => {
+					if text != "First Name: Hello, Last Name: World\n" {
+						return Err("Got wrong body")
+					}
+				},
+				Err(_) => return Err("Could not parse body")
+			}
+		},
+		Err(_) => return Err("Failed to send request")
+	}
+
+	let res = client.get("http://localhost:8080/scripts/custom_status.py").send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 505 {
+				return Err("Expected status 505")
+			}
+		},
+		Err(_) => return Err("Could not parse body")
+	}
+
+	let res = client.post("http://localhost:8080/scripts/post_echo.py")
+		.header("Content-Type", "text/plain")
+		.body("This is a test")
+		.send()
+		.await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 200 {
+				return Err("Got wrong Status code")
+			}
+			match ret.text().await {
+				Ok(text) => {
+					if text != "This is a test\n" {
+						return Err("Got wrong body")
+					}
+				},
+				Err(_) => return Err("Could not parse body")
+			}
+		},
+		Err(_) => return Err("Failed to send request")
+	}
+
+	let chunks: Vec<std::result::Result<_, std::io::Error>> = vec![Ok("Another"), Ok(" "),  Ok("Test"), Ok("!")];
+	let stream = futures_util::stream::iter(chunks);
+
+	let body = reqwest::Body::wrap_stream(stream);
+
+	let res = client.post("http://localhost:8080/scripts/post_echo.py")
+		.header("Content-Type", "text/plain")
+		.body(body)
+		.send()
+		.await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 200 {
+				return Err("Got wrong Status code")
+			}
+			match ret.text().await {
+				Ok(text) => {
+					if text != "Another Test!\n" {
+						return Err("Got wrong body")
+					}
+				},
+				Err(_) => return Err("Could not parse body")
+			}
 		},
 		Err(_) => return Err("Failed to send request")
 	}
