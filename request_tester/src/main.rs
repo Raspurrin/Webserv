@@ -12,6 +12,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	evaluate_test("Post", test_post(&client, upload_name.clone()).await);
 	evaluate_test("Delete", test_delete(&client, upload_name.clone()).await);
 	evaluate_test("Cgi", test_cgi(&client, upload_name.clone()).await);
+	evaluate_test("Unknown Request", test_unknown(&client).await);
 
 	Ok(())
 }
@@ -307,7 +308,7 @@ async fn test_cgi(client: &reqwest::Client, filename: String) -> Result<(), &'st
 		},
 		Err(_) => return Err("Could not parse body")
 	}
-	let mut file = match tokio::fs::read("test").await {
+	let file = match tokio::fs::read("test").await {
 		Ok(f) => f,
 		Err(_) => {
 			return Err("Failed to open file")
@@ -362,6 +363,27 @@ async fn test_cgi(client: &reqwest::Client, filename: String) -> Result<(), &'st
 
 	Ok(())
 }
+
+async fn test_unknown(client: &reqwest::Client) -> Result<(), &str> {
+	let res = client.put("http://localhost:8080/dir").send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 501 {
+				return Err("Expected status 501")
+			}
+		},
+		Err(_) => return Err("Could not parse body")
+	}
+
+	let res = client.head("http://localhost:8080/dir").send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 501 {
+				return Err("Expected status 501")
+			}
+		},
+		Err(_) => return Err("Could not parse body")
+	}
 
 	Ok(())
 }
