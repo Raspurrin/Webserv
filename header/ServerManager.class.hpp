@@ -7,7 +7,7 @@
 #include "ServerConfigParser.class.hpp"
 #include "Client.class.hpp"
 
-#define BACKLOG 3
+#define BACKLOG 0
 
 typedef struct sockaddr_in			t_sockaddr_in;
 typedef struct pollfd				t_pollfd;
@@ -34,6 +34,7 @@ class ServerManager
 		void	listenToServerSocket(int i);
 		void	handleClientSocket(int i);
 		void	sendResponse(Client &client);
+		void	sendShutdownMessage(int clientSocket);
 
 	public:
 		void	eventLoop(void);

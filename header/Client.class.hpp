@@ -14,7 +14,7 @@ class Client
 
 	public:
 		int						getSocket();
-		void					getRequest(int& socketsIndex);
+		void					getRequest();
 		std::string				getResponse();
 		bool					isRequestSent();
 		StringStringMap			getHeaderFields();

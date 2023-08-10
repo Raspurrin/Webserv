@@ -9,13 +9,17 @@ volatile sig_atomic_t	g_shutdown_flag = 0;
 
 void signalHandler(int sigNum)
 {
-	(void)sigNum;
-	g_shutdown_flag = 1;
+	if (sigNum == SIGINT || sigNum == SIGTERM)
+	{
+		std::cout << "Received shutdown signal. Terminating processes..." << std::endl;
+		g_shutdown_flag = 1;
+	}
 }
 
 int main(void)
 {
 	signal(SIGINT, signalHandler);
+	signal(SIGTERM, signalHandler);
 
 	ServerManager ServerManager;
 

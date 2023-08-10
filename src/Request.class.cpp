@@ -1,4 +1,5 @@
 #include "../header/Request.class.hpp"
+#include <cstring>
 #include <sstream>
 
 Request::Request(void) :
@@ -14,13 +15,13 @@ Request::Request(void) :
 {
 }
 
-void	Request::getRequest(int	&socket, ServerConfig &serverConfig, int& socketsIndex)
+void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 {
 	_response._serverConfig = serverConfig;
 	if (DEBUG)
 		std::cout << CYAN << "\nGetting request...\n" << DEF;
 	try {
-		readIntoString(socket, socketsIndex);
+		readIntoString(socket);
 	} catch (const ErrorResponse& error) {
 		if (DEBUG)
 		{
@@ -32,19 +33,16 @@ void	Request::getRequest(int	&socket, ServerConfig &serverConfig, int& socketsIn
 	}
 }
 
-void Request::readIntoString(int &socket, int &socketsIndex)
+void Request::readIntoString(int &socket)
 {
 	char	readBuffer[BUFLEN] = {0};
 
 	_last_activity = time(NULL);
 	int bytes_read = recv(socket, readBuffer, BUFLEN - 1, 0);
 	if (bytes_read <= 0)
-	{
-		close(socket);
-		_indexesToRemove.push_back(socketsIndex);
 		return;
-	}
-
+	if (strstr(readBuffer, "SERVER_SHUTDOWN") != NULL)
+		std::cout << "Server shutting down..." << std::endl;
 	// We need the number of bytes read here since we cant be sure that we didnt read any zero bytes,
 	// which would lead to a truncation of the string.
 	std::string read(readBuffer, bytes_read);

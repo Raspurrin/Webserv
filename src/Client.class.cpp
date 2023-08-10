@@ -10,9 +10,9 @@ std::string Client::getResponse()
 	return (_request.getResponse());
 }
 
-void	Client::getRequest(int& socketsIndex)
+void	Client::getRequest()
 {
-	_request.getRequest(_pollFd.fd, _serverConfig, socketsIndex);
+	_request.getRequest(_pollFd.fd, _serverConfig);
 }
 
 bool	Client::isRequestSent()

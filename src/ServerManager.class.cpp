@@ -1,6 +1,7 @@
 #include "../header/ServerManager.class.hpp"
 #include "../header/ServerConfigParser.class.hpp"
 #include "../header/Cgi.class.hpp"
+#include <unistd.h>
 
 IntVector	_indexesToRemove;
 
@@ -81,28 +82,39 @@ void	ServerManager::eventLoop(void)
 
 	while (!g_shutdown_flag)
 	{
-		numEvent = poll(_sockets.data(), _sockets.size(), -1);
-		if (numEvent == -1)
+		if (g_shutdown_flag)
 		{
-			perror("Poll error");
-			break ;
+			for (size_t i = 0; i < _sockets.size(); ++i)
+			{
+				close(_sockets[i].fd);
+				_indexesToRemove.push_back(i);
+				removeIndexes();
+				break ;
+			}
 		}
-		else if (numEvent == 0)
+		numEvent = poll(_sockets.data(), _sockets.size(), -1);
+		if (numEvent <= 0)
 			continue ;
 		for (size_t i = 0; i < _sockets.size(); ++i)
 		{
 			if (i < (size_t)_numServerSockets)
-			{
 				listenToServerSocket(i);
-				if (g_shutdown_flag)
-					break ;
-			}
-			else {
+			else
+			{
 				handleClientSocket(i);
+				if (g_shutdown_flag)
+					sendShutdownMessage(_sockets[i].fd);
 			}
 			removeIndexes();
 		}
 	}
+}
+
+void	ServerManager::sendShutdownMessage(int clientSocket)
+{
+	const char*	shutdownMessage = "SERVER_SHUTDOWN";
+	size_t		messageLength = strlen(shutdownMessage);
+	send(clientSocket, shutdownMessage, messageLength, 0);
 }
 
 void	ServerManager::listenToServerSocket(int i)
@@ -159,22 +171,24 @@ void	ServerManager::handleClientSocket(int i)
 
 	if (socketPoll.revents & POLLNVAL) {
 		_indexesToRemove.push_back(i);
+		return ;
 	}
 	else if (socketPoll.revents & POLLERR || socketPoll.revents & POLLHUP) {
 		close(socketPoll.fd);
 		_indexesToRemove.push_back(i);
+		return ;
 	}
-	else if (!clientPoll.isRequestSent() && time(NULL) - clientPoll.getLastActivity() > REQUEST_TIMEOUT) {
+	if (!clientPoll.isRequestSent() && time(NULL) - clientPoll.getLastActivity() > REQUEST_TIMEOUT) {
 		clientPoll.setRequestError(ErrorResponse(408, "from ServerManager"));
 	}
-	else if (socketPoll.revents & POLLIN && !clientPoll.isRequestSent())
+	if (socketPoll.revents & POLLIN && !clientPoll.isRequestSent())
 	{
 		if (DEBUG)
 			std::cout << "- POLLIN with index " << i << " fd is " << _sockets[i].fd << std::endl;
 
-		clientPoll.getRequest(i);
+		clientPoll.getRequest();
 	}
-	else if (clientPoll.isRequestSent() && socketPoll.revents & POLLOUT) {
+	if (clientPoll.isRequestSent() && socketPoll.revents & POLLOUT) {
 		sendResponse(clientPoll);
 		if (clientPoll.responseFinished()) {
 			_indexesToRemove.push_back(i);
