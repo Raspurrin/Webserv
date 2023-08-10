@@ -117,19 +117,6 @@ async fn test_post(client: &reqwest::Client, filename: String) -> Result<(), &'s
 		}
 	}
 
-	let res = client.post("http://localhost:8080/dir")
-		.body("Hi")
-		.send()
-		.await;
-	match res {
-		Ok(ret) => if ret.status() != 405 {
-			return Err("Method should be forbidden")
-		},
-		Err(err) => {
-			println!("{:?}", err);
-			return Err("Failed to send request")
-		}
-	}
 
 	let res = client.get(format!("http://localhost:8080/upload/{}", filename)).send().await;
 	match res {
@@ -148,6 +135,20 @@ async fn test_post(client: &reqwest::Client, filename: String) -> Result<(), &'s
 			}
 		},
 		Err(_) => {
+			return Err("Failed to send request")
+		}
+	}
+
+	let res = client.post("http://localhost:8080/dir")
+		.body("Hi")
+		.send()
+		.await;
+	match res {
+		Ok(ret) => if ret.status() != 405 {
+			return Err("Method should be forbidden")
+		},
+		Err(err) => {
+			println!("{:?}", err);
 			return Err("Failed to send request")
 		}
 	}
