@@ -176,6 +176,7 @@ void Response::POSTMethod()
 		_response = cgi.runPost();
     return ;
   }
+	// TODO: Is it possible to allow any route here? If yes why are we not doing it?
 	if (_headerFields["Route"] != "upload")
 		throw ErrorResponse(403, "POST: Route to save files must be called upload.");
 	if (_headerFields.count("Root") > 0)

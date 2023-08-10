@@ -10,8 +10,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let upload_name = generate(5, "0123456789");
 	evaluate_test("Get", test_get(&client).await);
 	evaluate_test("Post", test_post(&client, upload_name.clone()).await);
-	evaluate_test("Delete", test_delete(&client, upload_name).await);
-	evaluate_test("Cgi", test_cgi(&client).await);
+	evaluate_test("Delete", test_delete(&client, upload_name.clone()).await);
+	evaluate_test("Cgi", test_cgi(&client, upload_name.clone()).await);
 
 	Ok(())
 }
@@ -192,7 +192,7 @@ async fn test_delete(client: &reqwest::Client, filename: String) -> Result<(), &
 	Ok(())
 }
 
-async fn test_cgi(client: &reqwest::Client) -> Result<(), &'static str> {
+async fn test_cgi(client: &reqwest::Client, filename: String) -> Result<(), &'static str> {
 	let res = client.get("http://localhost:8080/scripts/test.pl").send().await;
 	match res {
 		Ok(ret) => {
@@ -287,6 +287,81 @@ async fn test_cgi(client: &reqwest::Client) -> Result<(), &'static str> {
 		},
 		Err(_) => return Err("Failed to send request")
 	}
+
+	let res = client.get("http://localhost:8080/scripts/not_executable.py").send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 500 {
+				return Err("Expected status 500")
+			}
+		},
+		Err(_) => return Err("Could not parse body")
+	}
+
+	let res = client.get("http://localhost:8080/scripts/crash.py").send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 500 {
+				return Err("Expected status 500")
+			}
+		},
+		Err(_) => return Err("Could not parse body")
+	}
+	let mut file = match tokio::fs::read("test").await {
+		Ok(f) => f,
+		Err(_) => {
+			return Err("Failed to open file")
+		}
+	};
+
+	let part = reqwest::multipart::Part::bytes(file.clone())
+		.file_name(filename.clone())
+		.mime_str("text/plain");
+	let part = match part {
+		Ok(part) => part,
+		Err(_) => return Err("Failed to convert file")
+	};
+
+	let form = reqwest::multipart::Form::new()
+		.part("myFile", part);
+
+	let res = client.post("http://localhost:8080/scripts/post.py")
+		.multipart(form)
+		.send()
+		.await;
+	match res {
+		Ok(ret) => if ret.status() != 201 {
+			println!("{:?}", ret);
+			return Err("Failed to upload file")
+		},
+		Err(err) => {
+			println!("{:?}", err);
+			return Err("Failed to send request")
+		}
+	}
+
+	let res = client.get(format!("http://localhost:8080/scripts/{}", filename)).send().await;
+	match res {
+		Ok(ret) => {
+			if ret.status() != 200 {
+				return Err("Could not retrive uploaded file again")
+			} else {
+				let content = match ret.bytes().await {
+					Ok(bytes) => bytes,
+					Err(_) => return Err("Could not retrive bytes")
+				}.to_vec();
+				if !content.feq(&file) {
+					return Err("File was uploaded incorrect")
+				 }
+			}
+		},
+		Err(_) => {
+			return Err("Failed to send request")
+		}
+	}
+
+	Ok(())
+}
 
 	Ok(())
 }
