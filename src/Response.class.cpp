@@ -244,6 +244,7 @@ void Response::generateHTML(const t_status& _status)
 	if (pos != std::string::npos) {
 		std::stringstream ss;
 		ss << _status._code;
+		_response["Status code"] = ss.str() + " " + _status._description;
 		htmlTemplate.replace(pos, 9, ss.str());
 	}
 	pos = htmlTemplate.find("{{DESCRIPTION}}");
