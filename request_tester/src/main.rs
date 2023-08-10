@@ -13,7 +13,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	let client = reqwest::Client::new();
 	let upload_name = generate(5, "0123456789");
 	evaluate_test("Get", test_get(&client).await);
-	evaluate_test("Post", test_post(&client, upload_name).await);
+	evaluate_test("Post", test_post(&client, upload_name.clone()).await);
+	evaluate_test("Delete", test_delete(&client, upload_name).await);
 
 	Ok(())
 }
@@ -168,6 +169,26 @@ async fn test_post(client: &reqwest::Client, filename: String) -> Result<(), &'s
 			println!("{:?}", err);
 			return Err("Failed to send request")
 		}
+	}
+
+	Ok(())
+}
+
+async fn test_delete(client: &reqwest::Client, filename: String) -> Result<(), &'static str> {
+	let res = client.delete(format!("http://localhost:8080/upload/{}", filename)).send().await;
+	match res {
+		Ok(ret) => if ret.status() != 200 {
+			return Err("Could not delete file")
+		},
+		Err(_) => return Err("Failed to send request")
+	}
+
+	let res = client.delete("http://localhost:8080/dir/index.html").send().await;
+	match res {
+		Ok(ret) => if ret.status() != 405 {
+			return Err("Could not delete file")
+		},
+		Err(_) => return Err("Failed to send request")
 	}
 
 	Ok(())
