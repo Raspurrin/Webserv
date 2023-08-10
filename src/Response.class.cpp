@@ -378,9 +378,9 @@ bool Response::listDir()
 
 	std::string body = "<h1>Content of " + _headerFields["Path"] + "</h1>";
 
-	const char *insert = _headerFields["Path"][_headerFields["Path"].size() - 1] == '/' ? "" : "/";
+	const char *insert = _headerFields["Path_Info"][_headerFields["Path_Info"].size() - 1] == '/' ? "" : "/";
 	for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-		body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
+		body += "<a href=\"" + _headerFields["Path_Info"] + insert + *it + "\">" + *it + "</a><br>";
 
 	_response["Body"] = body;
 	_response["Content-Type:"] = "text/html";
