@@ -1,3 +1,5 @@
+use std::io::Read;
+
 use reqwest;
 use color_print::cprintln;
 use random_string::generate;
@@ -13,6 +15,7 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 	evaluate_test("Delete", test_delete(&client, upload_name.clone()).await);
 	evaluate_test("Cgi", test_cgi(&client, upload_name.clone()).await);
 	evaluate_test("Unknown Request", test_unknown(&client).await);
+	evaluate_test("Timeout", test_timeout().await);
 
 	Ok(())
 }
@@ -385,5 +388,23 @@ async fn test_unknown(client: &reqwest::Client) -> Result<(), &str> {
 		Err(_) => return Err("Could not parse body")
 	}
 
+	Ok(())
+}
+
+async fn test_timeout() -> Result<(), &'static str> {
+	let con = std::net::TcpStream::connect("127.0.0.1:8081");
+	match con {
+		Ok(mut con) => {
+			tokio::time::sleep(tokio::time::Duration::new(3, 0)).await;
+			let mut output = String::new();
+			if let Err(_) =  con.read_to_string(&mut output) {
+				return Err("Could not read from stream")
+			}
+			if let None = output.find("408") {
+				return Err("Did not find timout response code")
+			}
+		},
+		Err(_) => return Err("Could not connect to server")
+	}
 	Ok(())
 }
