@@ -39,8 +39,10 @@ void Request::readIntoString(int &socket)
 
 	_last_activity = time(NULL);
 	int bytes_read = recv(socket, readBuffer, BUFLEN - 1, 0);
-	if (bytes_read <= 0)
+	if (bytes_read <= 0) {
+		close(socket);
 		return;
+	}
 	if (strstr(readBuffer, "SERVER_SHUTDOWN") != NULL)
 		std::cout << "Server shutting down..." << std::endl;
 	// We need the number of bytes read here since we cant be sure that we didnt read any zero bytes,

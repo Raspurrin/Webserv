@@ -89,9 +89,9 @@ void	ServerManager::eventLoop(void)
 			{
 				close(_sockets[i].fd);
 				_fdsToRemove.push_back(_sockets[i].fd);
-				removeSockets();
-				break ;
 			}
+			removeSockets();
+			break ;
 		}
 		numEvent = poll(_sockets.data(), _sockets.size(), -1);
 		if (numEvent <= 0)
@@ -174,7 +174,7 @@ void	ServerManager::handleClientSocket(int i)
 		_fdsToRemove.push_back(socketPoll.fd);
 		return ;
 	}
-	else if (socketPoll.revents & POLLERR || socketPoll.revents & POLLHUP) {
+	if (socketPoll.revents & POLLERR || socketPoll.revents & POLLHUP) {
 		close(socketPoll.fd);
 		_fdsToRemove.push_back(socketPoll.fd);
 		return ;
