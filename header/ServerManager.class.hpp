@@ -41,6 +41,7 @@ class ServerManager
 
 	public:
 		ServerManager(void);
+		ServerManager(const char*);
 		//ServerManager(ServerManager const &src);
 		//ServerManager&	operator=(ServerManager const &assign);
 		~ServerManager(void);

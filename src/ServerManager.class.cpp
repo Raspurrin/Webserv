@@ -6,10 +6,10 @@
 
 IntVector	_fdsToRemove;
 
-ServerManager::ServerManager(void) :
+ServerManager::ServerManager(const char* configuration_file) :
 	_opt(1), _numServerSockets(0)
 {
-	ServerConfigParser	parsingConfig("configuration.conf");
+	ServerConfigParser	parsingConfig(configuration_file);
 
 	_serverConfigs = parsingConfig.getServerConfigs();
 	addServerSockets();
