@@ -1,7 +1,9 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-#include <bits/types/sig_atomic_t.h>
+#ifdef __linux__
+	#include <bits/types/sig_atomic_t.h>
+#endif
 #include <vector>
 #include <csignal>
 #include <list>

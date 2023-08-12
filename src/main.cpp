@@ -1,7 +1,6 @@
 #include "../header/webserv.hpp"
 #include "../header/colours.hpp"
 #include "../header/ServerManager.class.hpp"
-#include <bits/types/sig_atomic_t.h>
 #include <sys/socket.h>
 #include <fcntl.h>
 
