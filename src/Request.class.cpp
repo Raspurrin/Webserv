@@ -306,15 +306,14 @@ void Request::separatingPathAndFilename()
 	const std::string& method = _headerFields["Method"];
 	static StringIntMap methods;
 
-	if (path == "/") {
-		_headerFields["Route"] = "/";
-	} else {
-		StringRouteMap &routes = (StringRouteMap &)_response._serverConfig.getRoutesMap();
-		StringRouteMap::reverse_iterator rit = routes.rbegin();
-		for (; rit != routes.rend(); rit++) {
-			size_t pos = path.find(rit->first, 1);
-			if (pos == 1)
-				_headerFields["Route"] = rit->first;
+	_headerFields["Route"] = "/";
+	StringRouteMap &routes = (StringRouteMap &)_response._serverConfig.getRoutesMap();
+	StringRouteMap::reverse_iterator rit = routes.rbegin();
+	for (; rit != routes.rend(); rit++) {
+		size_t pos = path.find(rit->first, 1);
+		if (pos == 1) {
+			_headerFields["Route"] = rit->first;
+			break;
 		}
 	}
 
@@ -342,10 +341,16 @@ void Request::checkRoot(const std::string& route)
 		root = root.substr(1);
 	size_t pos = 0;
 	_headerFields["Path_Info"] = _headerFields["Path"];
-	pos = _headerFields["Path"].find(route, pos);
-	if (pos != std::string::npos)
-		_headerFields["Path"].replace(pos, route.length(), root);
+	if (route != "/") {
+			pos = _headerFields["Path"].find(route, pos);
+		if (pos != std::string::npos)
+			_headerFields["Path"].replace(pos, route.length(), root);
+	} else {
+		_headerFields["Path"] = root + _headerFields["Path"];
+	}
 	_headerFields["Root"] = root;
+	if (_headerFields["Path"][0] != '/')
+		_headerFields["Path"] = "/" + _headerFields["Path"];
 }
 
 void Request::setMethods(StringIntMap& methods)
