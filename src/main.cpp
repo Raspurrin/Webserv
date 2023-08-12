@@ -15,13 +15,21 @@ void signalHandler(int sigNum)
 	}
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
+	std::string configuration_file = "configuration.conf";
+
 	signal(SIGINT, signalHandler);
 	signal(SIGTERM, signalHandler);
 
-	ServerManager ServerManager;
-
+	if (argc == 2)
+		configuration_file = argv[1];
+	else if (argc != 1)
+	{
+		std::cout << "Wrong arguments." << std::endl;
+		exit(1);
+	}
+	ServerManager ServerManager(configuration_file.c_str());
 	ServerManager.eventLoop();
 	return (0);
 }
