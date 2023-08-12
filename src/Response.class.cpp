@@ -19,14 +19,13 @@ void Response::getQueryString() {
 	if (_headerFields["Path"].find('?') != std::string::npos) {
 		_headerFields["Query-String"] = _headerFields["Path"].substr(_headerFields["Path"].find('?') + 1);
 		_headerFields["Path"] = _headerFields["Path"].substr(0, _headerFields["Path"].find('?'));
-		std::cout << "!!!!!" << _headerFields["Query-String"] << std::endl;
 	}
 }
 
 std::string	Response::getResponse()
 {
 	if (_firstCall) {
-		tryChdir("www");
+		// tryChdir("www");
 		getQueryString();
 		processRequest();
 		readFile();
@@ -39,7 +38,7 @@ std::string	Response::getResponse()
 	std::string response(_responseBuff, _responseStream.gcount());
 
 	if (_responseStream.eof()) {
-		tryChdir("..");
+		// tryChdir("..");
 		_responseFinished = true;
 	}
 	return (response);
@@ -51,7 +50,8 @@ void Response::processRequest()
 		checkRequestErrors();
 		checkMethod();
 	} catch (const ErrorResponse& error) {
-		std::cout << "Catched exception " << error.what() << std::endl;
+		if (DEBUG)
+			std::cout << "Catched exception " << error.what() << std::endl;
 		buildError(error.getError());
 	}
 	return ;
@@ -109,27 +109,20 @@ void Response::checkRequestErrors()
 
 void Response::checkMethod()
 {
-	_serverConfig.printServerConfig();
+	if (DEBUG) {
+		_serverConfig.printServerConfig();
+	}
 	std::string route = _headerFields["Route"];
 	std::string method = _headerFields["Method"];
 	static StringIntMap methods;
 
-	if (!_serverConfig.isRouteValid(route))
-		throw ErrorResponse(404, "Route not configured.");
 	std::string redirect = _serverConfig.getHTTPRedirect(route);
 	if (!redirect.empty())
 	{
 		status307(redirect);
 		return ;
 	}
-	checkRoot(route);
 	setMethods(methods);
-
-	if (methods.find(method) == methods.end())
-		throw ErrorResponse(501, method);
-	if (!_serverConfig.isRouteMethodAllowed(route, methods[method]))
-		throw ErrorResponse(405, method);
-
 	methodID(methods[method]);
 }
 
@@ -147,8 +140,11 @@ bool Response::checkCgi() {
 void Response::GETMethod()
 {
 	struct	stat s;
+	if (_headerFields["Path"] == "/")
+		checkIndex();
 	const char *path = _headerFields["Path"].c_str() + 1;
 	bool is_cgi = checkCgi();
+
 
 	if (access(path, F_OK) == -1)
 		throw ErrorResponse(404, "GET: File doesn't exist.");
@@ -174,13 +170,14 @@ void Response::POSTMethod()
 	std::stringstream ss;
 	std::string location;
 	const char* upload_path;
-  bool is_cgi = checkCgi();
+	bool is_cgi = checkCgi();
 
 	if (is_cgi) {
 		Cgi cgi(_headerFields);
 		_response = cgi.runPost();
     return ;
   }
+	// TODO: Is it possible to allow any route here? If yes why are we not doing it?
 	if (_headerFields["Route"] != "upload")
 		throw ErrorResponse(403, "POST: Route to save files must be called upload.");
 	if (_headerFields.count("Root") > 0)
@@ -249,6 +246,7 @@ void Response::generateHTML(const t_status& _status)
 	if (pos != std::string::npos) {
 		std::stringstream ss;
 		ss << _status._code;
+		_response["Status code"] = ss.str() + " " + _status._description;
 		htmlTemplate.replace(pos, 9, ss.str());
 	}
 	pos = htmlTemplate.find("{{DESCRIPTION}}");
@@ -264,13 +262,13 @@ void Response::generateHTML(const t_status& _status)
 }
 
 std::string Response::readTemplate(const t_status& _status) {
-	std::ifstream	file("template.html");
+	std::ifstream	file("www/template.html");
 	std::string templateContent, line;
 
 	if (!file)
 	{
 		std::stringstream ss;
-		ss << "<h1>" <<  _status._code << _status._description << _status._message << "</h1>";
+		ss << "<h1>" <<  _status._code << " " << _status._description << " "<< _status._message << "</h1>";
 		return (ss.str());
 	}
 	while (getline(file, line))
@@ -279,20 +277,22 @@ std::string Response::readTemplate(const t_status& _status) {
 	return (templateContent);
 }
 
-void Response::checkRoot(const std::string& route)
+bool Response::checkIndex()
 {
-	std::string root = _serverConfig.getRouteRoot(route);
+	const std::string &route = _headerFields["Route"];
+	const std::string &index = _serverConfig.getRouteIndex(route);
+	std::stringstream build;
 
-	if (root.empty())
-		return ;
-	if (root[0] == '/')
-		root = root.substr(1);
-	size_t pos = 0;
-	_headerFields["Path_Info"] = _headerFields["Path"];
-	pos = _headerFields["Path"].find(route, pos);
-	if (pos != std::string::npos)
-		_headerFields["Path"].replace(pos, route.length(), root);
-	_headerFields["Root"] = root;
+	if (index.empty())
+		return (false) ;
+
+	int last = _headerFields["Path"].length() - 1;
+	if (_headerFields["Path"][last] == '/')
+		build << _headerFields["Path"] << index;
+	else
+		build << _headerFields["Path"] << "/" << index;
+	_headerFields["Path"] = build.str();
+	return (true) ;
 }
 
 void Response::setMethods(StringIntMap& methods)
@@ -342,27 +342,13 @@ void Response::status307(const std::string& location)
 
 void Response::checkDirectory()
 {
-	std::string route = _headerFields["Route"];
-
-	std::string index = _serverConfig.getRouteIndex(route);
-	if (index.empty())
-	{
-		if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
-		{
-			const t_status _status = {200, "OK", "Directory listing disabled."};
-			generateHTML(_status);
-		}
-	}
-	else
-	{
-		std::stringstream build;
-		int last = _headerFields["Path"].length() - 1;
-		if (_headerFields["Path"][last] == '/')
-			build << _headerFields["Path"] << index;
-		else
-			build << _headerFields["Path"] << "/" << index;
-		_headerFields["Path"] = build.str();
+	const std::string& route = _headerFields["Route"];
+	if (checkIndex())
 		GETMethod();
+	else if (!_serverConfig.isRouteDirListingEnabled(route) || !listDir())
+	{
+		const t_status _status = {200, "OK", "Directory listing disabled."};
+		generateHTML(_status);
 	}
 }
 
@@ -394,9 +380,9 @@ bool Response::listDir()
 
 	std::string body = "<h1>Content of " + _headerFields["Path"] + "</h1>";
 
-	const char *insert = _headerFields["Path"][_headerFields["Path"].size() - 1] == '/' ? "" : "/";
+	const char *insert = _headerFields["Path_Info"][_headerFields["Path_Info"].size() - 1] == '/' ? "" : "/";
 	for (std::set<std::string>::iterator it = files.begin(); it != files.end(); it++)
-		body += "<a href=\"" + _headerFields["Path"] + insert + *it + "\">" + *it + "</a><br>";
+		body += "<a href=\"" + _headerFields["Path_Info"] + insert + *it + "\">" + *it + "</a><br>";
 
 	_response["Body"] = body;
 	_response["Content-Type:"] = "text/html";

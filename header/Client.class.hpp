@@ -9,7 +9,7 @@ class Client
 {
 	private:
 		struct pollfd			_pollFd;
-		class ServerConfig&		_serverConfig;
+		class ServerConfig		_serverConfig;
 		class Request			_request;
 
 	public:
@@ -24,6 +24,7 @@ class Client
 		bool					responseFinished();
 
 	public:
+		Client();
 		Client(struct pollfd& pollFd, class ServerConfig& ServerConfig);
 		Client(Client const &obj);
 		Client&	operator=(Client const &rhs);

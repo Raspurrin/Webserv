@@ -13,7 +13,7 @@ ServerConfigParser::ServerConfigParser(const char *fileName)
 		{
 			if (!checkForServerDeclaration())
 				break;
-	
+
 			ServerConfig oneServerConfig = parsingOneServerConfig();
 			checkMinimumConfiguration(oneServerConfig);
 			setAddress(oneServerConfig);
@@ -77,7 +77,7 @@ ServerConfig ServerConfigParser::parsingOneServerConfig()
 			addRoute(line, oneServerConfig);
 		else
 		{
-	
+
 			initializeConfiguration(oneServerConfig, line);
 		}
 	}
@@ -93,23 +93,23 @@ std::string 	ServerConfigParser::getRouteName(std::string &firstLine)
 	return (routeName);
 }
 
-ServerConfig::route ServerConfigParser::addRoute(std::string firstLine, ServerConfig &oneServerConfig)
+route ServerConfigParser::addRoute(std::string firstLine, ServerConfig &oneServerConfig)
 {
 	std::string				line;
-	ServerConfig::route		newRoute;
+	route					newRoute;
 	std::string				routeName;
 
 	routeName = getRouteName(firstLine);
 	while (getline(_fileToBeParsed, line) && trim(line).substr(0, 2) != "</")
 		initializeRoute(line, newRoute);
-	
+
 	oneServerConfig._routes[routeName] = newRoute;
 	return (newRoute);
 }
 
-void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &newRoute)
+void	ServerConfigParser::initializeRoute(std::string line, route &newRoute)
 {
-	std::string		key; 
+	std::string		key;
 	std::string		value;
 
 	extractKeyValue(line, key, value);
@@ -125,11 +125,11 @@ void	ServerConfigParser::initializeRoute(std::string line, ServerConfig::route &
 		setRouteHTTPRedirect(value, newRoute);
 	else if (key == "CGI")
 		setCGI(value, newRoute);
-	else 
+	else
 		throw std::invalid_argument("Invalid configuration key");
 }
 
-void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, ServerConfig::route &newRoute)
+void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, route &newRoute)
 {
 	if (value.empty())
 		throw std::invalid_argument("HTTP redirect cannot be empty");
@@ -138,7 +138,7 @@ void	ServerConfigParser::setRouteHTTPRedirect(std::string &value, ServerConfig::
 	newRoute._HTTPRedirect = value;
 }
 
-void	ServerConfigParser::setRouteRoot(std::string &root, ServerConfig::route &newRoute)
+void	ServerConfigParser::setRouteRoot(std::string &root, route &newRoute)
 {
 	if (root.empty())
 		throw std::invalid_argument("Root cannot be empty");
@@ -147,7 +147,7 @@ void	ServerConfigParser::setRouteRoot(std::string &root, ServerConfig::route &ne
 	newRoute._root = root;
 }
 
-void	ServerConfigParser::setRouteIndex(std::string &index, ServerConfig::route &newRoute)
+void	ServerConfigParser::setRouteIndex(std::string &index, route &newRoute)
 {
 	if (index.empty())
 		throw std::invalid_argument("Index cannot be empty");
@@ -156,7 +156,7 @@ void	ServerConfigParser::setRouteIndex(std::string &index, ServerConfig::route &
 	newRoute._index = index;
 }
 
-void	ServerConfigParser::setCGI(std::string &value, ServerConfig::route &newRoute)
+void	ServerConfigParser::setCGI(std::string &value, route &newRoute)
 {
 	std::stringstream ss(value);
 	std::string fileExtension;
@@ -174,7 +174,9 @@ void	ServerConfigParser::setCGI(std::string &value, ServerConfig::route &newRout
 		if (!newRoute._CGI.insert(fileExtension).second)
 			throw std::invalid_argument("duplicate file extension set for CGI");
 	}
-	std::cout << "CGI: " << value << std::endl;
+
+	if (DEBUG)
+		std::cout << "CGI: " << value << std::endl;
 }
 
 bool	ServerConfigParser::checkBooleanString(std::string boolString)
@@ -201,7 +203,7 @@ void	ServerConfigParser::addAllowedMethod(std::string method, int &allowedMethod
 
 void	ServerConfigParser::initializeConfiguration(ServerConfig &oneServerConfig, std::string line)
 {
-	std::string		key; 
+	std::string		key;
 	std::string		value;
 	std::string		firstWord;
 
@@ -257,10 +259,17 @@ void	ServerConfigParser::setPort(std::string &value, ServerConfig &oneServerConf
 	oneServerConfig._port = port;
 }
 
+static int isValidChar(int c) {
+	if (isalnum(c) || c == '-' || c == '.') {
+		return 1;
+	}
+	return 0;
+}
+
 void	ServerConfigParser::setServerName(std::string &serverName, ServerConfig &oneServerConfig)
 {
-	if (!validate(serverName, isalnum))
-		throw std::invalid_argument("Server name should be alphanumeric");
+	if (!validate(serverName, isValidChar))
+		throw std::invalid_argument("Server name can only contain alphanumeric characters and '-' and '.'");
 	if (serverName.empty())
 		throw std::invalid_argument("Server name cannot be empty");
 	if (!oneServerConfig._name.empty())
@@ -297,7 +306,7 @@ void	ServerConfigParser::addErrorPage(ServerConfig &oneServerConfig, std::string
 
 	line = line.substr(10, line.length());
 	extractKeyValue(line, key, value);
-	
+
 	keyInt = std::atoi(key.c_str());
 	if (keyInt < 100 || keyInt > 599)
 		throw std::invalid_argument("Invalid error code for error page");

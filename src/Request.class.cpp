@@ -1,4 +1,5 @@
 #include "../header/Request.class.hpp"
+#include <cstring>
 #include <sstream>
 
 Request::Request(void) :
@@ -22,6 +23,10 @@ void	Request::getRequest(int	&socket, ServerConfig &serverConfig)
 	try {
 		readIntoString(socket);
 	} catch (const ErrorResponse& error) {
+		if (DEBUG)
+		{
+			printMap();
+		}
 		_isRead = true;
 		_response._hasError = true;
 		_response._requestParsingError = error;
@@ -35,11 +40,9 @@ void Request::readIntoString(int &socket)
 	_last_activity = time(NULL);
 	int bytes_read = recv(socket, readBuffer, BUFLEN - 1, 0);
 	if (bytes_read <= 0)
-	{
-		close(socket);
 		return;
-	}
-
+	if (strstr(readBuffer, "SERVER_SHUTDOWN") != NULL)
+		std::cout << "Server shutting down..." << std::endl;
 	// We need the number of bytes read here since we cant be sure that we didnt read any zero bytes,
 	// which would lead to a truncation of the string.
 	std::string read(readBuffer, bytes_read);
@@ -220,10 +223,6 @@ void Request::checkHeaderFields()
 		}
 
 		doesKeyExist(400, "Content-Type", "Missing content type field.");
-		std::string content_type = _headerFields["Content-Type"];
-		size_t found = content_type.find("multipart/form-data");
-		if (found == std::string::npos)
-			throw ErrorResponse(415, content_type);
 	}
 }
 
@@ -232,6 +231,11 @@ void Request::parseBody(std::string body)
 	std::string line;
 	std::istringstream	ss(body);
 
+
+	std::string content_type = _headerFields["Content-Type"];
+	size_t found = content_type.find("multipart/form-data");
+	if (found == std::string::npos)
+		throw ErrorResponse(415, content_type);
 	getline(ss, line);
 	checkBoundary(line);
 	getline(ss, _headerFields["Body-Disposition"]);
@@ -295,13 +299,60 @@ void Request::checkBoundary(const std::string& line)
 
 void Request::separatingPathAndFilename()
 {
-	std::string path = _headerFields["Path"];
+	const std::string& path = _headerFields["Path"];
+	const std::string& route = _headerFields["Route"];
+	const std::string& method = _headerFields["Method"];
+	static StringIntMap methods;
 
-	size_t	lastSlash = path.find_last_of("/\\");
-	if (lastSlash == std::string::npos)
+	if (path == "/") {
+		_headerFields["Route"] = "/";
+	} else {
+		StringRouteMap &routes = (StringRouteMap &)_response._serverConfig.getRoutesMap();
+		StringRouteMap::reverse_iterator rit = routes.rbegin();
+		for (; rit != routes.rend(); rit++) {
+			size_t pos = path.find(rit->first, 1);
+			if (pos == 1)
+				_headerFields["Route"] = rit->first;
+		}
+	}
+
+	if (DEBUG)
+		std::cout << "ROUTE: " << route << std::endl;
+
+	if (!_response._serverConfig.isRouteValid(route))
+		throw ErrorResponse(404, "Route not configured.");
+	checkRoot(route);
+	setMethods(methods);
+
+	if (methods.find(method) == methods.end())
+		throw ErrorResponse(501, method);
+	if (!_response._serverConfig.isRouteMethodAllowed(route, methods[method]))
+		throw ErrorResponse(405, method);
+}
+
+void Request::checkRoot(const std::string& route)
+{
+	std::string root = _response._serverConfig.getRouteRoot(route);
+
+	if (root.empty())
 		return ;
-	_headerFields["Route"] = path.substr(1, lastSlash - 1);
-	_headerFields["Filename"] = path.substr(lastSlash + 1);
+	if (root[0] == '/' && _headerFields["Path"].length() != 1)
+		root = root.substr(1);
+	size_t pos = 0;
+	_headerFields["Path_Info"] = _headerFields["Path"];
+	pos = _headerFields["Path"].find(route, pos);
+	if (pos != std::string::npos)
+		_headerFields["Path"].replace(pos, route.length(), root);
+	_headerFields["Root"] = root;
+}
+
+void Request::setMethods(StringIntMap& methods)
+{
+	if (!methods.empty())
+		return ;
+	methods["GET"] = 1;
+	methods["POST"] = 2;
+	methods["DELETE"] = 4;
 }
 
 void Request::extractingFilenameToUpload()

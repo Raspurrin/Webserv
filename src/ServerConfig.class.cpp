@@ -51,6 +51,11 @@ bool	ServerConfig::isRouteValid(const std::string &path) const
 	return (false);
 }
 
+const StringRouteMap&	ServerConfig::getRoutesMap() const
+{
+	return (_routes);
+}
+
 int		ServerConfig::getRouteMethods(const std::string &path) const
 {
 	if (_routes.find(path) != _routes.end())
@@ -143,8 +148,8 @@ void	ServerConfig::printServerConfig() const
 	}
 }
 
-std::ostream&	operator<<(std::ostream &out, const ServerConfig &serverConfig)
-{
-	serverConfig.printServerConfig();
-	return (out);
-}
+// std::ostream&	operator<<(std::ostream &out, const ServerConfig &serverConfig)
+// {
+// 	serverConfig.printServerConfig();
+// 	return (out);
+// }

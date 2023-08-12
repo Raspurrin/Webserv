@@ -7,14 +7,13 @@
 #include "ServerConfigParser.class.hpp"
 #include "Client.class.hpp"
 
-#define BACKLOG 3
+#define BACKLOG 0
 
 typedef struct sockaddr_in			t_sockaddr_in;
 typedef struct pollfd				t_pollfd;
-typedef struct route				route;
 typedef struct server_config		t_server_config;
 typedef std::vector<t_pollfd>		PollFdVector;
-typedef	std::vector<class Client>	ClientVector;
+typedef	std::map<int, class Client>	ClientMap;
 typedef std::vector<ServerConfig>	ServerConfigVector;
 
 class ServerManager
@@ -23,11 +22,11 @@ class ServerManager
 		int					_opt;
 		int					_numServerSockets;
 		ServerConfigVector	_serverConfigs;
-		ClientVector		_clients;
+		ClientMap		_clients;
 		PollFdVector		_sockets;
 
 	private:
-		void	removeIndexes(void);
+		void	removeSockets(void);
 		void	addServerSockets(void);
 		void	addServerSocket(ServerConfig &serverConfig);
 		void	configureSocket(int newSocket);
@@ -35,6 +34,7 @@ class ServerManager
 		void	listenToServerSocket(int i);
 		void	handleClientSocket(int i);
 		void	sendResponse(Client &client);
+		void	sendShutdownMessage(int clientSocket);
 
 	public:
 		void	eventLoop(void);
