@@ -25,7 +25,6 @@ void Response::getQueryString() {
 std::string	Response::getResponse()
 {
 	if (_firstCall) {
-		// tryChdir("www");
 		getQueryString();
 		processRequest();
 		readFile();
@@ -38,7 +37,6 @@ std::string	Response::getResponse()
 	std::string response(_responseBuff, _responseStream.gcount());
 
 	if (_responseStream.eof()) {
-		// tryChdir("..");
 		_responseFinished = true;
 	}
 	return (response);
@@ -87,6 +85,10 @@ void Response::assembleResponse()
 
 	_responseMessage += _response["Version"] + " "
 		+ _response["Status code"] + "\n";
+
+	std::string	server_name = _serverConfig.getName();
+	if (!server_name.empty())
+		_responseMessage += "Server: " + server_name + "\n";
 
 	for(StringStringMap::iterator it = _response.begin(); it != _response.end(); it++)
 	{
