@@ -50,7 +50,8 @@ void Response::processRequest()
 		checkRequestErrors();
 		checkMethod();
 	} catch (const ErrorResponse& error) {
-		std::cout << "Catched exception " << error.what() << std::endl;
+		if (DEBUG)
+			std::cout << "Catched exception " << error.what() << std::endl;
 		buildError(error.getError());
 	}
 	return ;

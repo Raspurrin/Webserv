@@ -20,6 +20,10 @@ bool	Client::isRequestSent()
 	return (_request.isFlagOn());
 }
 
+Client::Client() {
+	
+}
+
 Client::Client(struct pollfd &pollFd, class ServerConfig& ServerConfig) :
 	_pollFd(pollFd),
 	_serverConfig(ServerConfig)

@@ -315,7 +315,9 @@ void Request::separatingPathAndFilename()
 				_headerFields["Route"] = rit->first;
 		}
 	}
-	std::cout << "ROUTE: " << route << std::endl;
+
+	if (DEBUG)
+		std::cout << "ROUTE: " << route << std::endl;
 
 	if (!_response._serverConfig.isRouteValid(route))
 		throw ErrorResponse(404, "Route not configured.");

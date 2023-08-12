@@ -2,8 +2,9 @@
 #include "../header/ServerConfigParser.class.hpp"
 #include "../header/Cgi.class.hpp"
 #include <unistd.h>
+#include <algorithm>
 
-IntVector	_indexesToRemove;
+IntVector	_fdsToRemove;
 
 ServerManager::ServerManager(void) :
 	_opt(1), _numServerSockets(0)
@@ -87,8 +88,8 @@ void	ServerManager::eventLoop(void)
 			for (size_t i = 0; i < _sockets.size(); ++i)
 			{
 				close(_sockets[i].fd);
-				_indexesToRemove.push_back(i);
-				removeIndexes();
+				_fdsToRemove.push_back(_sockets[i].fd);
+				removeSockets();
 				break ;
 			}
 		}
@@ -105,8 +106,8 @@ void	ServerManager::eventLoop(void)
 				if (g_shutdown_flag)
 					sendShutdownMessage(_sockets[i].fd);
 			}
-			removeIndexes();
 		}
+		removeSockets();
 	}
 }
 
@@ -141,7 +142,7 @@ void	ServerManager::addClientSocket(t_pollfd &serverSocket, ServerConfig &server
 		newPfd.revents = 0;
 		_sockets.push_back(newPfd);
 		Client	newClient(newPfd, serverConfig);
-		_clients.push_back(newClient);
+		_clients[newPfd.fd] = newClient;
 	}
 }
 
@@ -167,15 +168,15 @@ void	ServerManager::sendResponse(Client &client)
 void	ServerManager::handleClientSocket(int i)
 {
 	t_pollfd&		socketPoll = _sockets[i];
-	class Client&	clientPoll = _clients[i - _numServerSockets];
+	class Client&	clientPoll = _clients[socketPoll.fd];
 
 	if (socketPoll.revents & POLLNVAL) {
-		_indexesToRemove.push_back(i);
+		_fdsToRemove.push_back(socketPoll.fd);
 		return ;
 	}
 	else if (socketPoll.revents & POLLERR || socketPoll.revents & POLLHUP) {
 		close(socketPoll.fd);
-		_indexesToRemove.push_back(i);
+		_fdsToRemove.push_back(socketPoll.fd);
 		return ;
 	}
 	if (!clientPoll.isRequestSent() && time(NULL) - clientPoll.getLastActivity() > REQUEST_TIMEOUT) {
@@ -188,21 +189,27 @@ void	ServerManager::handleClientSocket(int i)
 
 		clientPoll.getRequest();
 	}
-	if (clientPoll.isRequestSent() && socketPoll.revents & POLLOUT) {
+	else if (clientPoll.isRequestSent() && socketPoll.revents & POLLOUT) {
 		sendResponse(clientPoll);
 		if (clientPoll.responseFinished()) {
-			_indexesToRemove.push_back(i);
+			_fdsToRemove.push_back(socketPoll.fd);
 		}
 	}
 }
 
-void	ServerManager::removeIndexes()
+void	ServerManager::removeSockets()
 {
-	for (size_t i = 0; i < _indexesToRemove.size(); ++i) {
-		_sockets.erase(_sockets.begin() + _indexesToRemove[i]);
-		_clients.erase(_clients.begin() + (_indexesToRemove[i] - _numServerSockets));
+	PollFdVector::iterator it = _sockets.begin();
+	while (it != _sockets.end()) {
+		if (std::find(_fdsToRemove.begin(), _fdsToRemove.end(), it->fd) != _fdsToRemove.end()) {
+			_clients.erase(it->fd);
+			it = _sockets.erase(it);
+		} else {
+			it++;
+		}
 	}
-	_indexesToRemove.clear();
+
+	_fdsToRemove.clear();
 }
 
 ServerManager::~ServerManager(void)

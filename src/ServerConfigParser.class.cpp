@@ -174,7 +174,9 @@ void	ServerConfigParser::setCGI(std::string &value, route &newRoute)
 		if (!newRoute._CGI.insert(fileExtension).second)
 			throw std::invalid_argument("duplicate file extension set for CGI");
 	}
-	std::cout << "CGI: " << value << std::endl;
+
+	if (DEBUG)
+		std::cout << "CGI: " << value << std::endl;
 }
 
 bool	ServerConfigParser::checkBooleanString(std::string boolString)
