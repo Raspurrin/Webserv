@@ -1,6 +1,7 @@
 #include "../header/ServerManager.class.hpp"
 #include "../header/ServerConfigParser.class.hpp"
 #include "../header/Cgi.class.hpp"
+#include <sys/poll.h>
 #include <unistd.h>
 #include <algorithm>
 
@@ -101,21 +102,10 @@ void	ServerManager::eventLoop(void)
 			if (i < (size_t)_numServerSockets)
 				listenToServerSocket(i);
 			else
-			{
 				handleClientSocket(i);
-				if (g_shutdown_flag)
-					sendShutdownMessage(_sockets[i].fd);
-			}
 		}
 		removeSockets();
 	}
-}
-
-void	ServerManager::sendShutdownMessage(int clientSocket)
-{
-	const char*	shutdownMessage = "SERVER_SHUTDOWN";
-	size_t		messageLength = strlen(shutdownMessage);
-	send(clientSocket, shutdownMessage, messageLength, 0);
 }
 
 void	ServerManager::listenToServerSocket(int i)
@@ -138,7 +128,7 @@ void	ServerManager::addClientSocket(t_pollfd &serverSocket, ServerConfig &server
 
 		pollfd	newPfd;
 		newPfd.fd = newClientSocket;
-		newPfd.events = POLLIN | POLLOUT | POLLERR;
+		newPfd.events = POLLIN | POLLOUT | POLLERR | POLLHUP | POLLNVAL;
 		newPfd.revents = 0;
 		_sockets.push_back(newPfd);
 		Client	newClient(newPfd, serverConfig);
@@ -170,11 +160,7 @@ void	ServerManager::handleClientSocket(int i)
 	t_pollfd&		socketPoll = _sockets[i];
 	class Client&	clientPoll = _clients[socketPoll.fd];
 
-	if (socketPoll.revents & POLLNVAL) {
-		_fdsToRemove.push_back(socketPoll.fd);
-		return ;
-	}
-	if (socketPoll.revents & POLLERR || socketPoll.revents & POLLHUP) {
+	if (socketPoll.revents & POLLERR || socketPoll.revents & POLLHUP || socketPoll.revents & POLLNVAL) {
 		close(socketPoll.fd);
 		_fdsToRemove.push_back(socketPoll.fd);
 		return ;

@@ -34,7 +34,6 @@ class ServerManager
 		void	listenToServerSocket(int i);
 		void	handleClientSocket(int i);
 		void	sendResponse(Client &client);
-		void	sendShutdownMessage(int clientSocket);
 
 	public:
 		void	eventLoop(void);

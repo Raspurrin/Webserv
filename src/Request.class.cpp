@@ -1,6 +1,8 @@
 #include "../header/Request.class.hpp"
 #include <cstring>
 #include <sstream>
+#include <sys/poll.h>
+#include <unistd.h>
 
 Request::Request(void) :
 	_response(_headerFields),
@@ -43,8 +45,6 @@ void Request::readIntoString(int &socket)
 		close(socket);
 		return;
 	}
-	if (strstr(readBuffer, "SERVER_SHUTDOWN") != NULL)
-		std::cout << "Server shutting down..." << std::endl;
 	// We need the number of bytes read here since we cant be sure that we didnt read any zero bytes,
 	// which would lead to a truncation of the string.
 	std::string read(readBuffer, bytes_read);
