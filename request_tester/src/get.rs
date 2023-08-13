@@ -9,6 +9,15 @@ pub async fn test_get(client: &reqwest::Client) -> Result<(), &'static str> {
 		return Err("Failed to send request");
 	}
 
+	let res = client.get("http://localhost:8080/index.html").send().await;
+	if let Ok(ret) = res {
+		if ret.status() != 200 {
+			return Err("Got wrong status for /index.html");
+		}
+	} else {
+		return Err("Failed to send request");
+	}
+
 	let res = client.get("http://localhost:8080/asfasd").send().await;
 	match res {
 		Ok(ret) => if ret.status() != 404 {
@@ -20,6 +29,7 @@ pub async fn test_get(client: &reqwest::Client) -> Result<(), &'static str> {
 	let res = client.get("http://localhost:8080/dir?test=test").send().await;
 	match res {
 		Ok(ret) => if ret.status() != 200 {
+			println!("{:?}", ret);
 			return Err("Failed to separate query string")
 		},
 		Err(_) => return Err("Failed to send request")
