@@ -257,8 +257,6 @@ void Request::whenReadSmallerThanLen(std::istringstream& iss, char* readBuffer)
 	iss.read(readBuffer, _content_len - _readCount + 2);
 	size_t count = iss.gcount();
 	_readCount += count;
-	// We need to consider that there are possible conditions where the trailing \r\n gets send later
-	// TODO: talk to the team about it
 	_bodyBuffer += std::string(readBuffer, count);
 	if (_bodyBuffer.size() > (size_t)_response._serverConfig.getClientBodySize()) {
 		throw ErrorResponse(413, "Body of chunked request is biger than max body size.");
